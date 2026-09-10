@@ -61,24 +61,9 @@
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const token = @json($order->order_token);
-            if (typeof window.Echo !== 'undefined') {
-                window.Echo.private('order.' + token).listen('.order.status.updated', (e) => {
-                    const status = e.order.status;
-                    document.querySelectorAll('[data-status]').forEach(el => {
-                        const dot = el.querySelector('.status-dot');
-                        const state = el.dataset.status;
-                        const activeOrder = ['pending', 'preparing', 'ready', 'served', 'paid'];
-                        const isReached = activeOrder.indexOf(state) <= activeOrder.indexOf(status);
-                        if (isReached) {
-                            dot.classList.remove('bg-muted');
-                            dot.classList.add('bg-primary');
-                        }
-                    });
-                });
-            }
-        });
+        setInterval(() => {
+            window.location.reload();
+        }, 5000);
     </script>
 </body>
 </html>

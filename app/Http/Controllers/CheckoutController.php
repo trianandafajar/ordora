@@ -11,8 +11,9 @@ use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
 {
-    public function showMenu(Table $table)
+    public function showMenu(string $qr_token)
     {
+        $table = Table::where('qr_token', $qr_token)->firstOrFail();
         session(['table_id' => $table->id, 'table_qr' => $table->qr_token]);
 
         $categories = Category::with(['products' => fn ($q) => $q->where('is_available', true)])->get();
