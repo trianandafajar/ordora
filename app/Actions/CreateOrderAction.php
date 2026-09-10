@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Actions;
+
+use App\Enums\OrderStatus;
+use App\Enums\TableStatus;
+use App\Events\OrderStatusUpdated;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\OrderStatusHistory;
+use App\Models\Product;
+use App\Models\Table;
+use Illuminate\Support\Str;
+
+class CreateOrderAction
+{
+    public function execute(array $items, string $customerName, int $tableId): Order
+    {
+        $table = Table::lockForUpdate()->find($tableId);
+
+        $order = Order::create([
+            'table_id' => $tableId,
+            'user_id' => null,
+            'order_token' => Str::random(32),
+            'customer_name' => $customerName,
+            'total_price' => 0,
+            'status' => OrderStatus::Pending,
+            'payment_method' => null,
+        ]);
+
+        $subtotal = 0;
+        foreach ($items as $item) {
+            $product = Product::find($item['product_id']);
+            $price = $product->price;
+            $qty = $item['quantity'];
+            $line = $price * $qty;
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $product->id,
+                'quantity' => $qty,
+                'price' => $price,
+                'subtotal' => $line,
+            ]);
+            $subtotal += $line;
+        }
+
+        $order->update(['total_price' => $subtotal]);
+        $table->update(['status' => TableStatus::Occupied]);
+
+        OrderStatusHistory::create([
+            'order_id' => $order->id,
+            'status' => 'pending',
+            'changed_by' => null,
+        ]);
+
+        event(new OrderStatusUpdated($order->fresh()));
+
+        return $order->load(['orderItems.product', 'table']);
+    }
+}
