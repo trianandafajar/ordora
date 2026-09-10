@@ -1,4 +1,4 @@
-<div class="flex flex-col h-full bg-sidebar text-sidebar-foreground">
+<div class="flex flex-col h-full w-full bg-sidebar text-sidebar-foreground">
     <!-- Header / Brand -->
     <div class="flex items-center gap-2 px-4 h-16 border-b border-sidebar-border"
         :class="sidebarOpen ? 'px-6' : 'px-4 justify-center'">
@@ -6,11 +6,20 @@
             class="size-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg flex-shrink-0">
             O
         </div>
-        <div class="flex flex-col" x-show="sidebarOpen" x-cloak x-transition:enter="transition ease-out duration-150"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        <div class="flex flex-col flex-1" x-show="sidebarOpen" x-cloak
+            x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100">
             <span class="font-bold text-sm tracking-tight whitespace-nowrap">Ordora</span>
             <span class="text-xs text-muted-foreground whitespace-nowrap">Coffee Shop OS</span>
         </div>
+        @if($mobile)
+        <button @click="mobileOpen = false" class="p-1.5 rounded hover:bg-sidebar-accent/50 transition-colors"
+            aria-label="Close sidebar">
+            <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        @endif
     </div>
 
     <!-- Navigation -->
@@ -23,7 +32,8 @@
                 x-show="sidebarOpen" x-cloak>
                 General
             </div>
-            <a href="{{ route('admin.dashboard') }}" :class="!sidebarOpen && 'justify-center'"
+            <a href="{{ route('admin.dashboard') }}" @click="mobileOpen = false"
+                :class="!sidebarOpen && 'justify-center'"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -38,7 +48,8 @@
                 x-show="sidebarOpen" x-cloak>
                 System Management
             </div>
-            <a href="{{ route('admin.categories.index') }}" :class="!sidebarOpen && 'justify-center'"
+            <a href="{{ route('admin.categories.index') }}" @click="mobileOpen = false"
+                :class="!sidebarOpen && 'justify-center'"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.categories.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -46,7 +57,8 @@
                 </svg>
                 <span x-show="sidebarOpen" x-cloak class="whitespace-nowrap">Categories</span>
             </a>
-            <a href="{{ route('admin.products.index') }}" :class="!sidebarOpen && 'justify-center'"
+            <a href="{{ route('admin.products.index') }}" @click="mobileOpen = false"
+                :class="!sidebarOpen && 'justify-center'"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.products.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -54,7 +66,8 @@
                 </svg>
                 <span x-show="sidebarOpen" x-cloak class="whitespace-nowrap">Products</span>
             </a>
-            <a href="{{ route('admin.tables.index') }}" :class="!sidebarOpen && 'justify-center'"
+            <a href="{{ route('admin.tables.index') }}" @click="mobileOpen = false"
+                :class="!sidebarOpen && 'justify-center'"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.tables.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -62,7 +75,8 @@
                 </svg>
                 <span x-show="sidebarOpen" x-cloak class="whitespace-nowrap">Tables QR</span>
             </a>
-            <a href="{{ route('admin.kasir.index') }}" :class="!sidebarOpen && 'justify-center'"
+            <a href="{{ route('admin.kasir.index') }}" @click="mobileOpen = false"
+                :class="!sidebarOpen && 'justify-center'"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.kasir.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -70,7 +84,7 @@
                 </svg>
                 <span x-show="sidebarOpen" x-cloak class="whitespace-nowrap">Kasir Accounts</span>
             </a>
-            <a href="/" :class="!sidebarOpen && 'justify-center'"
+            <a href="/" @click="mobileOpen = false" :class="!sidebarOpen && 'justify-center'"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.reports.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -86,7 +100,8 @@
                 x-show="sidebarOpen" x-cloak>
                 Kasir
             </div>
-            <a href="{{ route('kasir.dashboard') }}" :class="!sidebarOpen && 'justify-center'"
+            <a href="{{ route('kasir.dashboard') }}" @click="mobileOpen = false"
+                :class="!sidebarOpen && 'justify-center'"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('kasir.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

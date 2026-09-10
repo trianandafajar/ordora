@@ -1,7 +1,16 @@
 <div class="flex items-center justify-between h-full w-full">
-    <!-- Left: Search / Breadcrumb -->
+    <!-- Left -->
     <div class="flex items-center gap-3">
-        <button @click="sidebarOpen = !sidebarOpen" class="p-1.5 rounded hover:bg-accent transition-colors"
+        <!-- Mobile hamburger (open drawer) -->
+        <button @click="mobileOpen = true" class="md:hidden p-1.5 rounded hover:bg-accent transition-colors"
+            aria-label="Open sidebar">
+            <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM9 4v16" />
+            </svg>
+        </button>
+        <!-- Desktop toggle (collapse/expand) -->
+        <button @click="sidebarOpen = !sidebarOpen" class="hidden md:flex p-1.5 rounded hover:bg-accent transition-colors"
             aria-label="Toggle sidebar">
             <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -15,7 +24,6 @@
 
     <!-- Right: Actions -->
     <div class="flex items-center gap-2">
-        <!-- User menu -->
         @auth
         <div
             class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
