@@ -1,5 +1,4 @@
 <div class="flex flex-col h-full w-full bg-sidebar text-sidebar-foreground">
-    <!-- Header / Brand -->
     <div class="flex items-center gap-2 px-4 h-16 border-b border-sidebar-border"
         :class="(sidebarOpen || hoverOpen) ? 'px-6' : 'px-4 justify-center'">
         <div
@@ -22,11 +21,9 @@
         @endif
     </div>
 
-    <!-- Navigation -->
     <nav class="flex-1 px-4 py-4 space-y-6 overflow-y-auto overflow-x-hidden">
         @auth
         @if(auth()->user()->role->value === 'admin')
-        <!-- Admin Menu -->
         <div class="space-y-1">
             <div class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 whitespace-nowrap"
                 x-show="sidebarOpen || hoverOpen" x-cloak>
@@ -94,7 +91,6 @@
             </a>
         </div>
         @else
-        <!-- Kasir Menu -->
         <div class="space-y-1">
             <div class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 whitespace-nowrap"
                 x-show="sidebarOpen || hoverOpen" x-cloak>
@@ -114,7 +110,6 @@
         @endauth
     </nav>
 
-    <!-- User Profile / Footer -->
     <div class="p-4 border-t border-sidebar-border flex items-center"
         :class="(sidebarOpen || hoverOpen) ? 'justify-between' : 'justify-center'">
         @auth

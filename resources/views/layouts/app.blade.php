@@ -12,25 +12,20 @@
     x-data="{ sidebarOpen: true, hoverOpen: false, mobileOpen: false }">
     <div class="min-h-screen">
 
-        <!-- Desktop Sidebar (fixed, collapsible, flyout-on-hover / absolute) -->
         <aside @mouseenter="hoverOpen = true" @mouseleave="hoverOpen = false"
             class="hidden md:flex fixed inset-y-0 left-0 z-40 border-r bg-sidebar transition-all duration-200 overflow-hidden"
             :class="(sidebarOpen || hoverOpen) ? 'w-64 shadow-xl' : 'w-16'">
             @include('layouts.partials.sidebar', ['mobile' => false])
         </aside>
 
-        <!-- Mobile Sidebar Drawer (slide-in from left) -->
         <div class="md:hidden fixed inset-0 z-50" x-show="mobileOpen" x-cloak x-transition:opacity>
-            <!-- Overlay -->
             <div class="absolute inset-0 bg-black/50" @click="mobileOpen = false"></div>
-            <!-- Panel -->
             <div class="absolute inset-y-0 left-0 w-64 h-full bg-sidebar shadow-xl transition-transform duration-200"
                 :class="mobileOpen ? 'translate-x-0' : '-translate-x-full'">
                 @include('layouts.partials.sidebar', ['mobile' => true])
             </div>
         </div>
 
-        <!-- Main -->
         <div class="flex flex-col min-h-screen transition-all duration-200"
             :class="sidebarOpen ? 'md:pl-64' : 'md:pl-16'">
             <header
