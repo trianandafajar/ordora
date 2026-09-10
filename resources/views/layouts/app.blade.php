@@ -8,12 +8,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased bg-background text-foreground" x-data="{ sidebarOpen: true, mobileOpen: false }">
+<body class="font-sans antialiased bg-background text-foreground"
+    x-data="{ sidebarOpen: false, hoverOpen: false, mobileOpen: false }">
     <div class="min-h-screen">
 
-        <!-- Desktop Sidebar (fixed, collapsible) -->
-        <aside :class="sidebarOpen ? 'w-64' : 'w-16'"
-            class="hidden md:flex fixed inset-y-0 left-0 z-30 border-r transition-all duration-200 overflow-hidden flex-shrink-0">
+        <!-- Desktop Sidebar (fixed, collapsible, flyout-on-hover / absolute) -->
+        <aside @mouseenter="hoverOpen = true" @mouseleave="hoverOpen = false"
+            class="hidden md:flex fixed inset-y-0 left-0 z-40 border-r bg-sidebar transition-all duration-200 overflow-hidden"
+            :class="(sidebarOpen || hoverOpen) ? 'w-64 shadow-xl' : 'w-16'">
             @include('layouts.partials.sidebar', ['mobile' => false])
         </aside>
 
