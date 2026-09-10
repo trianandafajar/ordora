@@ -9,7 +9,7 @@
 </head>
 
 <body class="font-sans antialiased bg-background text-foreground"
-    x-data="{ sidebarOpen: false, hoverOpen: false, mobileOpen: false }">
+    x-data="{ sidebarOpen: true, hoverOpen: false, mobileOpen: false }">
     <div class="min-h-screen">
 
         <!-- Desktop Sidebar (fixed, collapsible, flyout-on-hover / absolute) -->

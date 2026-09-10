@@ -84,8 +84,7 @@
                 </svg>
                 <span x-show="sidebarOpen || hoverOpen" x-cloak class="whitespace-nowrap">Kasir Accounts</span>
             </a>
-            <a href="{{ route('admin.reports.index') }}" @click="mobileOpen = false"
-                :class="!(sidebarOpen || hoverOpen) && 'justify-center'"
+            <a href="/" @click="mobileOpen = false" :class="!(sidebarOpen || hoverOpen) && 'justify-center'"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('admin.reports.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
