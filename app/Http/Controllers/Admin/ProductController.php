@@ -29,13 +29,17 @@ class ProductController extends Controller
             'is_available' => ['boolean'],
         ]);
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
-        }
-
         $data['is_available'] = $request->boolean('is_available');
 
-        Product::create($data);
+        $product = Product::create($data);
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $ext = $file->getClientOriginalExtension();
+            $filename = $product->slug . '-' . now()->format('Y-m-d') . '.' . $ext;
+            $path = $file->storeAs('products', $filename, 'public');
+            $product->update(['image' => $path]);
+        }
 
         return back()->with('success', 'Product created.');
     }
@@ -51,27 +55,37 @@ class ProductController extends Controller
             'is_available' => ['boolean'],
         ]);
 
+        $data['is_available'] = $request->boolean('is_available');
+
+        $product->update($data);
+
         if ($request->hasFile('image')) {
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $file = $request->file('image');
+            $ext = $file->getClientOriginalExtension();
+            $filename = $product->slug . '-' . now()->format('Y-m-d') . '.' . $ext;
+            $path = $file->storeAs('products', $filename, 'public');
+            $product->update(['image' => $path]);
         }
-
-        $data['is_available'] = $request->boolean('is_available');
-
-        $product->update($data);
 
         return back()->with('success', 'Product updated.');
     }
 
     public function destroy(Product $product)
     {
+        if ($product->orderItems()->exists()) {
+            return back()->with('error', "Product \"{$product->name}\" has {$product->orderItems()->count()} order item(s) and cannot be deleted.");
+        }
+
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
+
+        $name = $product->name;
         $product->delete();
 
-        return back()->with('success', 'Product deleted.');
+        return back()->with('success', "Product \"{$name}\" deleted.");
     }
 }
