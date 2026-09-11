@@ -28,16 +28,14 @@
 
         <div class="flex flex-col min-h-screen transition-all duration-200"
             :class="sidebarOpen ? 'md:pl-64' : 'md:pl-16'">
-            <div class="flex-1 overflow-hidden">
-                <header
-                    class="sticky top-0 z-20 h-16 border-b bg-background/95 backdrop-blur flex items-center px-4 w-full">
-                    @include('layouts.partials.header')
-                </header>
+            <header
+                class="sticky top-0 z-20 h-16 border-b bg-background/95 backdrop-blur flex items-center px-4 w-full">
+                @include('layouts.partials.header')
+            </header>
 
-                <main class="flex-1 p-6">
-                    @yield('content')
-                </main>
-            </div>
+            <main class="flex-1 p-6">
+                @yield('content')
+            </main>
         </div>
     </div>
 </body>
