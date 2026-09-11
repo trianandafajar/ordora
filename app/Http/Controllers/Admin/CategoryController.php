@@ -26,7 +26,7 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        $data = $request->validate(['name' => ['required', 'string', 'max:100', 'unique:categories,name,'.$category->id]]);
+        $data = $request->validate(['name' => ['required', 'string', 'max:100', 'unique:categories,name,' . $category->id]]);
 
         $category->update($data);
 
@@ -35,8 +35,13 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        if ($category->products()->exists()) {
+            return back()->with('error', "Category \"{$category->name}\" has {$category->products()->count()} product(s) and cannot be deleted.");
+        }
+
+        $name = $category->name;
         $category->delete();
 
-        return back()->with('success', 'Category deleted.');
+        return back()->with('success', "Category \"{$name}\" deleted.");
     }
 }
