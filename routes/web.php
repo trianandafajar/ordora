@@ -47,6 +47,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('kasir', KasirController::class);
     Route::patch('kasir/{user}/toggle', [KasirController::class, 'toggle'])->name('kasir.toggle');
     Route::get('/reports', [DashboardController::class, 'reports'])->name('reports');
+    Route::get('/reports/pdf', [DashboardController::class, 'pdf'])->name('reports.pdf');
 });
 
 // Kasir

@@ -6,7 +6,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Table;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -45,23 +47,91 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact('stats', 'recentOrders', 'total', 'total7d', 'statusCounts', 'revenueData', 'maxRev'));
     }
 
-    public function reports()
+    public function reports(Request $request): View
     {
+        $startDate = $request->get('start_date', today()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('end_date', today()->format('Y-m-d'));
+
+        $paidQuery = Order::where('status', 'paid')
+            ->whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate);
+
         $stats = [
-            'today_revenue' => Order::where('status', 'paid')->whereDate('created_at', today())->sum('total_price'),
-            'total_paid_orders' => Order::where('status', 'paid')->count(),
+            'period_start' => $startDate,
+            'period_end' => $endDate,
+            'period_revenue' => (clone $paidQuery)->sum('total_price'),
+            'period_paid_orders' => (clone $paidQuery)->count(),
             'total_revenue' => Order::where('status', 'paid')->sum('total_price'),
+            'aov' => 0,
         ];
+        $stats['aov'] = $stats['period_paid_orders'] > 0
+            ? round($stats['period_revenue'] / $stats['period_paid_orders'], 2)
+            : 0;
 
         $topProducts = OrderItem::query()
             ->selectRaw('products.name, sum(order_items.quantity) as sold, sum(order_items.subtotal) as revenue')
             ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->whereHas('order', fn ($q) => $q->where('status', 'paid')
+                ->whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate))
             ->groupBy('products.name')
             ->orderByDesc('sold')
             ->limit(5)
             ->get();
 
-        return view('admin.reports', compact('stats', 'topProducts'));
+        $orderHistory = Order::where('status', 'paid')
+            ->whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate)
+            ->with('table', 'user')
+            ->latest()
+            ->get();
+
+        return view('admin.reports.index', compact('stats', 'topProducts', 'orderHistory', 'startDate', 'endDate'));
+    }
+
+    public function pdf(Request $request)
+    {
+        $startDate = $request->get('start_date', today()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('end_date', today()->format('Y-m-d'));
+
+        $paidQuery = Order::where('status', 'paid')
+            ->whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate);
+
+        $stats = [
+            'period_start' => $startDate,
+            'period_end' => $endDate,
+            'period_revenue' => (clone $paidQuery)->sum('total_price'),
+            'period_paid_orders' => (clone $paidQuery)->count(),
+            'total_revenue' => Order::where('status', 'paid')->sum('total_price'),
+            'aov' => 0,
+        ];
+        $stats['aov'] = $stats['period_paid_orders'] > 0
+            ? round($stats['period_revenue'] / $stats['period_paid_orders'], 2)
+            : 0;
+
+        $topProducts = OrderItem::query()
+            ->selectRaw('products.name, sum(order_items.quantity) as sold, sum(order_items.subtotal) as revenue')
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->whereHas('order', fn ($q) => $q->where('status', 'paid')
+                ->whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate))
+            ->groupBy('products.name')
+            ->orderByDesc('sold')
+            ->limit(5)
+            ->get();
+
+        $orderHistory = Order::where('status', 'paid')
+            ->whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate)
+            ->with('table', 'user')
+            ->latest()
+            ->get();
+
+        $pdf = Pdf::loadView('admin.reports.pdf', compact('stats', 'topProducts', 'orderHistory', 'startDate', 'endDate'));
+        $pdf->setPaper('a4', 'landscape');
+
+        return $pdf->download('laporan-penjualan-' . $startDate . '_to_' . $endDate . '.pdf');
     }
 
     public function kasir(): View
