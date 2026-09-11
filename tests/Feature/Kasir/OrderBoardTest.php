@@ -53,25 +53,97 @@ class OrderBoardTest extends TestCase
             ->assertDontSee('#'.$pending->id);
     }
 
-    public function test_cashier_can_move_forward_and_pay_served_order_with_cash(): void
+    public function test_cashier_must_confirm_cash_payment_before_order_is_paid(): void
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $order = $this->makeOrder();
 
-        Livewire::actingAs($cashier)->test('kasir.order-board')
+        $component = Livewire::actingAs($cashier)->test('kasir.order-board');
+
+        $component
             ->call('moveOrder', $order->id, 'preparing')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'preparing']);
 
         $order->update(['status' => OrderStatus::Served]);
-        Livewire::actingAs($cashier)->test('kasir.order-board')
+        $component = Livewire::actingAs($cashier)->test('kasir.order-board')
+            ->assertSee('Pay')
+            ->assertDontSee('Bayar cash')
+            ->assertDontSee('Bayar QRIS');
+
+        $component
             ->call('moveOrder', $order->id, 'paid')
+            ->assertSet('paymentDialogOpen', true)
+            ->assertSet('paymentMethod', PaymentMethod::Cash->value)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => OrderStatus::Served->value]);
+
+        $component
+            ->call('continuePayment')
+            ->assertSet('paymentStep', 'confirmation')
+            ->call('confirmPayment')
+            ->assertSet('receiptDialogOpen', true)
+            ->assertSet('receiptData.payment_method', PaymentMethod::Cash->value)
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'paid', 'payment_method' => 'cash']);
         $this->assertSame(TableStatus::Available, $order->table->fresh()->status);
+    }
+
+    public function test_cashier_must_confirm_qris_payment_before_order_is_paid(): void
+    {
+        Event::fake([OrderStatusUpdated::class]);
+        $cashier = User::factory()->create(['role' => UserRole::Kasir]);
+        $order = $this->makeOrder();
+        $order->update(['status' => OrderStatus::Served]);
+
+        $component = Livewire::actingAs($cashier)->test('kasir.order-board')
+            ->call('openPaymentDialog', $order->id, PaymentMethod::Qris->value)
+            ->call('continuePayment')
+            ->call('confirmPayment')
+            ->assertHasErrors('qrisConfirmed');
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => OrderStatus::Served->value,
+            'payment_method' => null,
+        ]);
+
+        $component
+            ->set('qrisConfirmed', true)
+            ->call('confirmPayment')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => OrderStatus::Paid->value,
+            'payment_method' => PaymentMethod::Qris->value,
+            'user_id' => $cashier->id,
+        ]);
+        $this->assertSame(TableStatus::Available, $order->table->fresh()->status);
+    }
+
+    public function test_canceling_payment_dialog_keeps_served_order_unpaid(): void
+    {
+        Event::fake([OrderStatusUpdated::class]);
+        $cashier = User::factory()->create(['role' => UserRole::Kasir]);
+        $order = $this->makeOrder();
+        $order->update(['status' => OrderStatus::Served]);
+
+        Livewire::actingAs($cashier)->test('kasir.order-board')
+            ->call('openPaymentDialog', $order->id, PaymentMethod::Cash->value)
+            ->call('cancelPayment')
+            ->assertSet('paymentDialogOpen', false)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => OrderStatus::Served->value,
+            'payment_method' => null,
+        ]);
     }
 
     public function test_cashier_can_move_an_active_order_backward(): void

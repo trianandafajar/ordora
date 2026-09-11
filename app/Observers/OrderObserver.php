@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\OrderStatus;
 use App\Events\OrderStatusUpdated;
 use App\Models\Order;
 
@@ -24,7 +25,7 @@ class OrderObserver
             return;
         }
 
-        $changeType = $order->wasChanged('payment_method') ? 'paid' : 'status_changed';
+        $changeType = $order->status === OrderStatus::Paid ? 'paid' : 'status_changed';
 
         OrderStatusUpdated::dispatch(
             $order,

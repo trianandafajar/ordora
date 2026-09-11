@@ -52,6 +52,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:kasir'])->prefix('kasir')->name('kasir.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
     Route::get('/order/{order}', [KasirOrderController::class, 'show'])->name('order.show');
+    Route::get('/order/{order}/receipt', [KasirOrderController::class, 'receipt'])->name('order.receipt');
     Route::patch('/order/{order}/status', [KasirOrderController::class, 'updateStatus'])->name('order.status');
     Route::post('/order/{order}/pay', [KasirOrderController::class, 'pay'])->name('order.pay');
 });

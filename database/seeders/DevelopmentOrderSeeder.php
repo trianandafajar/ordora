@@ -100,6 +100,7 @@ class DevelopmentOrderSeeder extends Seeder
                 );
 
                 if ($orderData['status'] === OrderStatus::Paid) {
+                    $updateOrderStatusAction->execute($order, OrderStatus::Served, $kasirId);
                     $payOrderAction->execute($order, $orderData['payment_method'], $kasirId);
 
                     return;
