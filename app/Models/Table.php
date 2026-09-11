@@ -25,4 +25,9 @@ class Table extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function getQrUrlAttribute(): string
+    {
+        return route('meja.menu', $this->qr_token);
+    }
 }

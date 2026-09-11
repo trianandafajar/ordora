@@ -42,6 +42,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
     Route::resource('tables', TableController::class);
+    Route::get('tables/{table}/qr', [TableController::class, 'qr'])->name('tables.qr');
+    Route::patch('tables/{table}/regenerate-qr', [TableController::class, 'regenQr'])->name('tables.regenQr');
     Route::resource('kasir', KasirController::class);
     Route::get('/reports', [DashboardController::class, 'reports'])->name('reports');
 });

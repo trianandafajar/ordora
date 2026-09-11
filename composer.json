@@ -10,7 +10,8 @@
         "laravel/framework": "^13.17",
         "laravel/reverb": "^1.0",
         "laravel/tinker": "^3.0",
-        "livewire/livewire": "^4.4"
+        "livewire/livewire": "^4.4",
+        "simplesoftwareio/simple-qrcode": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
