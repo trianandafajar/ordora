@@ -3,7 +3,6 @@
 namespace App\Actions;
 
 use App\Enums\OrderStatus;
-use App\Events\OrderStatusUpdated;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 
@@ -19,6 +18,5 @@ class UpdateOrderStatusAction
             'changed_by' => $changedBy,
         ]);
 
-        event(new OrderStatusUpdated($order->fresh()));
     }
 }

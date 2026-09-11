@@ -34,11 +34,9 @@
                 <li class="flex flex-1 items-center">
                     <div class="flex flex-col items-center gap-2" data-status="{{ $state }}">
                         <div
-                            class="status-dot size-5 rounded-full {{ $order->status->value === $state ? 'bg-primary' : 'bg-muted' }}">
+                            class="status-dot size-5 rounded-full bg-muted">
                         </div>
-                        <span
-                            class="text-xs capitalize {{ $order->status->value === $state ? 'font-medium text-foreground' : 'text-muted-foreground' }}">{{
-                            $state }}</span>
+                        <span class="status-label text-xs capitalize text-muted-foreground">{{ $state }}</span>
                     </div>
                     @if(!$loop->last)
                     <div class="h-px flex-1 bg-border"></div>
@@ -64,10 +62,45 @@
         </div>
     </main>
 
+    <p id="liveStatus" class="text-sm text-muted-foreground">Status: {{ $order->status->value }}</p>
+
     <script>
-        setInterval(() => {
-            window.location.reload();
-        }, 5000);
+        const orderToken = {{ Js::from($order->order_token) }};
+        const orderStatuses = ['pending', 'preparing', 'ready', 'served', 'paid'];
+
+        function renderStatus(status) {
+            const currentIndex = orderStatuses.indexOf(status);
+
+            document.querySelectorAll('[data-status]').forEach((node) => {
+                const nodeIndex = orderStatuses.indexOf(node.dataset.status);
+                const dot = node.querySelector('.status-dot');
+                const label = node.querySelector('.status-label');
+                const active = nodeIndex <= currentIndex;
+
+                dot.classList.toggle('bg-primary', active);
+                dot.classList.toggle('bg-muted', !active);
+                label.classList.toggle('font-medium', nodeIndex === currentIndex);
+                label.classList.toggle('text-foreground', active);
+                label.classList.toggle('text-muted-foreground', !active);
+            });
+
+            document.getElementById('liveStatus').textContent = `Status: ${status}`;
+        }
+
+        renderStatus({{ Js::from($order->status->value) }});
+
+        const subscribeToOrderChannel = () => {
+            if (window.__ordoraTrackingChannel || !window.Echo) return;
+
+            const channel = window.Echo.channel(`order.${orderToken}`);
+            window.__ordoraTrackingChannel = channel;
+            channel.listen('.order.status.updated', (payload) => {
+                if (payload?.order?.status) renderStatus(payload.order.status);
+            });
+        };
+
+        subscribeToOrderChannel();
+        window.addEventListener('ordora-echo-ready', subscribeToOrderChannel);
     </script>
 </body>
 

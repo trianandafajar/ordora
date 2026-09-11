@@ -7,6 +7,7 @@ use App\Actions\UpdateOrderStatusAction;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Models\Order;
+use Illuminate\Http\Request;
 
 class KasirOrderController extends Controller
 {

@@ -38,12 +38,12 @@
                     <td class="p-4 text-center text-sm capitalize">{{ $tbl->capacity }}</td>
                     <td class="p-4 text-sm text-muted-foreground break-all">{{ substr($tbl->qr_token, 0, 8) }}...</td>
                     <td class="p-4 text-right">
-                        <form method="POST" action="{{ route('admin.tables.regenQr', $tbl) }}" class="inline">
+                        {{-- <form method="POST" action="{{ route('admin.tables.regenQr', $tbl) }}" class="inline">
                             @csrf @method('PATCH')
                             <button type="submit"
                                 class="text-xs bg-primary text-primary-foreground px-2 py-1 rounded hover:opacity-90">Regenerate
                                 QR</button>
-                        </form>
+                        </form> --}}
                         <form method="POST" action="{{ route('admin.tables.destroy', $tbl) }}" class="inline"
                             onsubmit="return confirm('Delete this table?')">
                             @csrf @method('DELETE')

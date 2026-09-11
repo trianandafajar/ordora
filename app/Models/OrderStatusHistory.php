@@ -13,6 +13,13 @@ class OrderStatusHistory extends Model
 
     protected $table = 'order_status_histories';
 
+    protected static function booted(): void
+    {
+        static::creating(function (OrderStatusHistory $history): void {
+            $history->created_at ??= now();
+        });
+    }
+
     protected function casts(): array
     {
         return [

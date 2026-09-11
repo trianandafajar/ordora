@@ -4,57 +4,57 @@ namespace App\Actions;
 
 use App\Enums\OrderStatus;
 use App\Enums\TableStatus;
-use App\Events\OrderStatusUpdated;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Table;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CreateOrderAction
 {
     public function execute(array $items, string $customerName, int $tableId): Order
     {
-        $table = Table::lockForUpdate()->find($tableId);
+        return DB::transaction(function () use ($items, $customerName, $tableId): Order {
+            $table = Table::lockForUpdate()->findOrFail($tableId);
 
-        $order = Order::create([
-            'table_id' => $tableId,
-            'user_id' => null,
-            'order_token' => Str::random(32),
-            'customer_name' => $customerName,
-            'total_price' => 0,
-            'status' => OrderStatus::Pending,
-            'payment_method' => null,
-        ]);
-
-        $subtotal = 0;
-        foreach ($items as $item) {
-            $product = Product::find($item['product_id']);
-            $price = $product->price;
-            $qty = $item['quantity'];
-            $line = $price * $qty;
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $product->id,
-                'quantity' => $qty,
-                'price' => $price,
-                'subtotal' => $line,
+            $order = Order::create([
+                'table_id' => $tableId,
+                'user_id' => null,
+                'order_token' => Str::random(32),
+                'customer_name' => $customerName,
+                'total_price' => 0,
+                'status' => OrderStatus::Pending,
+                'payment_method' => null,
             ]);
-            $subtotal += $line;
-        }
 
-        $order->update(['total_price' => $subtotal]);
-        $table->update(['status' => TableStatus::Occupied]);
+            $subtotal = 0;
+            foreach ($items as $item) {
+                $product = Product::findOrFail($item['product_id']);
+                $price = $product->price;
+                $qty = $item['quantity'];
+                $line = $price * $qty;
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $product->id,
+                    'quantity' => $qty,
+                    'price' => $price,
+                    'subtotal' => $line,
+                ]);
+                $subtotal += $line;
+            }
 
-        OrderStatusHistory::create([
-            'order_id' => $order->id,
-            'status' => 'pending',
-            'changed_by' => null,
-        ]);
+            $order->update(['total_price' => $subtotal]);
+            $table->update(['status' => TableStatus::Occupied]);
 
-        event(new OrderStatusUpdated($order->fresh()));
+            OrderStatusHistory::create([
+                'order_id' => $order->id,
+                'status' => 'pending',
+                'changed_by' => null,
+            ]);
 
-        return $order->load(['orderItems.product', 'table']);
+            return $order->load(['orderItems.product', 'table']);
+        });
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Table;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 
 class DashboardController extends Controller
 {
@@ -63,13 +64,8 @@ class DashboardController extends Controller
         return view('admin.reports', compact('stats', 'topProducts'));
     }
 
-    public function kasir()
+    public function kasir(): View
     {
-        $orders = Order::where('status', '!=', 'paid')
-            ->with(['table'])
-            ->latest()
-            ->get();
-
-        return view('kasir.dashboard', compact('orders'));
+        return view('kasir.dashboard');
     }
 }
