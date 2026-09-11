@@ -132,4 +132,64 @@
         </a>
     </div>
 </div>
+<!-- Recent Activity Section -->
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="rounded-xl border bg-card shadow-sm p-6">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-medium text-muted-foreground">Recent Orders</h3>
+            <a href="{{ route('kasir.dashboard') }}" class="text-xs text-primary hover:underline">Lihat Semua</a>
+        </div>
+        <div class="space-y-2 h-20 overflow-y-auto">
+            @if(count($recentOrders) > 0)
+            @foreach($recentOrders as $order)
+            <div class="flex items-center gap-3 px-2 py-1 rounded-md hover:bg-accent/20 transition-colors">
+                <div
+                    class="w-2 h-2 rounded-full {{ $order->status->value === 'paid' ? 'bg-green-500' : ($order->status->value === 'preparing' ? 'bg-amber-500' : ($order->status->value === 'ready' ? 'bg-blue-500' : ($order->status->value === 'served' ? 'bg-purple-500' : 'bg-red-500'))) }}">
+                </div>
+                <span class="text-xs text-muted-foreground truncate">{{ $order->order_token }}</span>
+                <span class="text-xs font-medium">{{ $order->status->value }}</span>
+                <span class="text-right text-xs font-medium">{{ $order->total_price > 0 ? 'Rp ' .
+                    number_format($order->total_price, 0, ',', '.') : '-' }}</span>
+            </div>
+            @endforeach
+            @else
+            <p class="text-xs text-muted-foreground">No orders yet.</p>
+            @endif
+        </div>
+    </div>
+
+    <div class="rounded-xl border bg-card shadow-sm p-6">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-medium text-muted-foreground">Order Status Distribution</h3>
+        </div>
+        <div class="space-y-2">
+            @foreach($statusCounts as $status => $count)
+            <div class="flex items-center justify-between text-xs">
+                <span class="text-muted-foreground capitalize whitespace-nowrap">{{ $status }}</span>
+                <span class="flex-1 h-2 rounded-full bg-muted"
+                    style="width: {{ $total > 0 ? round(($count / $total) * 100) : 0 }}%"></span>
+                <span class="text-right text-muted-foreground whitespace-nowrap">{{ $count }}</span>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+
+<!-- Daily Revenue Chart Alternative (using simple bar chart design) -->
+<div class="rounded-xl border bg-card shadow-sm p-6">
+    <h3 class="text-sm font-medium text-muted-foreground mb-4">Revenue Trend (Last 7 Days)</h3>
+    <div class="space-y-3">
+        @foreach($revenueData as $item)
+        <div class="flex items-center gap-4 text-xs">
+            <span class="w-16 text-muted-foreground">{{ $item['label'] }}</span>
+            <div class="flex-1 h-3 bg-muted rounded-full overflow-hidden flex">
+                <div class="bg-primary rounded-full transition-all"
+                    style="width: {{ round(($item['revenue'] / $maxRev) * 100) }}%"></div>
+            </div>
+            <span class="w-28 text-right font-medium">Rp {{ number_format($item['revenue'], 0, ',', '.') }}</span>
+        </div>
+        @endforeach
+    </div>
+</div>
+</div>
 @endsection

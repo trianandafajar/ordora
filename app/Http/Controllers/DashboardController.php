@@ -18,7 +18,30 @@ class DashboardController extends Controller
             'total_tables' => Table::count(),
         ];
 
-        return view('admin.dashboard', compact('stats'));
+        $recentOrders = Order::latest()->take(5)->get();
+        $total = Order::count();
+        $total7d = Order::where('status', 'paid')->whereDate('created_at', '>=', now()->subDays(7))->sum('total_price');
+
+        $statusCounts = [
+            'pending' => Order::where('status', 'pending')->count(),
+            'preparing' => Order::where('status', 'preparing')->count(),
+            'ready' => Order::where('status', 'ready')->count(),
+            'served' => Order::where('status', 'served')->count(),
+            'paid' => Order::where('status', 'paid')->count(),
+        ];
+
+        $revenueData = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $rev = Order::where('status', 'paid')->whereDate('created_at', $date->toDateString())->sum('total_price') ?? 0;
+            $revenueData[] = [
+                'label' => $date->format('d M'),
+                'revenue' => $rev,
+            ];
+        }
+        $maxRev = max(array_column($revenueData, 'revenue')) ?: 1;
+
+        return view('admin.dashboard', compact('stats', 'recentOrders', 'total', 'total7d', 'statusCounts', 'revenueData', 'maxRev'));
     }
 
     public function reports()
