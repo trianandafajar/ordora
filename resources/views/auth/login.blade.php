@@ -33,7 +33,7 @@
             </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}" class="space-y-4">
+            <form method="POST" action="{{ route('login') }}" class="space-y-4" id="login-form">
                 @csrf
                 <div class="space-y-2">
                     <label for="email" class="text-sm font-medium">Email</label>
@@ -45,11 +45,20 @@
                     <input id="password" type="password" name="password" required
                         class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive">
                 </div>
-                <button type="submit"
-                    class="w-full inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground font-medium text-sm h-9 px-4 py-2 hover:opacity-90 transition-opacity">
-                    Sign in
+                <button type="submit" id="login-btn"
+                    class="w-full inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground font-medium text-sm h-9 px-4 py-2 hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span id="login-text">Sign in</span>
+                    <span id="login-loading" class="hidden">Signing in...</span>
                 </button>
             </form>
+            <script>
+                document.getElementById('login-form').addEventListener('submit', function() {
+                    var btn = document.getElementById('login-btn');
+                    btn.disabled = true;
+                    document.getElementById('login-text').classList.add('hidden');
+                    document.getElementById('login-loading').classList.remove('hidden');
+                });
+            </script>
 
             <p class="text-xs text-muted-foreground text-center">
                 Demo access. Password: <code class="bg-accent px-1 rounded">password</code>

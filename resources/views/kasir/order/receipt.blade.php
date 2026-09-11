@@ -24,7 +24,8 @@
 
     <main class="mx-auto max-w-lg rounded-2xl border bg-card p-6 shadow-sm print:border-0 print:shadow-none">
         @if(session('success'))
-            <div class="no-print mb-4 rounded-md border border-green-300 bg-green-50 p-3 text-sm text-green-800">{{ session('success') }}</div>
+        <div class="no-print mb-4 rounded-md border border-green-300 bg-green-50 p-3 text-sm text-green-800">{{
+            session('success') }}</div>
         @endif
 
         <div class="mb-6 flex items-start justify-between gap-4 border-b pb-4">
@@ -32,7 +33,8 @@
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Ordora</p>
                 <h1 class="mt-1 text-2xl font-bold">Payment Receipt</h1>
             </div>
-            <a href="{{ route('kasir.order.show', $order) }}" class="no-print text-sm text-muted-foreground hover:text-foreground">Back</a>
+            <a href="{{ route('kasir.order.show', $order) }}"
+                class="no-print text-sm text-muted-foreground hover:text-foreground">Back</a>
         </div>
 
         <div class="mb-6 grid grid-cols-2 gap-3 text-sm">
@@ -61,10 +63,10 @@
             </div>
             <div class="space-y-3">
                 @foreach($order->orderItems as $item)
-                    <div class="flex justify-between gap-4 text-sm">
-                        <span>{{ $item->quantity }} × {{ $item->product->name }}</span>
-                        <span class="shrink-0">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
-                    </div>
+                <div class="flex justify-between gap-4 text-sm">
+                    <span>{{ $item->quantity }} × {{ $item->product->name }}</span>
+                    <span class="shrink-0">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                </div>
                 @endforeach
             </div>
         </div>
@@ -85,7 +87,8 @@
             <p class="mt-1 break-all">Order token: {{ $order->order_token }}</p>
         </div>
 
-        <button type="button" onclick="window.print()" class="no-print mt-6 w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90">
+        <button type="button" onclick="window.print()"
+            class="no-print mt-6 w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer">
             Print Receipt
         </button>
     </main>

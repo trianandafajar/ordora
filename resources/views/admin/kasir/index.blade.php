@@ -5,7 +5,7 @@
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold tracking-tight">Kasir Accounts</h1>
         <button x-data @click="$dispatch('open-modal', { id: 'create-kasir' })"
-            class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity">
+            class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity cursor-pointer">
             Add Kasir
         </button>
     </div>
@@ -36,7 +36,9 @@
                     <td class="p-4 text-right">
                         <div class="flex items-center justify-end gap-3" x-data="{
                             isActive: @js($kasir->is_active),
+                            toggling: false,
                             async toggle() {
+                                this.toggling = true;
                                 try {
                                     const res = await fetch('{{ route('admin.kasir.toggle', $kasir) }}', {
                                         method: 'PATCH',
@@ -52,13 +54,15 @@
                                     window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
                                 } catch (e) {
                                     window.dispatchEvent(new CustomEvent('toast', { detail: { message: e.message, type: 'error' } }));
+                                } finally {
+                                    this.toggling = false;
                                 }
                             }
                         }">
-                            <button @click="toggle()"
-                                class="text-xs font-medium px-2.5 py-1 rounded-md transition-colors"
+                            <button @click="toggle()" :disabled="toggling"
+                                class="text-xs font-medium px-2.5 py-1 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                 :class="isActive ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 'bg-green-100 text-green-800 hover:bg-green-200'"
-                                x-text="isActive ? 'Deactivate' : 'Activate'"></button>
+                                x-text="toggling ? '...' : (isActive ? 'Deactivate' : 'Activate')"></button>
                         </div>
                     </td>
                 </tr>
@@ -93,9 +97,9 @@
         </div>
         <div class="flex justify-end gap-2 pt-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'create-kasir' })"
-                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
+                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
             <button type="submit"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Create
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Create
                 Account</button>
         </div>
     </form>

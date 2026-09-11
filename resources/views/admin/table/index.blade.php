@@ -5,7 +5,7 @@
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold tracking-tight">Tables</h1>
         <button x-data @click="$dispatch('open-modal', { id: 'create-table' })"
-            class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity">
+            class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity cursor-pointer">
             Add Table
         </button>
     </div>
@@ -42,11 +42,11 @@
                     <td class="p-4 text-right">
                         <div class="flex items-center justify-end gap-3">
                             <button x-data @click="$dispatch('open-modal', { id: 'detail-table-{{ $tbl->id }}' })"
-                                class="text-primary hover:underline">Detail</button>
+                                class="text-primary hover:underline cursor-pointer">Detail</button>
                             <button x-data @click="$dispatch('open-modal', { id: 'edit-table-{{ $tbl->id }}' })"
-                                class="text-primary hover:underline">Edit</button>
+                                class="text-primary hover:underline cursor-pointer">Edit</button>
                             <button x-data @click="$dispatch('open-modal', { id: 'delete-table-{{ $tbl->id }}' })"
-                                class="text-destructive hover:underline">Delete</button>
+                                class="text-destructive hover:underline cursor-pointer">Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -79,9 +79,9 @@
         </div>
         <div class="flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'create-table' })"
-                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
+                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
             <button type="submit"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Create
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Create
                 Table</button>
         </div>
     </form>
@@ -106,9 +106,9 @@
         </div>
         <div class="flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'edit-table-{{ $tbl->id }}' })"
-                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
+                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
             <button type="submit"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Save
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Save
                 Changes</button>
         </div>
     </form>
@@ -121,11 +121,11 @@
         </p>
         <div class="flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'delete-table-{{ $tbl->id }}' })"
-                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
+                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
             <form method="POST" action="{{ route('admin.tables.destroy', $tbl) }}">
                 @csrf @method('DELETE')
                 <button type="submit"
-                    class="rounded-md bg-destructive text-destructive-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Delete</button>
+                    class="rounded-md bg-destructive text-destructive-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Delete</button>
             </form>
         </div>
     </div>
@@ -212,18 +212,20 @@
                 <img :src="qrSrc" alt="QR Table {{ $tbl->number }}" class="w-48 h-48">
             </div>
             <p class="text-xs text-muted-foreground text-center">Scan to view menu at table {{ $tbl->number }}</p>
-            <div class="flex gap-2">
-                <a :href="qrSrc" download="qr-table-{{ $tbl->number }}.png"
-                    class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 flex items-center gap-2">
+            <div class="flex gap-2" x-data="{ downloading: false }">
+                <button type="button"
+                    @click="downloading = true; window.location.href = qrSrc; setTimeout(() => downloading = false, 2000)"
+                    :disabled="downloading"
+                    class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Download
-                </a>
+                    <span x-text="downloading ? 'Downloading...' : 'Download'"></span>
+                </button>
                 <button type="button" @click="regenerate" :disabled="regenerating"
-                    class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                     <svg class="h-4 w-4" :class="regenerating ? 'animate-spin' : ''" xmlns="http://www.w3.org/2000/svg"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"

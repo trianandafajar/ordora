@@ -39,7 +39,7 @@
             <div class="relative w-full h-full p-2 flex items-center justify-center" @click.stop>
                 <img :src="preview" class="max-h-36 max-w-full rounded-md object-contain">
                 <button type="button" @click="preview = null; $refs.fileInput.value = ''"
-                    class="absolute top-3 right-3 rounded-full bg-black/60 p-1 text-white hover:bg-black/80 transition-colors"
+                    class="absolute top-3 right-3 rounded-full bg-black/60 p-1 text-white hover:bg-black/80 transition-colors cursor-pointer"
                     @click.stop>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">

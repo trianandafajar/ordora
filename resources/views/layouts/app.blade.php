@@ -80,7 +80,7 @@
                 </template>
                 <span class="text-sm font-medium" x-text="message"></span>
             </div>
-            <button @click="show = false" class="ml-4 text-muted-foreground hover:text-foreground">
+            <button @click="show = false" class="ml-4 text-muted-foreground hover:text-foreground cursor-pointer">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -88,6 +88,19 @@
         </div>
     </div>
     @livewireScripts
+    <script>
+        document.addEventListener('submit', function(e) {
+            var form = e.target;
+            if (form.matches('form') && !form.hasAttribute('wire:submit')) {
+                var btn = form.querySelector('button[type="submit"]');
+                if (btn && !btn.disabled) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                }
+            }
+        }, true);
+    </script>
 </body>
 
 </html>

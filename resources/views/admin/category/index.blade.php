@@ -5,7 +5,7 @@
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold tracking-tight">Categories</h1>
         <button x-data @click="$dispatch('open-modal', { id: 'create-category' })"
-            class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity">
+            class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity cursor-pointer">
             Add Category
         </button>
     </div>
@@ -33,7 +33,7 @@
                     <td class="p-4 text-right">
                         <div class="flex items-center justify-end gap-2">
                             <button x-data @click="$dispatch('open-modal', { id: 'edit-category-{{ $cat->id }}' })"
-                                class="text-xs text-primary hover:underline">
+                                class="text-xs text-primary hover:underline cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-4">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -42,7 +42,7 @@
 
                             </button>
                             <button x-data @click="$dispatch('open-modal', { id: 'delete-category-{{ $cat->id }}' })"
-                                class="text-xs text-destructive hover:underline">
+                                class="text-xs text-destructive hover:underline cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-4">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -78,9 +78,9 @@
         </div>
         <div class="flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'create-category' })"
-                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
+                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
             <button type="submit"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Create</button>
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Create</button>
         </div>
     </form>
 </x-modal>
@@ -102,9 +102,9 @@
         </div>
         <div class="flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'edit-category-{{ $cat->id }}' })"
-                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
+                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
             <button type="submit"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Save</button>
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Save</button>
         </div>
     </form>
 </x-modal>
@@ -116,11 +116,11 @@
         </p>
         <div class="flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'delete-category-{{ $cat->id }}' })"
-                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
+                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
             <form method="POST" action="{{ route('admin.categories.destroy', $cat) }}">
                 @csrf @method('DELETE')
                 <button type="submit"
-                    class="rounded-md bg-destructive text-destructive-foreground  text-white text-sm font-medium h-9 px-4 hover:opacity-90">Delete</button>
+                    class="rounded-md bg-destructive text-destructive-foreground  text-white text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Delete</button>
             </form>
         </div>
     </div>

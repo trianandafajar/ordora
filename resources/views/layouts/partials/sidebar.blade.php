@@ -12,7 +12,8 @@
             <span class="text-xs text-muted-foreground whitespace-nowrap">Coffee Shop OS</span>
         </div>
         @if($mobile)
-        <button @click="mobileOpen = false" class="p-1.5 rounded hover:bg-sidebar-accent/50 transition-colors"
+        <button @click="mobileOpen = false"
+            class="p-1.5 rounded hover:bg-sidebar-accent/50 transition-colors cursor-pointer"
             aria-label="Close sidebar">
             <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

@@ -355,7 +355,9 @@ new class extends Component
 ?>
 
 <div data-order-board x-data="orderBoardRealtimeState" class="space-y-6">
-    <div x-show="toastMessage" x-cloak x-transition class="fixed right-4 top-4 z-50 rounded-xl border bg-card px-4 py-3 text-sm shadow-lg" role="status"><span x-text="toastMessage"></span></div>
+    <div x-show="toastMessage" x-cloak x-transition
+        class="fixed right-4 top-4 z-50 rounded-xl border bg-card px-4 py-3 text-sm shadow-lg" role="status"><span
+            x-text="toastMessage"></span></div>
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
@@ -366,100 +368,344 @@ new class extends Component
         <div class="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-sm">
             <span class="size-2 rounded-full bg-emerald-500"></span>
             <span class="font-medium" x-text="formattedNow()"></span>
-            <button type="button" class="ml-2 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted" @click="toggleSound()"><span x-text="soundEnabled ? '🔔' : '🔕'"></span><span x-text="soundEnabled ? 'Sound On' : 'Sound Off'"></span></button>
+            <button type="button"
+                class="ml-2 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted cursor-pointer"
+                @click="toggleSound()"><span x-text="soundEnabled ? '🔔' : '🔕'"></span><span
+                    x-text="soundEnabled ? 'Sound On' : 'Sound Off'"></span></button>
         </div>
     </div>
 
-    <div class="flex gap-1 border-b"><button type="button" wire:click="setTab('orders')" class="border-b-2 px-4 py-3 text-sm font-medium {{ $activeTab === 'orders' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground' }}">Orders</button><button type="button" wire:click="setTab('history')" class="border-b-2 px-4 py-3 text-sm font-medium {{ $activeTab === 'history' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground' }}">History</button></div>
+    <div class="flex gap-1 border-b"><button type="button" wire:click="setTab('orders')"
+            class="border-b-2 px-4 py-3 text-sm font-medium cursor-pointer {{ $activeTab === 'orders' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground' }}">Orders</button><button
+            type="button" wire:click="setTab('history')"
+            class="border-b-2 px-4 py-3 text-sm font-medium cursor-pointer {{ $activeTab === 'history' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground' }}">History</button>
+    </div>
 
-    <div class="flex flex-col gap-3 md:flex-row"><label class="relative flex-1"><span class="sr-only">Search orders</span><input wire:model.live.debounce.300ms="search" type="search" placeholder="Search orders, customers, or tables..." class="w-full rounded-xl border bg-card px-4 py-3 text-sm outline-none ring-primary/30 focus:ring-4"></label><select wire:model.live="statusFilter" class="rounded-xl border bg-card px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-primary/30"><option value="all">All statuses</option>@foreach($this->activeStatuses() as $status)<option value="{{ $status->value }}">{{ $this->statusMeta()[$status->value]['label'] }}</option>@endforeach</select></div>
-    <div wire:loading wire:target="moveOrder,confirmPayment" class="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">Updating order...</div>
-    @error('status')<div class="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{{ $message }}</div>@enderror
-    @if($paymentError !== '')<div class="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{{ $paymentError }}</div>@endif
+    <div class="flex flex-col gap-3 md:flex-row"><label class="relative flex-1"><span class="sr-only">Search
+                orders</span><input wire:model.live.debounce.300ms="search" type="search"
+                placeholder="Search orders, customers, or tables..."
+                class="w-full rounded-xl border bg-card px-4 py-3 text-sm outline-none ring-primary/30 focus:ring-4"></label><select
+            wire:model.live="statusFilter"
+            class="rounded-xl border bg-card px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-primary/30">
+            <option value="all">All statuses</option>@foreach($this->activeStatuses() as $status)<option
+                value="{{ $status->value }}">{{ $this->statusMeta()[$status->value]['label'] }}</option>@endforeach
+        </select></div>
+    <div wire:loading wire:target="moveOrder,confirmPayment"
+        class="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">Updating order...</div>
+    @error('status')<div
+        class="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{{ $message
+        }}</div>@enderror
+    @if($paymentError !== '')<div
+        class="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{{
+        $paymentError }}</div>@endif
 
     @if($activeTab === 'orders')
-        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            @if(false)
-            @php($kpiCards = [['label' => 'Active orders', 'value' => $this->kpis['active_orders'], 'icon' => '↗'], ['label' => 'Meja occupied', 'value' => $this->kpis['occupied_tables'], 'icon' => '⌂'], ['label' => 'Pending orders', 'value' => $this->kpis['pending_orders'], 'icon' => '◷'], ['label' => 'Revenue hari ini', 'value' => 'Rp '.number_format($this->kpis['today_revenue'], 0, ',', '.'), 'icon' => 'Rp']])
-            @foreach($kpiCards as $card)<div class="rounded-2xl border bg-card p-4 shadow-sm"><div class="flex items-center justify-between text-sm text-muted-foreground"><span>{{ $card['label'] }}</span><span>{{ $card['icon'] }}</span></div><p class="mt-3 text-2xl font-semibold tracking-tight">{{ $card['value'] }}</p></div>@endforeach
-        </div>
-        @endif
-        </div>
-        @php($kpiCards = [['label' => 'Active orders', 'value' => $this->kpis['active_orders'], 'icon' => '↗'], ['label' => 'Occupied tables', 'value' => $this->kpis['occupied_tables'], 'icon' => '⌂'], ['label' => 'Pending orders', 'value' => $this->kpis['pending_orders'], 'icon' => '◷'], ['label' => "Today's revenue", 'value' => 'Rp '.number_format($this->kpis['today_revenue'], 0, ',', '.'), 'icon' => 'Rp']])
-        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            @foreach($kpiCards as $card)
-                <div class="rounded-2xl border bg-card p-4 shadow-sm"><div class="flex items-center justify-between text-sm text-muted-foreground"><span>{{ $card['label'] }}</span><span>{{ $card['icon'] }}</span></div><p class="mt-3 text-2xl font-semibold tracking-tight">{{ $card['value'] }}</p></div>
-            @endforeach
-        </div>
-
-        <div class="grid gap-4 xl:grid-cols-4">
-            @foreach($this->activeStatuses() as $status)
-                @php($meta = $this->statusMeta()[$status->value]) @php($columnOrders = $this->orderColumns[$status->value] ?? collect())
-                <section class="min-h-[26rem] rounded-2xl border {{ $meta['line'] }} bg-muted/30 p-3"><div class="mb-3 flex items-start justify-between"><div><div class="flex items-center gap-2"><span class="size-2.5 rounded-full {{ $meta['dot'] }}"></span><h2 class="font-semibold">{{ $meta['label'] }}</h2></div><p class="mt-1 text-xs text-muted-foreground">{{ $meta['description'] }}</p></div><span class="rounded-full {{ $meta['surface'] }} px-2.5 py-1 text-xs font-semibold">{{ $columnOrders->count() }}</span></div>
-                    <div class="space-y-3" data-order-column="{{ $status->value }}">
-                        @forelse($columnOrders as $order)
-                            <article data-order-id="{{ $order->id }}" class="cursor-grab rounded-xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing" wire:key="order-{{ $order->id }}"><div class="flex items-start justify-between gap-3"><div><p class="font-semibold">#{{ $order->id }}</p><p class="mt-1 text-xs text-muted-foreground">{{ $order->customer_name }}</p></div><span class="rounded-md bg-muted px-2 py-1 text-xs font-medium">Table {{ $order->table?->number ?? '-' }}</span></div><p class="mt-3 text-xs text-muted-foreground">{{ $order->created_at?->format('d M Y, H:i') }}</p><div class="mt-3 space-y-1 border-y py-3 text-sm">@foreach($order->orderItems as $item)<div class="flex justify-between gap-3"><span class="truncate">{{ $item->quantity }}&times; {{ $item->product->name }}</span><span class="shrink-0 text-muted-foreground">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span></div>@endforeach</div><div class="mt-3 flex flex-wrap items-center justify-between gap-2"><span class="text-sm font-semibold">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>@if($status !== App\Enums\OrderStatus::Served)<button type="button" wire:click="moveOrder({{ $order->id }}, '{{ $this->nextStatus($status)->value }}')" wire:loading.attr="disabled" class="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90">{{ $this->statusMeta()[$this->nextStatus($status)->value]['label'] }}</button>@else<div class="flex flex-wrap justify-end gap-2"><button type="button" wire:click="openPaymentDialog({{ $order->id }})" wire:loading.attr="disabled" class="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90">Pay</button></div>@endif</div></article>
-                        @empty
-                            <div class="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No orders yet.</div>
-                        @endforelse
-                    </div>
-                </section>
-            @endforeach
-        </div>
-    @else
+    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         @if(false)
-        <div class="rounded-2xl border bg-card p-4 shadow-sm"><div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end"><label class="flex-1 text-xs font-medium">Dari<input wire:model.live="historyFrom" type="date" class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm"></label><label class="flex-1 text-xs font-medium">Sampai<input wire:model.live="historyTo" type="date" class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm"></label></div><div class="overflow-x-auto"><table class="w-full min-w-[42rem] text-left text-sm"><thead class="border-b text-xs uppercase text-muted-foreground"><tr><th class="px-3 py-3">Order</th><th class="px-3 py-3">Customer</th><th class="px-3 py-3">Meja</th><th class="px-3 py-3">Items</th><th class="px-3 py-3 text-right">Total</th></tr></thead><tbody class="divide-y">@forelse($this->historyOrders as $order)<tr><td class="px-3 py-3 font-semibold">#{{ $order->id }}<div class="text-xs font-normal text-muted-foreground">{{ $order->updated_at?->format('d M Y, H:i') }}</div></td><td class="px-3 py-3">{{ $order->customer_name }}</td><td class="px-3 py-3">{{ $order->table?->number ?? '-' }}</td><td class="px-3 py-3">{{ $order->orderItems->sum('quantity') }} item</td><td class="px-3 py-3 text-right font-semibold">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td></tr>@empty<tr><td colspan="5" class="px-3 py-12 text-center text-muted-foreground">Belum ada history pembayaran.</td></tr>@endforelse</tbody></table></div></div>
-        @endif
-        <div class="rounded-2xl border bg-card p-4 shadow-sm">
-            <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end"><label class="flex-1 text-xs font-medium">From<input wire:model.live="historyFrom" type="date" class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm"></label><label class="flex-1 text-xs font-medium">To<input wire:model.live="historyTo" type="date" class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm"></label></div>
-            <div class="overflow-x-auto"><table class="w-full min-w-[42rem] text-left text-sm"><thead class="border-b text-xs uppercase text-muted-foreground"><tr><th class="px-3 py-3">Order</th><th class="px-3 py-3">Customer</th><th class="px-3 py-3">Table</th><th class="px-3 py-3">Items</th><th class="px-3 py-3 text-right">Total</th></tr></thead><tbody class="divide-y">@forelse($this->historyOrders as $order)<tr><td class="px-3 py-3 font-semibold">#{{ $order->id }}<div class="text-xs font-normal text-muted-foreground">{{ $order->updated_at?->format('d M Y, H:i') }}</div></td><td class="px-3 py-3">{{ $order->customer_name }}</td><td class="px-3 py-3">{{ $order->table?->number ?? '-' }}</td><td class="px-3 py-3">{{ $order->orderItems->sum('quantity') }} item(s)</td><td class="px-3 py-3 text-right font-semibold">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td></tr>@empty<tr><td colspan="5" class="px-3 py-12 text-center text-muted-foreground">No payment history yet.</td></tr>@endforelse</tbody></table></div>
-        </div>
+        @php($kpiCards = [['label' => 'Active orders', 'value' => $this->kpis['active_orders'], 'icon' => '↗'], ['label'
+        => 'Meja occupied', 'value' => $this->kpis['occupied_tables'], 'icon' => '⌂'], ['label' => 'Pending orders',
+        'value' => $this->kpis['pending_orders'], 'icon' => '◷'], ['label' => 'Revenue hari ini', 'value' => 'Rp
+        '.number_format($this->kpis['today_revenue'], 0, ',', '.'), 'icon' => 'Rp']])
+        @foreach($kpiCards as $card)<div class="rounded-2xl border bg-card p-4 shadow-sm">
+            <div class="flex items-center justify-between text-sm text-muted-foreground"><span>{{ $card['label']
+                    }}</span><span>{{ $card['icon'] }}</span></div>
+            <p class="mt-3 text-2xl font-semibold tracking-tight">{{ $card['value'] }}</p>
+        </div>@endforeach
+    </div>
     @endif
+</div>
+@php($kpiCards = [['label' => 'Active orders', 'value' => $this->kpis['active_orders'], 'icon' => '↗'], ['label' =>
+'Occupied tables', 'value' => $this->kpis['occupied_tables'], 'icon' => '⌂'], ['label' => 'Pending orders', 'value' =>
+$this->kpis['pending_orders'], 'icon' => '◷'], ['label' => "Today's revenue", 'value' => 'Rp
+'.number_format($this->kpis['today_revenue'], 0, ',', '.'), 'icon' => 'Rp']])
+<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    @foreach($kpiCards as $card)
+    <div class="rounded-2xl border bg-card p-4 shadow-sm">
+        <div class="flex items-center justify-between text-sm text-muted-foreground"><span>{{ $card['label']
+                }}</span><span>{{ $card['icon'] }}</span></div>
+        <p class="mt-3 text-2xl font-semibold tracking-tight">{{ $card['value'] }}</p>
+    </div>
+    @endforeach
+</div>
 
-    @if($paymentDialogOpen)
-        <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4" wire:click.self="cancelPayment" wire:keydown.escape="cancelPayment">
-            <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-card p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="payment-dialog-title">
-                <div class="flex items-start justify-between gap-4">
-                    <div><p class="text-xs font-medium uppercase tracking-wide text-primary">Order #{{ $paymentData['id'] ?? $paymentOrderId }}</p><h2 id="payment-dialog-title" class="mt-1 text-xl font-semibold">{{ $paymentStep === 'method' ? 'Choose payment method' : 'Confirm payment' }}</h2></div>
-                    <button type="button" wire:click="cancelPayment" class="rounded-lg p-2 text-muted-foreground hover:bg-muted" aria-label="Close">&times;</button>
+<div class="grid gap-4 xl:grid-cols-4">
+    @foreach($this->activeStatuses() as $status)
+    @php($meta = $this->statusMeta()[$status->value]) @php($columnOrders = $this->orderColumns[$status->value] ??
+    collect())
+    <section class="min-h-[26rem] rounded-2xl border {{ $meta['line'] }} bg-muted/30 p-3">
+        <div class="mb-3 flex items-start justify-between">
+            <div>
+                <div class="flex items-center gap-2"><span class="size-2.5 rounded-full {{ $meta['dot'] }}"></span>
+                    <h2 class="font-semibold">{{ $meta['label'] }}</h2>
                 </div>
-                @if($paymentData !== [])
-                    <div class="mt-5 rounded-xl border bg-muted/30 p-4"><div class="flex justify-between gap-3 text-sm"><span>{{ $paymentData['customer_name'] }}</span><span>Table {{ $paymentData['table_number'] ?? '-' }}</span></div><div class="mt-3 space-y-1 border-t pt-3 text-sm">@foreach($paymentData['items'] as $item)<div class="flex justify-between gap-3"><span>{{ $item['quantity'] }}&times; {{ $item['product_name'] }}</span><span>Rp {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>@endforeach</div><div class="mt-3 flex justify-between border-t pt-3 text-base font-semibold"><span>Total</span><span>Rp {{ number_format((float) $paymentData['total_price'], 0, ',', '.') }}</span></div></div>
-                @endif
-                @if($paymentStep === 'method')
-                    <p class="mt-5 text-sm text-muted-foreground">Select the payment method received from the customer.</p>
-                    <div class="mt-3 grid grid-cols-2 gap-3"><button type="button" wire:click="selectPaymentMethod('cash')" class="rounded-xl border p-4 text-left {{ $paymentMethod === 'cash' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span class="block font-semibold">Cash</span><span class="mt-1 block text-xs text-muted-foreground">Cash payment</span></button><button type="button" wire:click="selectPaymentMethod('qris')" class="rounded-xl border p-4 text-left {{ $paymentMethod === 'qris' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span class="block font-semibold">QRIS</span><span class="mt-1 block text-xs text-muted-foreground">Manual confirmation</span></button></div>
-                    @error('paymentMethod')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror
-                    <div class="mt-6 flex justify-end gap-3"><button type="button" wire:click="cancelPayment" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Cancel</button><button type="button" wire:click="continuePayment" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">Continue</button></div>
-                @else
-                    <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"><p>This order will be marked as <strong>paid</strong> using <strong>{{ strtoupper($paymentMethod) }}</strong>.</p>@if($paymentMethod === 'qris')<label class="mt-4 flex items-start gap-3"><input wire:model.live="qrisConfirmed" type="checkbox" class="mt-0.5 rounded border-amber-500 text-primary focus:ring-primary"><span>I have received and manually verified the QRIS payment.</span></label>@endif</div>
-                    @error('qrisConfirmed')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror
-                    @if($paymentError !== '')<p class="mt-2 text-sm text-destructive">{{ $paymentError }}</p>@endif
-                    <div class="mt-6 flex justify-between gap-3"><button type="button" wire:click="$set('paymentStep', 'method')" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Back</button><div class="flex gap-3"><button type="button" wire:click="cancelPayment" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Cancel</button><button type="button" wire:click="confirmPayment" wire:loading.attr="disabled" wire:target="confirmPayment" @disabled($paymentMethod === 'qris' && ! $qrisConfirmed) class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"><span wire:loading.remove wire:target="confirmPayment">Confirm Payment</span><span wire:loading wire:target="confirmPayment">Processing...</span></button></div></div>
-                @endif
-            </div>
+                <p class="mt-1 text-xs text-muted-foreground">{{ $meta['description'] }}</p>
+            </div><span class="rounded-full {{ $meta['surface'] }} px-2.5 py-1 text-xs font-semibold">{{
+                $columnOrders->count() }}</span>
         </div>
-    @endif
-
-    @if(false && $paymentDialogOpen)
-            @if($paymentData !== [])<div class="mt-5 rounded-xl border bg-muted/30 p-4"><div class="flex justify-between gap-3 text-sm"><span>{{ $paymentData['customer_name'] }}</span><span>Meja {{ $paymentData['table_number'] ?? '-' }}</span></div><div class="mt-3 space-y-1 border-t pt-3 text-sm">@foreach($paymentData['items'] as $item)<div class="flex justify-between gap-3"><span>{{ $item['quantity'] }}&times; {{ $item['product_name'] }}</span><span>Rp {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>@endforeach</div><div class="mt-3 flex justify-between border-t pt-3 text-base font-semibold"><span>Total</span><span>Rp {{ number_format((float) $paymentData['total_price'], 0, ',', '.') }}</span></div></div>@endif
-            @if($paymentStep === 'method')<p class="mt-5 text-sm text-muted-foreground">Pilih metode yang diterima dari customer.</p><div class="mt-3 grid grid-cols-2 gap-3"><button type="button" wire:click="selectPaymentMethod('cash')" class="rounded-xl border p-4 text-left {{ $paymentMethod === 'cash' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span class="block font-semibold">Cash</span><span class="mt-1 block text-xs text-muted-foreground">Pembayaran tunai</span></button><button type="button" wire:click="selectPaymentMethod('qris')" class="rounded-xl border p-4 text-left {{ $paymentMethod === 'qris' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span class="block font-semibold">QRIS</span><span class="mt-1 block text-xs text-muted-foreground">Konfirmasi manual kasir</span></button></div>@error('paymentMethod')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror<div class="mt-6 flex justify-end gap-3"><button type="button" wire:click="cancelPayment" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Batal</button><button type="button" wire:click="continuePayment" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">Lanjutkan</button></div>@else<div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"><p>Order akan ditandai sebagai <strong>paid</strong> menggunakan <strong>{{ strtoupper($paymentMethod) }}</strong>.</p>@if($paymentMethod === 'qris')<label class="mt-4 flex items-start gap-3"><input wire:model.live="qrisConfirmed" type="checkbox" class="mt-0.5 rounded border-amber-500 text-primary focus:ring-primary"><span>Saya sudah menerima dan memverifikasi pembayaran QRIS secara manual.</span></label>@endif</div>@error('qrisConfirmed')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror@if($paymentError !== '')<p class="mt-2 text-sm text-destructive">{{ $paymentError }}</p>@endif<div class="mt-6 flex justify-between gap-3"><button type="button" wire:click="$set('paymentStep', 'method')" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Kembali</button><div class="flex gap-3"><button type="button" wire:click="cancelPayment" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Batal</button><button type="button" wire:click="confirmPayment" wire:loading.attr="disabled" wire:target="confirmPayment" @disabled($paymentMethod === 'qris' && ! $qrisConfirmed) class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"><span wire:loading.remove wire:target="confirmPayment">Konfirmasi Pembayaran</span><span wire:loading wire:target="confirmPayment">Memproses...</span></button></div></div>@endif
-        </div></div>
-    @endif
-
-    @if($receiptDialogOpen)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" wire:click.self="closeReceiptDialog" wire:keydown.escape="closeReceiptDialog">
-            <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-card p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="receipt-dialog-title">
-                <div class="flex items-start justify-between gap-4"><div><p class="text-xs font-medium uppercase tracking-wide text-emerald-600">Payment successful</p><h2 id="receipt-dialog-title" class="mt-1 text-xl font-semibold">Receipt for Order #{{ $receiptData['id'] ?? '' }}</h2></div><button type="button" wire:click="closeReceiptDialog" class="rounded-lg p-2 text-muted-foreground hover:bg-muted" aria-label="Close">&times;</button></div>
-                <div class="mt-5 space-y-3 rounded-xl border bg-muted/30 p-4 text-sm"><div class="flex justify-between gap-3"><span>Customer</span><span class="font-medium">{{ $receiptData['customer_name'] ?? '-' }}</span></div><div class="flex justify-between gap-3"><span>Table</span><span class="font-medium">{{ $receiptData['table_number'] ?? '-' }}</span></div><div class="flex justify-between gap-3"><span>Payment method</span><span class="font-medium uppercase">{{ $receiptData['payment_method'] ?? '-' }}</span></div><div class="flex justify-between gap-3"><span>Cashier</span><span class="font-medium">{{ $receiptData['cashier_name'] ?? '-' }}</span></div><div class="flex justify-between gap-3 border-t pt-3"><span>Total</span><span class="text-base font-semibold">Rp {{ number_format((float) ($receiptData['total_price'] ?? 0), 0, ',', '.') }}</span></div></div>
-                <div class="mt-4 space-y-1 text-sm">@foreach($receiptData['items'] ?? [] as $item)<div class="flex justify-between gap-3"><span>{{ $item['quantity'] }}&times; {{ $item['product_name'] }}</span><span>Rp {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>@endforeach</div>
-                <div class="mt-6 flex justify-end gap-3"><button type="button" wire:click="closeReceiptDialog" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Close</button><a href="{{ $receiptData['receipt_url'] ?? '#' }}" target="_blank" rel="noopener" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">Print / Open Receipt</a></div>
+        <div class="space-y-3" data-order-column="{{ $status->value }}">
+            @forelse($columnOrders as $order)
+            <article data-order-id="{{ $order->id }}"
+                class="cursor-grab rounded-xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing"
+                wire:key="order-{{ $order->id }}">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="font-semibold">#{{ $order->id }}</p>
+                        <p class="mt-1 text-xs text-muted-foreground">{{ $order->customer_name }}</p>
+                    </div><span class="rounded-md bg-muted px-2 py-1 text-xs font-medium">Table {{
+                        $order->table?->number ?? '-' }}</span>
+                </div>
+                <p class="mt-3 text-xs text-muted-foreground">{{ $order->created_at?->format('d M Y, H:i') }}</p>
+                <div class="mt-3 space-y-1 border-y py-3 text-sm">@foreach($order->orderItems as $item)<div
+                        class="flex justify-between gap-3"><span class="truncate">{{ $item->quantity }}&times; {{
+                            $item->product->name }}</span><span class="shrink-0 text-muted-foreground">Rp {{
+                            number_format($item->subtotal, 0, ',', '.') }}</span></div>@endforeach</div>
+                <div class="mt-3 flex flex-wrap items-center justify-between gap-2"><span
+                        class="text-sm font-semibold">Rp {{ number_format($order->total_price, 0, ',', '.')
+                        }}</span>@if($status !== App\Enums\OrderStatus::Served)<button type="button"
+                        wire:click="moveOrder({{ $order->id }}, '{{ $this->nextStatus($status)->value }}')"
+                        wire:loading.attr="disabled"
+                        class="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">{{
+                        $this->statusMeta()[$this->nextStatus($status)->value]['label'] }}</button>@else<div
+                        class="flex flex-wrap justify-end gap-2"><button type="button"
+                            wire:click="openPaymentDialog({{ $order->id }})" wire:loading.attr="disabled"
+                            class="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">Pay</button>
+                    </div>@endif</div>
+            </article>
+            @empty
+            <div class="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No orders yet.
             </div>
+            @endforelse
         </div>
-    @endif
+    </section>
+    @endforeach
+</div>
+@else
+@if(false)
+<div class="rounded-2xl border bg-card p-4 shadow-sm">
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end"><label class="flex-1 text-xs font-medium">Dari<input
+                wire:model.live="historyFrom" type="date"
+                class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm"></label><label
+            class="flex-1 text-xs font-medium">Sampai<input wire:model.live="historyTo" type="date"
+                class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm"></label></div>
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-[42rem] text-left text-sm">
+            <thead class="border-b text-xs uppercase text-muted-foreground">
+                <tr>
+                    <th class="px-3 py-3">Order</th>
+                    <th class="px-3 py-3">Customer</th>
+                    <th class="px-3 py-3">Meja</th>
+                    <th class="px-3 py-3">Items</th>
+                    <th class="px-3 py-3 text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">@forelse($this->historyOrders as $order)<tr>
+                    <td class="px-3 py-3 font-semibold">#{{ $order->id }}<div
+                            class="text-xs font-normal text-muted-foreground">{{ $order->updated_at?->format('d M Y,
+                            H:i') }}</div>
+                    </td>
+                    <td class="px-3 py-3">{{ $order->customer_name }}</td>
+                    <td class="px-3 py-3">{{ $order->table?->number ?? '-' }}</td>
+                    <td class="px-3 py-3">{{ $order->orderItems->sum('quantity') }} item</td>
+                    <td class="px-3 py-3 text-right font-semibold">Rp {{ number_format($order->total_price, 0, ',', '.')
+                        }}</td>
+                </tr>@empty<tr>
+                    <td colspan="5" class="px-3 py-12 text-center text-muted-foreground">Belum ada history pembayaran.
+                    </td>
+                </tr>@endforelse</tbody>
+        </table>
+    </div>
+</div>
+@endif
+<div class="rounded-2xl border bg-card p-4 shadow-sm">
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end"><label class="flex-1 text-xs font-medium">From<input
+                wire:model.live="historyFrom" type="date"
+                class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm"></label><label
+            class="flex-1 text-xs font-medium">To<input wire:model.live="historyTo" type="date"
+                class="mt-1 block w-full rounded-lg border px-3 py-2 text-sm"></label></div>
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-[42rem] text-left text-sm">
+            <thead class="border-b text-xs uppercase text-muted-foreground">
+                <tr>
+                    <th class="px-3 py-3">Order</th>
+                    <th class="px-3 py-3">Customer</th>
+                    <th class="px-3 py-3">Table</th>
+                    <th class="px-3 py-3">Items</th>
+                    <th class="px-3 py-3 text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">@forelse($this->historyOrders as $order)<tr>
+                    <td class="px-3 py-3 font-semibold">#{{ $order->id }}<div
+                            class="text-xs font-normal text-muted-foreground">{{ $order->updated_at?->format('d M Y,
+                            H:i') }}</div>
+                    </td>
+                    <td class="px-3 py-3">{{ $order->customer_name }}</td>
+                    <td class="px-3 py-3">{{ $order->table?->number ?? '-' }}</td>
+                    <td class="px-3 py-3">{{ $order->orderItems->sum('quantity') }} item(s)</td>
+                    <td class="px-3 py-3 text-right font-semibold">Rp {{ number_format($order->total_price, 0, ',', '.')
+                        }}</td>
+                </tr>@empty<tr>
+                    <td colspan="5" class="px-3 py-12 text-center text-muted-foreground">No payment history yet.</td>
+                </tr>@endforelse</tbody>
+        </table>
+    </div>
+</div>
+@endif
 
-    @if(false && $receiptDialogOpen)
-    @endif
+@if($paymentDialogOpen)
+<div class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4" wire:click.self="cancelPayment"
+    wire:keydown.escape="cancelPayment">
+    <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-card p-6 shadow-2xl" role="dialog"
+        aria-modal="true" aria-labelledby="payment-dialog-title">
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <p class="text-xs font-medium uppercase tracking-wide text-primary">Order #{{ $paymentData['id'] ??
+                    $paymentOrderId }}</p>
+                <h2 id="payment-dialog-title" class="mt-1 text-xl font-semibold">{{ $paymentStep === 'method' ? 'Choose
+                    payment method' : 'Confirm payment' }}</h2>
+            </div>
+            <button type="button" wire:click="cancelPayment"
+                class="rounded-lg p-2 text-muted-foreground hover:bg-muted cursor-pointer"
+                aria-label="Close">&times;</button>
+        </div>
+        @if($paymentData !== [])
+        <div class="mt-5 rounded-xl border bg-muted/30 p-4">
+            <div class="flex justify-between gap-3 text-sm"><span>{{ $paymentData['customer_name'] }}</span><span>Table
+                    {{ $paymentData['table_number'] ?? '-' }}</span></div>
+            <div class="mt-3 space-y-1 border-t pt-3 text-sm">@foreach($paymentData['items'] as $item)<div
+                    class="flex justify-between gap-3"><span>{{ $item['quantity'] }}&times; {{ $item['product_name']
+                        }}</span><span>Rp {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>
+                @endforeach</div>
+            <div class="mt-3 flex justify-between border-t pt-3 text-base font-semibold"><span>Total</span><span>Rp {{
+                    number_format((float) $paymentData['total_price'], 0, ',', '.') }}</span></div>
+        </div>
+        @endif
+        @if($paymentStep === 'method')
+        <p class="mt-5 text-sm text-muted-foreground">Select the payment method received from the customer.</p>
+        <div class="mt-3 grid grid-cols-2 gap-3"><button type="button" wire:click="selectPaymentMethod('cash')"
+                class="rounded-xl border p-4 text-left cursor-pointer {{ $paymentMethod === 'cash' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span
+                    class="block font-semibold">Cash</span><span class="mt-1 block text-xs text-muted-foreground">Cash
+                    payment</span></button><button type="button" wire:click="selectPaymentMethod('qris')"
+                class="rounded-xl border p-4 text-left cursor-pointer {{ $paymentMethod === 'qris' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span
+                    class="block font-semibold">QRIS</span><span class="mt-1 block text-xs text-muted-foreground">Manual
+                    confirmation</span></button></div>
+        @error('paymentMethod')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror
+        <div class="mt-6 flex justify-end gap-3"><button type="button" wire:click="cancelPayment"
+                class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Cancel</button><button
+                type="button" wire:click="continuePayment"
+                class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer">Continue</button>
+        </div>
+        @else
+        <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+            <p>This order will be marked as <strong>paid</strong> using <strong>{{ strtoupper($paymentMethod)
+                    }}</strong>.</p>@if($paymentMethod === 'qris')<label class="mt-4 flex items-start gap-3"><input
+                    wire:model.live="qrisConfirmed" type="checkbox"
+                    class="mt-0.5 rounded border-amber-500 text-primary focus:ring-primary"><span>I have received and
+                    manually verified the QRIS payment.</span></label>@endif
+        </div>
+        @error('qrisConfirmed')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror
+        @if($paymentError !== '')<p class="mt-2 text-sm text-destructive">{{ $paymentError }}</p>@endif
+        <div class="mt-6 flex justify-between gap-3"><button type="button" wire:click="$set('paymentStep', 'method')"
+                class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Back</button>
+            <div class="flex gap-3"><button type="button" wire:click="cancelPayment"
+                    class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Cancel</button><button
+                    type="button" wire:click="confirmPayment" wire:loading.attr="disabled" wire:target="confirmPayment"
+                    @disabled($paymentMethod==='qris' && ! $qrisConfirmed)
+                    class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"><span
+                        wire:loading.remove wire:target="confirmPayment">Confirm Payment</span><span wire:loading
+                        wire:target="confirmPayment">Processing...</span></button></div>
+        </div>
+        @endif
+    </div>
+</div>
+@endif
+
+@if(false && $paymentDialogOpen)
+@if($paymentData !== [])<div class="mt-5 rounded-xl border bg-muted/30 p-4">
+    <div class="flex justify-between gap-3 text-sm"><span>{{ $paymentData['customer_name'] }}</span><span>Meja {{
+            $paymentData['table_number'] ?? '-' }}</span></div>
+    <div class="mt-3 space-y-1 border-t pt-3 text-sm">@foreach($paymentData['items'] as $item)<div
+            class="flex justify-between gap-3"><span>{{ $item['quantity'] }}&times; {{ $item['product_name']
+                }}</span><span>Rp {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>@endforeach
+    </div>
+    <div class="mt-3 flex justify-between border-t pt-3 text-base font-semibold"><span>Total</span><span>Rp {{
+            number_format((float) $paymentData['total_price'], 0, ',', '.') }}</span></div>
+</div>@endif
+@if($paymentStep === 'method')<p class="mt-5 text-sm text-muted-foreground">Pilih metode yang diterima dari customer.
+</p>
+<div class="mt-3 grid grid-cols-2 gap-3"><button type="button" wire:click="selectPaymentMethod('cash')"
+        class="rounded-xl border p-4 text-left {{ $paymentMethod === 'cash' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span
+            class="block font-semibold">Cash</span><span class="mt-1 block text-xs text-muted-foreground">Pembayaran
+            tunai</span></button><button type="button" wire:click="selectPaymentMethod('qris')"
+        class="rounded-xl border p-4 text-left {{ $paymentMethod === 'qris' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span
+            class="block font-semibold">QRIS</span><span class="mt-1 block text-xs text-muted-foreground">Konfirmasi
+            manual kasir</span></button></div>@error('paymentMethod')<p class="mt-2 text-sm text-destructive">{{
+    $message }}</p>@enderror<div class="mt-6 flex justify-end gap-3"><button type="button" wire:click="cancelPayment"
+        class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Batal</button><button type="button"
+        wire:click="continuePayment"
+        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">Lanjutkan</button>
+</div>@else<div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+    <p>Order akan ditandai sebagai <strong>paid</strong> menggunakan <strong>{{ strtoupper($paymentMethod) }}</strong>.
+    </p>@if($paymentMethod === 'qris')<label class="mt-4 flex items-start gap-3"><input wire:model.live="qrisConfirmed"
+            type="checkbox" class="mt-0.5 rounded border-amber-500 text-primary focus:ring-primary"><span>Saya sudah
+            menerima dan memverifikasi pembayaran QRIS secara manual.</span></label>@endif
+</div>@error('qrisConfirmed')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror@if($paymentError !==
+'')<p class="mt-2 text-sm text-destructive">{{ $paymentError }}</p>@endif<div class="mt-6 flex justify-between gap-3">
+    <button type="button" wire:click="$set('paymentStep', 'method')"
+        class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Kembali</button>
+    <div class="flex gap-3"><button type="button" wire:click="cancelPayment"
+            class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">Batal</button><button type="button"
+            wire:click="confirmPayment" wire:loading.attr="disabled" wire:target="confirmPayment"
+            @disabled($paymentMethod==='qris' && ! $qrisConfirmed)
+            class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"><span
+                wire:loading.remove wire:target="confirmPayment">Konfirmasi Pembayaran</span><span wire:loading
+                wire:target="confirmPayment">Memproses...</span></button></div>
+</div>@endif
+</div>
+</div>
+@endif
+
+@if($receiptDialogOpen)
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" wire:click.self="closeReceiptDialog"
+    wire:keydown.escape="closeReceiptDialog">
+    <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-card p-6 shadow-2xl" role="dialog"
+        aria-modal="true" aria-labelledby="receipt-dialog-title">
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <p class="text-xs font-medium uppercase tracking-wide text-emerald-600">Payment successful</p>
+                <h2 id="receipt-dialog-title" class="mt-1 text-xl font-semibold">Receipt for Order #{{
+                    $receiptData['id'] ?? '' }}</h2>
+            </div><button type="button" wire:click="closeReceiptDialog"
+                class="rounded-lg p-2 text-muted-foreground hover:bg-muted cursor-pointer"
+                aria-label="Close">&times;</button>
+        </div>
+        <div class="mt-5 space-y-3 rounded-xl border bg-muted/30 p-4 text-sm">
+            <div class="flex justify-between gap-3"><span>Customer</span><span class="font-medium">{{
+                    $receiptData['customer_name'] ?? '-' }}</span></div>
+            <div class="flex justify-between gap-3"><span>Table</span><span class="font-medium">{{
+                    $receiptData['table_number'] ?? '-' }}</span></div>
+            <div class="flex justify-between gap-3"><span>Payment method</span><span class="font-medium uppercase">{{
+                    $receiptData['payment_method'] ?? '-' }}</span></div>
+            <div class="flex justify-between gap-3"><span>Cashier</span><span class="font-medium">{{
+                    $receiptData['cashier_name'] ?? '-' }}</span></div>
+            <div class="flex justify-between gap-3 border-t pt-3"><span>Total</span><span
+                    class="text-base font-semibold">Rp {{ number_format((float) ($receiptData['total_price'] ?? 0), 0,
+                    ',', '.') }}</span></div>
+        </div>
+        <div class="mt-4 space-y-1 text-sm">@foreach($receiptData['items'] ?? [] as $item)<div
+                class="flex justify-between gap-3"><span>{{ $item['quantity'] }}&times; {{ $item['product_name']
+                    }}</span><span>Rp {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>
+            @endforeach</div>
+        <div class="mt-6 flex justify-end gap-3"><button type="button" wire:click="closeReceiptDialog"
+                class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Close</button><a
+                href="{{ $receiptData['receipt_url'] ?? '#' }}" target="_blank" rel="noopener"
+                class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer">Print
+                / Open Receipt</a></div>
+    </div>
+</div>
+@endif
+
+@if(false && $receiptDialogOpen)
+@endif
 </div>
 
 @script

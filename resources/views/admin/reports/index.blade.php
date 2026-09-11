@@ -4,12 +4,18 @@
 <div class="space-y-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
         <h1 class="text-2xl font-bold tracking-tight">Sales Reports</h1>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('admin.reports.pdf', ['start_date' => $stats['period_start'], 'end_date' => $stats['period_end']]) }}"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity inline-flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Download PDF
-            </a>
+        <div class="flex items-center gap-2" x-data="{ downloading: false }">
+            <button type="button"
+                @click="downloading = true; window.location.href = '{{ route('admin.reports.pdf', ['start_date' => $stats['period_start'], 'end_date' => $stats['period_end']]) }}'; setTimeout(() => downloading = false, 2000)"
+                :disabled="downloading"
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity inline-flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span x-text="downloading ? 'Downloading...' : 'Download PDF'"></span>
+            </button>
         </div>
     </div>
 
@@ -28,9 +34,9 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit"
-                    class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Filter</button>
+                    class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Filter</button>
                 <a href="{{ route('admin.reports') }}"
-                    class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 inline-flex items-center">Reset</a>
+                    class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 inline-flex items-center cursor-pointer">Reset</a>
             </div>
             <div class="text-sm text-muted-foreground ml-auto self-center">
                 Periode: <span class="font-medium">{{ date('d M Y', strtotime($startDate)) }}</span> —
@@ -83,7 +89,10 @@
                         <td class="p-3 text-right font-medium">Rp {{ number_format($prod->revenue, 0, ',', '.') }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="p-8 text-center text-sm text-muted-foreground">No sales data for this period.</td></tr>
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-sm text-muted-foreground">No sales data for this
+                            period.</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
@@ -116,11 +125,16 @@
                         <td class="p-3">{{ $order->table->number ?? '—' }}</td>
                         <td class="p-3 capitalize">{{ $order->payment_method?->value ?? '—' }}</td>
                         <td class="p-3">{{ $order->user->name ?? '—' }}</td>
-                        <td class="p-3 text-right font-medium">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
-                        <td class="p-3 text-right text-muted-foreground">{{ $order->created_at->format('d M Y H:i') }}</td>
+                        <td class="p-3 text-right font-medium">Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                        </td>
+                        <td class="p-3 text-right text-muted-foreground">{{ $order->created_at->format('d M Y H:i') }}
+                        </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="p-8 text-center text-sm text-muted-foreground">No paid orders for this period.</td></tr>
+                    <tr>
+                        <td colspan="7" class="p-8 text-center text-sm text-muted-foreground">No paid orders for this
+                            period.</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
