@@ -43,6 +43,9 @@ class KasirController extends Controller
         $user->update(['is_active' => ! $user->is_active]);
         $label = $user->is_active ? 'activated' : 'deactivated';
 
-        return back()->with('success', "Account {$label}.");
+        return response()->json([
+            'message' => "Account {$label}.",
+            'is_active' => $user->is_active
+        ]);
     }
 }

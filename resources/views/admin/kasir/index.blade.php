@@ -4,51 +4,67 @@
 <div class="space-y-6">
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold tracking-tight">Kasir Accounts</h1>
-        <button data-modal="create-kasir"
+        <button x-data @click="$dispatch('open-modal', { id: 'create-kasir' })"
             class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity">
             Add Kasir
         </button>
     </div>
 
-    @if(session('success'))
-    <div class="rounded-md border border-green-300 bg-green-50 text-green-800 p-3 text-sm">{{ session('success') }}
-    </div>
-    @endif
-
-    <div class="overflow-x-auto">
-        <table class="w-full">
+    <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
             <thead class="bg-muted">
                 <tr>
-                    <th class="p-4 text-left text-sm font-medium">Name</th>
-                    <th class="p-4 text-left text-sm font-medium">Email</th>
-                    <th class="p-4 text-left text-sm font-medium">Status</th>
-                    <th class="p-4 text-center text-sm font-medium">Actions</th>
+                    <th class="p-4 text-left font-medium w-10">#</th>
+                    <th class="p-4 text-left font-medium">Name</th>
+                    <th class="p-4 text-left font-medium">Email</th>
+                    <th class="p-4 text-center font-medium">Status</th>
+                    <th class="p-4 text-right font-medium">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($kasirs as $kasir)
+                @forelse($kasirs as $index => $kasir)
                 <tr class="border-t last:border-0 hover:bg-accent/30">
-                    <td class="p-4 text-sm font-medium">{{ $kasir->name }}</td>
-                    <td class="p-4 text-sm text-muted-foreground">{{ $kasir->email }}</td>
-                    <td class="p-4 text-center text-sm capitalize
+                    <td class="p-4 text-muted-foreground">{{ $index + 1 }}</td>
+                    <td class="p-4 font-medium">{{ $kasir->name }}</td>
+                    <td class="p-4 text-muted-foreground">{{ $kasir->email }}</td>
+                    <td class="p-4 text-center">
+                        <span class="rounded-full px-2.5 py-0.5 text-xs capitalize font-medium
                             {{ $kasir->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $kasir->is_active ? 'Active' : 'Inactive' }}
+                            {{ $kasir->is_active ? 'Active' : 'Inactive' }}
+                        </span>
                     </td>
                     <td class="p-4 text-right">
-                        <form method="POST" action="{{ route('admin.kasir.toggle', $kasir) }}" class="inline"
-                            onsubmit="return confirm('Are you sure?')">
-                            @csrf @method('PATCH')
-                            <button type="submit"
-                                class="text-xs capitalize
-                                    {{ $kasir->is_active ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                {{ $kasir->is_active ? 'Deactivate' : 'Activate' }}
-                            </button>
-                        </form>
+                        <div class="flex items-center justify-end gap-3" x-data="{
+                            isActive: @js($kasir->is_active),
+                            async toggle() {
+                                try {
+                                    const res = await fetch('{{ route('admin.kasir.toggle', $kasir) }}', {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                            'Accept': 'application/json',
+                                            'X-Requested-With': 'XMLHttpRequest',
+                                        }
+                                    });
+                                    const data = await res.json();
+                                    if (!res.ok) throw new Error(data.message || 'Failed');
+                                    this.isActive = data.is_active;
+                                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+                                } catch (e) {
+                                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: e.message, type: 'error' } }));
+                                }
+                            }
+                        }">
+                            <button @click="toggle()"
+                                class="text-xs font-medium px-2.5 py-1 rounded-md transition-colors"
+                                :class="isActive ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 'bg-green-100 text-green-800 hover:bg-green-200'"
+                                x-text="isActive ? 'Deactivate' : 'Activate'"></button>
+                        </div>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="p-8 text-center text-sm text-muted-foreground">No kasir accounts yet.</td>
+                    <td colspan="5" class="p-8 text-center text-muted-foreground">No kasir accounts yet.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -56,38 +72,32 @@
     </div>
 </div>
 
-<div id="create-kasir" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50"
-    onclick="this.classList.add('hidden')">
-    <div class="relative w-full max-w-md rounded-xl bg-card p-6 shadow-lg" onclick="event.stopPropagation()">
-        <h3 class="text-lg font-semibold mb-4">New Kasir Account</h3>
-        <form method="POST" action="{{ route('admin.kasir.store') }}" class="space-y-4">
-            @csrf
-            <div>
-                <label class="text-sm font-medium">Name</label>
-                <input name="name" required maxlength="255"
-                    class="mt-1 w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
-            </div>
-            <div>
-                <label class="text-sm font-medium">Email</label>
-                <input name="email" required maxlength="255"
-                    class="mt-1 w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
-            </div>
-            <div>
-                <label class="text-sm font-medium">Password</label>
-                <input name="password" required min="6"
-                    class="mt-1 w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
-            </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="document.getElementById('create-kasir').classList.add('hidden')"
-                    class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
-                <button type="submit"
-                    class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Create</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    document.querySelector('[data-modal="create-kasir"]').onclick = () => document.getElementById('create-kasir').classList.remove('hidden');
-</script>
+{{-- Create Kasir Modal --}}
+<x-modal id="create-kasir" title="New Kasir Account">
+    <form method="POST" action="{{ route('admin.kasir.store') }}" class="space-y-4">
+        @csrf
+        <div>
+            <label class="block text-sm font-medium mb-1">Name</label>
+            <input name="name" required maxlength="255"
+                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Email</label>
+            <input name="email" type="email" required maxlength="255"
+                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Password</label>
+            <input name="password" type="password" required minlength="6"
+                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" @click="$dispatch('close-modal', { id: 'create-kasir' })"
+                class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
+            <button type="submit"
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Create
+                Account</button>
+        </div>
+    </form>
+</x-modal>
 @endsection

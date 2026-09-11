@@ -45,6 +45,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('tables/{table}/qr', [TableController::class, 'qr'])->name('tables.qr');
     Route::patch('tables/{table}/regenerate-qr', [TableController::class, 'regenQr'])->name('tables.regenQr');
     Route::resource('kasir', KasirController::class);
+    Route::patch('kasir/{user}/toggle', [KasirController::class, 'toggle'])->name('kasir.toggle');
     Route::get('/reports', [DashboardController::class, 'reports'])->name('reports');
 });
 
