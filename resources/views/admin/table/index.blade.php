@@ -23,19 +23,21 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($tables as $tbl)
+                @forelse($tables as $index => $tbl)
                 <tr class="border-t last:border-0 hover:bg-accent/30">
-                    <td class="p-4 text-muted-foreground">{{ $tbl->id }}</td>
+                    <td class="p-4 text-muted-foreground">{{ $index + 1 }}</td>
                     <td class="p-4 font-medium">{{ $tbl->number }}</td>
                     <td class="p-4 text-center text-muted-foreground">{{ $tbl->capacity }}</td>
                     <td class="p-4 text-center">
-                        <span class="rounded-full px-2.5 py-0.5 text-xs capitalize font-medium
+                        <span
+                            class="rounded-full px-2.5 py-0.5 text-xs capitalize font-medium
                             {{ $tbl->status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                             {{ $tbl->status }}
                         </span>
                     </td>
                     <td class="p-4 text-center">
-                        <img src="{{ route('admin.tables.qr', $tbl) }}" alt="QR Table {{ $tbl->number }}" class="h-10 w-10 mx-auto rounded-sm border">
+                        <img src="{{ route('admin.tables.qr', $tbl) }}" alt="QR Table {{ $tbl->number }}"
+                            class="h-10 w-10 mx-auto rounded-sm border">
                     </td>
                     <td class="p-4 text-right">
                         <div class="flex items-center justify-end gap-3">
@@ -79,7 +81,8 @@
             <button type="button" @click="$dispatch('close-modal', { id: 'create-table' })"
                 class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
             <button type="submit"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Create Table</button>
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Create
+                Table</button>
         </div>
     </form>
 </x-modal>
@@ -105,7 +108,8 @@
             <button type="button" @click="$dispatch('close-modal', { id: 'edit-table-{{ $tbl->id }}' })"
                 class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50">Cancel</button>
             <button type="submit"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Save Changes</button>
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90">Save
+                Changes</button>
         </div>
     </form>
 </x-modal>
@@ -128,24 +132,53 @@
 </x-modal>
 
 <x-modal id="detail-table-{{ $tbl->id }}" title="Table Detail — #{{ $tbl->number }}" maxWidth="max-w-2xl">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div x-data="{
+            qrSrc: '{{ route('admin.tables.qr', $tbl) }}',
+            regenUrl: '{{ route('admin.tables.regenQr', $tbl) }}',
+            regenerating: false,
+            async regenerate() {
+                this.regenerating = true;
+                try {
+                    const res = await fetch(this.regenUrl, {
+                        method: 'PATCH',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Failed to regenerate');
+                    this.qrSrc = data.qr_url + '?t=' + Date.now();
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+                } catch (e) {
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: e.message, type: 'error' } }));
+                } finally {
+                    this.regenerating = false;
+                }
+            }
+        }" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {{-- Left: Info --}}
         <div class="space-y-4">
             <div>
                 <h4 class="text-sm font-medium text-muted-foreground mb-2">Info</h4>
                 <div class="rounded-lg border p-3 space-y-2 text-sm">
-                    <div class="flex justify-between"><span class="text-muted-foreground">Number</span> <span class="font-medium">{{ $tbl->number }}</span></div>
-                    <div class="flex justify-between"><span class="text-muted-foreground">Capacity</span> <span class="font-medium">{{ $tbl->capacity }} people</span></div>
+                    <div class="flex justify-between"><span class="text-muted-foreground">Number</span> <span
+                            class="font-medium">{{ $tbl->number }}</span></div>
+                    <div class="flex justify-between"><span class="text-muted-foreground">Capacity</span> <span
+                            class="font-medium">{{ $tbl->capacity }} people</span></div>
                     <div class="flex justify-between items-center">
                         <span class="text-muted-foreground">Status</span>
-                        <span class="rounded-full px-2.5 py-0.5 text-xs capitalize font-medium
+                        <span
+                            class="rounded-full px-2.5 py-0.5 text-xs capitalize font-medium
                             {{ $tbl->status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                             {{ $tbl->status }}
                         </span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-muted-foreground">Menu URL</span>
-                        <a href="{{ $tbl->qr_url }}" target="_blank" class="text-primary text-xs hover:underline truncate max-w-[160px]">{{ $tbl->qr_url }}</a>
+                        <a href="{{ $tbl->qr_url }}" target="_blank"
+                            class="text-primary text-xs hover:underline truncate max-w-[160px]">{{ $tbl->qr_url }}</a>
                     </div>
                 </div>
             </div>
@@ -176,23 +209,28 @@
         <div class="flex flex-col items-center gap-4">
             <h4 class="text-sm font-medium text-muted-foreground">QR Code</h4>
             <div class="rounded-lg border bg-white p-4">
-                <img src="{{ route('admin.tables.qr', $tbl) }}" alt="QR Table {{ $tbl->number }}" class="w-48 h-48">
+                <img :src="qrSrc" alt="QR Table {{ $tbl->number }}" class="w-48 h-48">
             </div>
             <p class="text-xs text-muted-foreground text-center">Scan to view menu at table {{ $tbl->number }}</p>
             <div class="flex gap-2">
-                <a href="{{ route('admin.tables.qr', $tbl) }}" download="qr-table-{{ $tbl->number }}.png"
+                <a :href="qrSrc" download="qr-table-{{ $tbl->number }}.png"
                     class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                     Download
                 </a>
-                <form method="POST" action="{{ route('admin.tables.regenQr', $tbl) }}">
-                    @csrf @method('PATCH')
-                    <button type="submit"
-                        class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        Regenerate QR
-                    </button>
-                </form>
+                <button type="button" @click="regenerate" :disabled="regenerating"
+                    class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="h-4 w-4" :class="regenerating ? 'animate-spin' : ''" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span x-text="regenerating ? 'Regenerating...' : 'Regenerate QR'"></span>
+                </button>
             </div>
         </div>
     </div>

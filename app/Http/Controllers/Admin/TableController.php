@@ -12,8 +12,8 @@ class TableController extends Controller
 {
     public function index()
     {
-        $tables = Table::with(['orders' => fn ($q) => $q->where('status', '!=', 'paid')->latest()])
-            ->latest('number')
+        $tables = Table::with(['orders' => fn($q) => $q->where('status', '!=', 'paid')->latest()])
+            ->orderBy('id')
             ->get();
 
         return view('admin.table.index', compact('tables'));
@@ -37,7 +37,7 @@ class TableController extends Controller
     public function update(Request $request, Table $table)
     {
         $data = $request->validate([
-            'number' => ['required', 'string', 'max:20', 'unique:tables,number,'.$table->id],
+            'number' => ['required', 'string', 'max:20', 'unique:tables,number,' . $table->id],
             'capacity' => ['required', 'integer', 'min:1', 'max:50'],
         ]);
 
@@ -58,9 +58,17 @@ class TableController extends Controller
         return back()->with('success', "Table \"{$number}\" deleted.");
     }
 
-    public function regenQr(Table $table)
+    public function regenQr(Request $request, Table $table)
     {
         $table->update(['qr_token' => Str::random(32)]);
+        $table->refresh();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'QR regenerated.',
+                'qr_url' => route('admin.tables.qr', $table->id),
+            ]);
+        }
 
         return back()->with('success', 'QR token regenerated.');
     }

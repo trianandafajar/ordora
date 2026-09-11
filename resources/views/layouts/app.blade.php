@@ -57,10 +57,10 @@
                     this.show = true;
                     setTimeout(() => this.show = false, 4000);
                 }
-            }" x-show="show" x-cloak x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 translate-y-2"
+            }" x-on:toast.window="showToast($event.detail.message, $event.detail.type)" x-show="show" x-cloak
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2"
             class="fixed bottom-4 right-4 z-[60] min-w-[300px] max-w-md rounded-lg border p-4 shadow-lg flex items-center justify-between"
             :class="{
                 'bg-white border-green-200 text-green-800': type === 'success',
