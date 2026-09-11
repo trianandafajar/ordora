@@ -8,7 +8,18 @@
             <p class="text-sm text-muted-foreground mt-1">Overview of your coffee shop operations and revenue.</p>
         </div>
         <div class="flex items-center gap-2">
-            <span class="text-xs bg-muted text-muted-foreground px-3 py-1.5 rounded-md font-medium">
+            <span x-data="{
+                time: @js(now()->format('d M Y, H:i:s')),
+                startClock() {
+                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    setInterval(() => {
+                        const d = new Date();
+                        this.time = String(d.getDate()).padStart(2, '0') + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ', ' +
+                            String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
+                    }, 1000);
+                }
+            }" x-init="startClock()" x-text="time"
+                class="text-xs bg-muted text-muted-foreground px-3 py-1.5 rounded-md font-medium tabular-nums">
                 {{ now()->format('d M Y, H:i:s') }}
             </span>
         </div>
