@@ -14,7 +14,6 @@
 </head>
 
 <body class="min-h-screen flex flex-col lg:flex-row" x-data="{ showPassword: false }">
-    {{-- Left panel: brand (desktop only) --}}
     <div class="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-8 lg:p-16 text-white shrink-0"
         style="background-color: #2c1810;">
         <div class="relative z-10">

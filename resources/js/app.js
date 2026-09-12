@@ -3,7 +3,6 @@ import Alpine from 'alpinejs';
 import Sortable from 'sortablejs';
 
 window.Alpine = Alpine;
-Alpine.start();
 
 let sortableInstances = [];
 let sortableRefreshTimer = null;
@@ -128,7 +127,7 @@ function initOrderBoardSortables() {
 
                     sortableMoveBusy = true;
                     component.moveOrder(orderId, targetStatus)
-                        .catch(() => {})
+                        .catch(() => { })
                         .finally(() => {
                             sortableMoveBusy = false;
                             sortableRefreshPending = false;
@@ -180,3 +179,5 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showModal = (id) => document.getElementById(id)?.classList.remove('hidden');
     window.hideModal = (id) => document.getElementById(id)?.classList.add('hidden');
 });
+
+Alpine.start();
