@@ -19,7 +19,7 @@ return new class extends Migration
             $i = 2;
             $original = $product->slug;
             while (Product::where('slug', $product->slug)->where('id', '!=', $product->id)->exists()) {
-                $product->slug = $original . '-' . $i++;
+                $product->slug = $original.'-'.$i++;
             }
             $product->save();
         }

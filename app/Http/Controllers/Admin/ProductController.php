@@ -36,7 +36,7 @@ class ProductController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $ext = $file->getClientOriginalExtension();
-            $filename = $product->slug . '-' . now()->format('Y-m-d') . '.' . $ext;
+            $filename = $product->slug.'-'.now()->format('Y-m-d').'.'.$ext;
             $path = $file->storeAs('products', $filename, 'public');
             $product->update(['image' => $path]);
         }
@@ -65,7 +65,7 @@ class ProductController extends Controller
             }
             $file = $request->file('image');
             $ext = $file->getClientOriginalExtension();
-            $filename = $product->slug . '-' . now()->format('Y-m-d') . '.' . $ext;
+            $filename = $product->slug.'-'.now()->format('Y-m-d').'.'.$ext;
             $path = $file->storeAs('products', $filename, 'public');
             $product->update(['image' => $path]);
         }

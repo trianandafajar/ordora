@@ -39,8 +39,8 @@ class Category extends Model
         $slug = $base;
         $i = 2;
 
-        while (static::query()->where('slug', $slug)->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))->exists()) {
-            $slug = $base . '-' . $i++;
+        while (static::query()->where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
+            $slug = $base.'-'.$i++;
         }
 
         return $slug;

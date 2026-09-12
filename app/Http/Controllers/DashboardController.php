@@ -131,7 +131,7 @@ class DashboardController extends Controller
         $pdf = Pdf::loadView('admin.reports.pdf', compact('stats', 'topProducts', 'orderHistory', 'startDate', 'endDate'));
         $pdf->setPaper('a4', 'landscape');
 
-        return $pdf->download('laporan-penjualan-' . $startDate . '_to_' . $endDate . '.pdf');
+        return $pdf->download('laporan-penjualan-'.$startDate.'_to_'.$endDate.'.pdf');
     }
 
     public function kasir(): View

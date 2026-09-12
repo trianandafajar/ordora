@@ -45,7 +45,7 @@ class KasirController extends Controller
 
         return response()->json([
             'message' => "Account {$label}.",
-            'is_active' => $user->is_active
+            'is_active' => $user->is_active,
         ]);
     }
 }

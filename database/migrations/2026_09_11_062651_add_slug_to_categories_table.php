@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Category;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 return new class extends Migration
 {
@@ -13,14 +15,14 @@ return new class extends Migration
         });
 
         // Backfill existing slugs
-        $categories = \App\Models\Category::all();
+        $categories = Category::all();
         foreach ($categories as $category) {
-            $category->slug = \Illuminate\Support\Str::slug($category->name);
+            $category->slug = Str::slug($category->name);
             // Handle collision
             $i = 2;
             $original = $category->slug;
-            while (\App\Models\Category::where('slug', $category->slug)->where('id', '!=', $category->id)->exists()) {
-                $category->slug = $original . '-' . $i++;
+            while (Category::where('slug', $category->slug)->where('id', '!=', $category->id)->exists()) {
+                $category->slug = $original.'-'.$i++;
             }
             $category->save();
         }
