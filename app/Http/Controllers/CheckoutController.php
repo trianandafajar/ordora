@@ -73,9 +73,9 @@ class CheckoutController extends Controller
             return redirect()->back()->with('error', 'Your cart is empty.');
         }
 
-        $tableId = session('table_id');
-        if (! $tableId) {
-            return redirect('/')->with('error', 'Please scan the QR code first.');
+        $tableQr = session('table_qr');
+        if (! $tableQr) {
+            return redirect()->route('login')->with('error', 'Please scan the QR code first.');
         }
 
         return view('customer.checkout', compact('cart'));
@@ -94,7 +94,7 @@ class CheckoutController extends Controller
 
         $tableId = session('table_id');
         if (! $tableId) {
-            return redirect('/')->with('error', 'Please scan the QR code first.');
+            return redirect()->route('login')->with('error', 'Please scan the QR code first.');
         }
 
         $order = $action->execute($cart, $request->customer_name, $tableId);

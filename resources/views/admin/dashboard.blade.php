@@ -218,7 +218,6 @@
                 <h3 class="font-semibold">Recent Orders</h3>
                 <p class="text-xs text-muted-foreground mt-0.5">Latest 5 orders from all tables</p>
             </div>
-            <a href="{{ route('kasir.dashboard') }}" class="text-xs text-primary hover:underline">Lihat Semua</a>
         </div>
         <div class="p-6 pt-4">
             @if(count($recentOrders) > 0)

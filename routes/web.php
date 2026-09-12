@@ -28,12 +28,12 @@ Route::get('/', function () {
 
 // Customer (no auth, prefixed /meja)
 Route::prefix('meja')->name('meja.')->group(function () {
-    Route::get('/{qr_token}', [CheckoutController::class, 'showMenu'])->name('menu');
-    Route::post('/{qr_token}/cart', [CheckoutController::class, 'addToCart'])->name('cart.add');
-    Route::delete('/{qr_token}/cart/{product_id}', [CheckoutController::class, 'removeFromCart'])->name('cart.remove');
     Route::get('/checkout', [CheckoutController::class, 'showCheckout'])->name('checkout');
     Route::post('/checkout', [CheckoutController::class, 'storeCheckout'])->name('checkout.store');
     Route::get('/tracking/{order_token}', [CheckoutController::class, 'showTracking'])->name('tracking.show');
+    Route::get('/{qr_token}', [CheckoutController::class, 'showMenu'])->name('menu');
+    Route::post('/{qr_token}/cart', [CheckoutController::class, 'addToCart'])->name('cart.add');
+    Route::delete('/{qr_token}/cart/{product_id}', [CheckoutController::class, 'removeFromCart'])->name('cart.remove');
 });
 
 // Admin
