@@ -86,14 +86,14 @@
                 @endif
             </div>
 
-            @if($order->status->value === 'paid')
-            <div class="pt-2">
+            <div id="reorderSection" class="pt-2"
+                style="{{ $order->status->value === 'paid' ? '' : 'display: none;' }}">
                 <a href="{{ route('meja.menu', $order->table->qr_token) }}"
                     class="w-full inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground font-semibold h-12 hover:opacity-90 transition-all cursor-pointer">
                     Pesan Lagi
                 </a>
             </div>
-            @endif
+
         </main>
     </div>
 
@@ -121,6 +121,11 @@
             });
 
             document.getElementById('liveStatus').textContent = `Status: ${status}`;
+
+            const reorderSection = document.getElementById('reorderSection');
+            if (reorderSection) {
+                reorderSection.style.display = status === 'paid' ? 'block' : 'none';
+            }
         }
 
         renderStatus({{ Js::from($order->status->value) }});
