@@ -1,5 +1,8 @@
 import './echo';
+import Alpine from 'alpinejs';
 import Sortable from 'sortablejs';
+
+Alpine.start();
 
 let sortableInstances = [];
 let sortableRefreshTimer = null;
@@ -169,12 +172,3 @@ document.addEventListener('livewire:init', () => {
 
 registerOrderBoardAlpineComponent();
 registerLivewireHooks();
-
-window.addEventListener('DOMContentLoaded', scheduleOrderBoardSortables);
-
-document.addEventListener('DOMContentLoaded', () => {
-    window.showModal = (id) => document.getElementById(id)?.classList.remove('hidden');
-    window.hideModal = (id) => document.getElementById(id)?.classList.add('hidden');
-});
-
-Alpine.start();
