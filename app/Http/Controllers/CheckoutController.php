@@ -16,7 +16,7 @@ class CheckoutController extends Controller
         $table = Table::where('qr_token', $qr_token)->firstOrFail();
         session(['table_id' => $table->id, 'table_qr' => $table->qr_token]);
 
-        $categories = Category::with(['products' => fn ($q) => $q->where('is_available', true)])->get();
+        $categories = Category::with(['products' => fn($q) => $q->where('is_available', true)])->get();
 
         return view('customer.menu', compact('table', 'categories'));
     }
@@ -54,13 +54,13 @@ class CheckoutController extends Controller
 
         session(['cart' => $cart]);
 
-        return back()->with('success', $product->name.' added to cart.');
+        return back()->with('success', $product->name . ' added to cart.');
     }
 
     public function removeFromCart(Request $request, string $qr_token)
     {
         $productId = $request->route('product_id');
-        $cart = collect(session('cart', []))->reject(fn ($i) => $i['product_id'] == $productId)->values()->all();
+        $cart = collect(session('cart', []))->reject(fn($i) => $i['product_id'] == $productId)->values()->all();
         session(['cart' => $cart]);
 
         return back()->with('success', 'Item removed from cart.');
@@ -100,7 +100,7 @@ class CheckoutController extends Controller
         $order = $action->execute($cart, $request->customer_name, $tableId);
         session()->forget('cart');
 
-        return redirect()->route('meja.tracking.show', $order->order_token);
+        return redirect()->route('table.tracking.show', $order->order_token);
     }
 
     public function showTracking(string $order_token)

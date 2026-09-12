@@ -39,7 +39,7 @@ class KasirOrderController extends Controller
         $paidOrder = $action->execute($order, $method, auth()->id());
 
         return redirect()
-            ->route('kasir.order.receipt', $paidOrder)
+            ->route('cashier.order.receipt', $paidOrder)
             ->with('success', 'Payment processed. Table is now available.');
     }
 

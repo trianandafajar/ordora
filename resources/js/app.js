@@ -34,7 +34,7 @@ function registerOrderBoardAlpineComponent() {
         toastTimer: null,
         realtimeHandler: null,
         formattedNow() {
-            return this.now.toLocaleTimeString('id-ID', {
+            return this.now.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
@@ -75,8 +75,8 @@ function registerOrderBoardAlpineComponent() {
             const order = payload?.order;
             if (!order) return;
             this.toastMessage = payload.change_type === 'created'
-                ? `Pesanan baru #${order.id} masuk.`
-                : `Order #${order.id} berubah ke ${order.status}.`;
+                ? `New order #${order.id} placed.`
+                : `Order #${order.id} updated to ${order.status}.`;
             window.clearTimeout(this.toastTimer);
             this.toastTimer = window.setTimeout(() => { this.toastMessage = ''; }, 4200);
             if (payload.change_type === 'created' && this.soundEnabled) this.playSound();

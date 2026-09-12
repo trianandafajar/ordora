@@ -25,11 +25,11 @@ class PaymentTest extends TestCase
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $order = $this->makeOrder(OrderStatus::Served);
 
-        $response = $this->actingAs($cashier)->post(route('kasir.order.pay', $order), [
+        $response = $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'cash',
         ]);
 
-        $response->assertRedirect(route('kasir.order.receipt', $order));
+        $response->assertRedirect(route('cashier.order.receipt', $order));
         $this->assertPaymentCompleted($order, $cashier, PaymentMethod::Cash);
     }
 
@@ -39,9 +39,9 @@ class PaymentTest extends TestCase
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $order = $this->makeOrder(OrderStatus::Served);
 
-        $this->actingAs($cashier)->post(route('kasir.order.pay', $order), [
+        $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'qris',
-        ])->assertRedirect(route('kasir.order.receipt', $order));
+        ])->assertRedirect(route('cashier.order.receipt', $order));
 
         $this->assertPaymentCompleted($order, $cashier, PaymentMethod::Qris);
     }
@@ -54,7 +54,7 @@ class PaymentTest extends TestCase
         foreach ([OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Ready] as $status) {
             $order = $this->makeOrder($status);
 
-            $response = $this->actingAs($cashier)->post(route('kasir.order.pay', $order), [
+            $response = $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
                 'payment_method' => 'cash',
             ]);
 
@@ -73,11 +73,11 @@ class PaymentTest extends TestCase
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $order = $this->makeOrder(OrderStatus::Served);
 
-        $this->actingAs($cashier)->post(route('kasir.order.pay', $order), [
+        $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'cash',
-        ])->assertRedirect(route('kasir.order.receipt', $order));
+        ])->assertRedirect(route('cashier.order.receipt', $order));
 
-        $response = $this->actingAs($cashier)->post(route('kasir.order.pay', $order), [
+        $response = $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'qris',
         ]);
 
@@ -94,7 +94,7 @@ class PaymentTest extends TestCase
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $order = $this->makeOrder(OrderStatus::Served);
 
-        $response = $this->actingAs($cashier)->post(route('kasir.order.pay', $order), [
+        $response = $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'card',
         ]);
 
@@ -112,13 +112,13 @@ class PaymentTest extends TestCase
         $admin = User::factory()->create(['role' => UserRole::Admin]);
         $order = $this->makeOrder(OrderStatus::Served);
 
-        $this->actingAs($admin)->post(route('kasir.order.pay', $order), [
+        $this->actingAs($admin)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'cash',
         ])->assertForbidden();
 
         $this->post(route('logout'));
 
-        $this->post(route('kasir.order.pay', $order), [
+        $this->post(route('cashier.order.pay', $order), [
             'payment_method' => 'cash',
         ])->assertRedirectToRoute('login');
     }
@@ -130,15 +130,15 @@ class PaymentTest extends TestCase
         $unpaidOrder = $this->makeOrder(OrderStatus::Served);
 
         $this->actingAs($cashier)
-            ->get(route('kasir.order.receipt', $unpaidOrder))
+            ->get(route('cashier.order.receipt', $unpaidOrder))
             ->assertNotFound();
 
-        $this->actingAs($cashier)->post(route('kasir.order.pay', $unpaidOrder), [
+        $this->actingAs($cashier)->post(route('cashier.order.pay', $unpaidOrder), [
             'payment_method' => 'cash',
         ]);
 
         $this->actingAs($cashier)
-            ->get(route('kasir.order.receipt', $unpaidOrder))
+            ->get(route('cashier.order.receipt', $unpaidOrder))
             ->assertOk()
             ->assertSee('Payment Receipt')
             ->assertSee($unpaidOrder->customer_name);
@@ -151,7 +151,7 @@ class PaymentTest extends TestCase
         $order = $this->makeOrder(OrderStatus::Served);
 
         $this->actingAs($cashier)
-            ->get(route('kasir.order.show', $order))
+            ->get(route('cashier.order.show', $order))
             ->assertOk()
             ->assertSee('payment-confirmation-dialog')
             ->assertSee('Confirm payment')
@@ -165,7 +165,7 @@ class PaymentTest extends TestCase
         $order = $this->makeOrder(OrderStatus::Served);
         Event::fake([OrderStatusUpdated::class]);
 
-        $this->actingAs($cashier)->post(route('kasir.order.pay', $order), [
+        $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'qris',
         ]);
 

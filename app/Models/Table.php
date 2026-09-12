@@ -28,6 +28,6 @@ class Table extends Model
 
     public function getQrUrlAttribute(): string
     {
-        return route('meja.menu', $this->qr_token);
+        return route('table.menu', $this->qr_token);
     }
 }

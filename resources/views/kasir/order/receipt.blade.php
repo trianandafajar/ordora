@@ -33,7 +33,7 @@
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Ordora</p>
                 <h1 class="mt-1 text-2xl font-bold">Payment Receipt</h1>
             </div>
-            <a href="{{ route('kasir.order.show', $order) }}"
+            <a href="{{ route('cashier.order.show', $order) }}"
                 class="no-print text-sm text-muted-foreground hover:text-foreground">Back</a>
         </div>
 

@@ -69,7 +69,7 @@
         <header
             class="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <div class="flex h-14 items-center px-4">
-                <a href="{{ route('meja.menu', session('table_qr', '')) }}"
+                <a href="{{ route('table.menu', session('table_qr', '')) }}"
                     class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
@@ -108,7 +108,7 @@
                         <span class="font-bold text-sm">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',',
                             '.')
                             }}</span>
-                        <form action="{{ route('meja.cart.remove', [session('table_qr'), $item['product_id']]) }}"
+                        <form action="{{ route('table.cart.remove', [session('table_qr'), $item['product_id']]) }}"
                             method="POST" class="remove-form">
                             @csrf
                             @method('DELETE')
@@ -135,7 +135,7 @@
                     $i['quantity']), 0, ',', '.') }}</span>
             </div>
 
-            <form action="{{ route('meja.checkout.store') }}" method="POST" class="space-y-3">
+            <form action="{{ route('table.checkout.store') }}" method="POST" class="space-y-3">
                 @csrf
                 <input id="customer_name" name="customer_name" required maxlength="100" placeholder="Your name"
                     class="flex h-11 w-full rounded-xl border border-input bg-transparent px-4 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">

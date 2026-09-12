@@ -39,7 +39,7 @@
                     class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 inline-flex items-center cursor-pointer">Reset</a>
             </div>
             <div class="text-sm text-muted-foreground ml-auto self-center">
-                Periode: <span class="font-medium">{{ date('d M Y', strtotime($startDate)) }}</span> -
+                Period: <span class="font-medium">{{ date('d M Y', strtotime($startDate)) }}</span> -
                 <span class="font-medium">{{ date('d M Y', strtotime($endDate)) }}</span>
             </div>
         </form>
@@ -48,11 +48,11 @@
     {{-- Stat Cards --}}
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-xl border bg-card shadow-sm p-6">
-            <p class="text-sm text-muted-foreground">Revenue (Periode)</p>
+            <p class="text-sm text-muted-foreground">Revenue (Period)</p>
             <p class="text-2xl font-bold mt-1">Rp {{ number_format($stats['period_revenue'], 0, ',', '.') }}</p>
         </div>
         <div class="rounded-xl border bg-card shadow-sm p-6">
-            <p class="text-sm text-muted-foreground">Paid Orders (Periode)</p>
+            <p class="text-sm text-muted-foreground">Paid Orders (Period)</p>
             <p class="text-2xl font-bold mt-1">{{ $stats['period_paid_orders'] }}</p>
         </div>
         <div class="rounded-xl border bg-card shadow-sm p-6">

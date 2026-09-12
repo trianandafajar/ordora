@@ -42,7 +42,7 @@
                     <p class="font-bold">Ordora</p>
                     <p class="text-xs text-muted-foreground">Table {{ $table->number }}</p>
                 </div>
-                <a href="{{ route('meja.checkout') }}"
+                <a href="{{ route('table.checkout') }}"
                     class="relative flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium bg-primary text-primary-foreground cursor-pointer active:scale-95 transition-transform">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
@@ -114,7 +114,7 @@
                             <div class="flex items-center justify-between mt-auto pt-3">
                                 <span class="font-bold text-sm">Rp {{ number_format($product->price, 0, ',', '.')
                                     }}</span>
-                                <form action="{{ route('meja.cart.add', $table->qr_token) }}" method="POST"
+                                <form action="{{ route('table.cart.add', $table->qr_token) }}" method="POST"
                                     x-data="{ qty: 1 }" class="w-full flex items-center justify-end gap-2">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">

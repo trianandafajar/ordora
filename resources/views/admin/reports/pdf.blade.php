@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Laporan Penjualan</title>
+    <title>Sales Report</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2937; padding: 24px; }
@@ -28,12 +28,12 @@
 <body>
     <div class="header">
         <h1>Ordora Coffee Shop</h1>
-        <p>Laporan Penjualan</p>
+        <p>Laporan Penjualan</p> → <p>Sales Report</p>
     </div>
 
     <div class="sub-header">
-        <span>Periode: <strong>{{ date('d M Y', strtotime($startDate)) }}</strong> - <strong>{{ date('d M Y', strtotime($endDate)) }}</strong></span>
-        <span>Dicetak: {{ now()->format('d M Y H:i') }}</span>
+        <span>Period: <strong>{{ date('d M Y', strtotime($startDate)) }}</strong> - <strong>{{ date('d M Y', strtotime($endDate)) }}</strong></span>
+        <span>Printed: {{ now()->format('d M Y H:i') }}</span>
     </div>
 
     <div class="stats">
@@ -55,14 +55,14 @@
         </div>
     </div>
 
-    <h2>Produk Terlaris</h2>
+    <h2>Top Selling Products</h2>
     <table>
         <thead>
             <tr>
                 <th class="text-center" style="width: 30px;">#</th>
-                <th>Produk</th>
-                <th class="text-center">Terjual</th>
-                <th class="text-right">Pendapatan</th>
+                <th>Product</th>
+                <th class="text-center">Sold</th>
+                <th class="text-right">Revenue</th>
             </tr>
         </thead>
         <tbody>
@@ -74,22 +74,22 @@
                 <td class="text-right">Rp {{ number_format($prod->revenue, 0, ',', '.') }}</td>
             </tr>
             @empty
-            <tr><td colspan="4" class="text-center">Tidak ada data untuk periode ini.</td></tr>
+            <tr><td colspan="4" class="text-center">No data for this period.</td></tr>
             @endforelse
         </tbody>
     </table>
 
-    <h2>Riwayat Transaksi Lunas</h2>
+    <h2>Paid Orders History</h2>
     <table>
         <thead>
             <tr>
                 <th>#</th>
                 <th>Customer</th>
-                <th>Meja</th>
-                <th>Pembayaran</th>
-                <th>Kasir</th>
+                <th>Table</th>
+                <th>Payment</th>
+                <th>Cashier</th>
                 <th class="text-right">Total</th>
-                <th>Waktu</th>
+                <th>Date</th>
             </tr>
         </thead>
         <tbody>
@@ -104,13 +104,13 @@
                 <td>{{ $order->created_at->format('d M Y H:i') }}</td>
             </tr>
             @empty
-            <tr><td colspan="7" class="text-center">Tidak ada transaksi untuk periode ini.</td></tr>
+            <tr><td colspan="7" class="text-center">No transactions for this period.</td></tr>
             @endforelse
         </tbody>
     </table>
 
     <div class="footer">
-        <span class="brand">Ordora Coffee Shop</span> &mdash; Sistem QR Ordering &copy; {{ now()->year }}
+        <span class="brand">Ordora Coffee Shop</span> &mdash; QR Ordering System &copy; {{ now()->year }}
     </div>
 </body>
 </html>

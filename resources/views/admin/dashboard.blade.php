@@ -60,13 +60,13 @@
         $cardLabels = [
         'today_revenue' => "Today's Revenue",
         'pending_orders' => 'Pending Orders',
-        'active_kasir' => 'Active Kasir',
+        'active_kasir' => 'Active Cashiers',
         'total_tables' => 'Total Tables',
         ];
         $cardNotes = [
         'today_revenue' => 'Total paid orders today',
         'pending_orders' => 'Orders waiting to be processed',
-        'active_kasir' => 'Kasir online right now',
+        'active_kasir' => 'Cashiers online right now',
         'total_tables' => 'Registered tables in coffee shop',
         ];
         $cardValues = [
@@ -142,7 +142,7 @@
                 <p class="text-xs text-muted-foreground">Manage tables and QR tokens</p>
             </div>
         </a>
-        <a href="{{ route('admin.kasir.index') }}"
+        <a href="{{ route('admin.cashiers.index') }}"
             class="rounded-xl border bg-card hover:bg-accent/50 transition-colors p-6 flex items-center gap-4">
             <div class="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -153,7 +153,7 @@
 
             </div>
             <div>
-                <h3 class="font-semibold text-sm">Kasir Accounts</h3>
+                <h3 class="font-semibold text-sm">Cashier Accounts</h3>
                 <p class="text-xs text-muted-foreground">Manage cashier users</p>
             </div>
         </a>
@@ -229,7 +229,7 @@
                     </div>
                     <span class="font-mono text-xs text-muted-foreground truncate flex-1">{{ $order->order_token
                         }}</span>
-                    <span class="text-xs text-muted-foreground">Meja {{ $order->table->number ?? '-' }}</span>
+                    <span class="text-xs text-muted-foreground">{{ $order->table ? 'Table ' . $order->table->number : '-' }}</span>
                     <span class="text-xs text-muted-foreground">{{ $order->customer_name ?? '-' }}</span>
                     <span
                         class="text-xs capitalize rounded-full px-2.5 py-0.5 {{ $order->status->value === 'paid' ? 'bg-green-100 text-green-800' : ($order->status->value === 'preparing' ? 'bg-amber-100 text-amber-800' : ($order->status->value === 'ready' ? 'bg-blue-100 text-blue-800' : ($order->status->value === 'served' ? 'bg-purple-100 text-purple-800' : 'bg-red-100 text-red-800'))) }}">

@@ -26,8 +26,8 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Customer (no auth, prefixed /meja)
-Route::prefix('meja')->name('meja.')->group(function () {
+// Customer (no auth, prefixed /table)
+Route::prefix('table')->name('table.')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'showCheckout'])->name('checkout');
     Route::post('/checkout', [CheckoutController::class, 'storeCheckout'])->name('checkout.store');
     Route::get('/tracking/{order_token}', [CheckoutController::class, 'showTracking'])->name('tracking.show');
@@ -44,14 +44,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('tables', TableController::class);
     Route::get('tables/{table}/qr', [TableController::class, 'qr'])->name('tables.qr');
     Route::patch('tables/{table}/regenerate-qr', [TableController::class, 'regenQr'])->name('tables.regenQr');
-    Route::resource('kasir', KasirController::class);
-    Route::patch('kasir/{user}/toggle', [KasirController::class, 'toggle'])->name('kasir.toggle');
+    Route::resource('cashiers', KasirController::class);
+    Route::patch('cashiers/{user}/toggle', [KasirController::class, 'toggle'])->name('cashiers.toggle');
     Route::get('/reports', [DashboardController::class, 'reports'])->name('reports');
     Route::get('/reports/pdf', [DashboardController::class, 'pdf'])->name('reports.pdf');
 });
 
-// Kasir
-Route::middleware(['auth', 'role:kasir'])->prefix('kasir')->name('kasir.')->group(function () {
+// Cashier
+Route::middleware(['auth', 'role:kasir'])->prefix('cashier')->name('cashier.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
     Route::get('/order/{order}', [KasirOrderController::class, 'show'])->name('order.show');
     Route::get('/order/{order}/receipt', [KasirOrderController::class, 'receipt'])->name('order.receipt');

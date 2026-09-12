@@ -11,7 +11,7 @@
 <body class="min-h-screen bg-background text-foreground">
     <header class="border-b">
         <div class="mx-auto flex h-14 items-center justify-between px-4 max-w-3xl">
-            <a href="{{ route('kasir.dashboard') }}" class="text-sm text-muted-foreground hover:text-foreground">&larr;
+            <a href="{{ route('cashier.dashboard') }}" class="text-sm text-muted-foreground hover:text-foreground">&larr;
                 Back to orders</a>
             <span class="text-xs text-muted-foreground">Order #{{ $order->id }}</span>
         </div>
@@ -74,7 +74,7 @@
         <div class="space-y-3">
             @if($order->status !== \App\Enums\OrderStatus::Paid)
             @if($order->status === \App\Enums\OrderStatus::Pending)
-            <form method="POST" action="{{ route('kasir.order.status', $order->id) }}">
+            <form method="POST" action="{{ route('cashier.order.status', $order->id) }}">
                 @csrf
                 <input type="hidden" name="status" value="preparing">
                 <button type="submit"
@@ -83,7 +83,7 @@
                 </button>
             </form>
             @elseif($order->status === \App\Enums\OrderStatus::Preparing)
-            <form method="POST" action="{{ route('kasir.order.status', $order->id) }}">
+            <form method="POST" action="{{ route('cashier.order.status', $order->id) }}">
                 @csrf
                 <input type="hidden" name="status" value="ready">
                 <button type="submit"
@@ -92,7 +92,7 @@
                 </button>
             </form>
             @elseif($order->status === \App\Enums\OrderStatus::Ready)
-            <form method="POST" action="{{ route('kasir.order.status', $order->id) }}">
+            <form method="POST" action="{{ route('cashier.order.status', $order->id) }}">
                 @csrf
                 <input type="hidden" name="status" value="served">
                 <button type="submit"
@@ -112,7 +112,7 @@
                         Pay
                     </button>
                 </div>
-                <form id="payment-submit-form" method="POST" action="{{ route('kasir.order.pay', $order->id) }}"
+                <form id="payment-submit-form" method="POST" action="{{ route('cashier.order.pay', $order->id) }}"
                     class="hidden">
                     @csrf
                     <input type="hidden" name="payment_method" id="payment-method-input">
@@ -127,7 +127,7 @@
             <div class="rounded-xl border bg-green-50 p-4 text-center text-sm text-green-800 space-y-2">
                 <p>Payment processed using <span class="font-semibold uppercase">{{ $order->payment_method?->value
                         }}</span>. Table {{ $order->table->number }} is now available.</p>
-                <a href="{{ route('kasir.order.receipt', $order) }}"
+                <a href="{{ route('cashier.order.receipt', $order) }}"
                     class="inline-flex rounded-md bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-800 cursor-pointer">
                     View / Print receipt
                 </a>
@@ -147,7 +147,7 @@
                 </div>
                 <button type="button" data-close-payment
                     class="rounded-lg p-2 text-muted-foreground hover:bg-muted cursor-pointer"
-                    aria-label="Tutup">&times;</button>
+                    aria-label="Close">&times;</button>
             </div>
 
             <div class="mt-5 rounded-xl border bg-muted/30 p-4 text-sm">

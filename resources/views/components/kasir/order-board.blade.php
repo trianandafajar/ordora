@@ -271,7 +271,7 @@ new class extends Component
             'payment_method' => $paidOrder->payment_method?->value,
             'cashier_name' => $paidOrder->user?->name ?? auth()->user()?->name ?? 'Cashier',
             'paid_at' => $paidOrder->updated_at?->format('d M Y, H:i'),
-            'receipt_url' => route('kasir.order.receipt', $paidOrder),
+            'receipt_url' => route('cashier.order.receipt', $paidOrder),
         ];
 
         $this->paymentDialogOpen = false;

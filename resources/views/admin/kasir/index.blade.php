@@ -3,10 +3,10 @@
 @section('content')
 <div class="space-y-6">
     <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold tracking-tight">Kasir Accounts</h1>
+        <h1 class="text-2xl font-bold tracking-tight">Cashier Accounts</h1>
         <button x-data @click="$dispatch('open-modal', { id: 'create-kasir' })"
             class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity cursor-pointer">
-            Add Kasir
+            Add Cashier
         </button>
     </div>
 
@@ -40,7 +40,7 @@
                             async toggle() {
                                 this.toggling = true;
                                 try {
-                                    const res = await fetch('{{ route('admin.kasir.toggle', $kasir) }}', {
+                                    const res = await fetch('{{ route('admin.cashiers.toggle', $kasir) }}', {
                                         method: 'PATCH',
                                         headers: {
                                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -68,7 +68,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="p-8 text-center text-muted-foreground">No kasir accounts yet.</td>
+                    <td colspan="5" class="p-8 text-center text-muted-foreground">No cashier accounts yet.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -77,8 +77,8 @@
 </div>
 
 {{-- Create Kasir Modal --}}
-<x-modal id="create-kasir" title="New Kasir Account">
-    <form method="POST" action="{{ route('admin.kasir.store') }}" class="space-y-4">
+<x-modal id="create-kasir" title="New Cashier Account">
+    <form method="POST" action="{{ route('admin.cashiers.store') }}" class="space-y-4">
         @csrf
         <div>
             <label class="block text-sm font-medium mb-1">Name</label>
