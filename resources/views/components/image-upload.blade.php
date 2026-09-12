@@ -7,6 +7,9 @@
         handleFile(e) {
             const file = e.target.files?.[0] || e.dataTransfer?.files?.[0];
             if (!file || !file.type.startsWith('image/')) return;
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            this.$refs.fileInput.files = dt.files;
             const reader = new FileReader();
             reader.onload = (ev) => { this.preview = ev.target.result; };
             reader.readAsDataURL(file);
