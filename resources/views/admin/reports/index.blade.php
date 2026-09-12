@@ -39,7 +39,7 @@
                     class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 inline-flex items-center cursor-pointer">Reset</a>
             </div>
             <div class="text-sm text-muted-foreground ml-auto self-center">
-                Periode: <span class="font-medium">{{ date('d M Y', strtotime($startDate)) }}</span> —
+                Periode: <span class="font-medium">{{ date('d M Y', strtotime($startDate)) }}</span> -
                 <span class="font-medium">{{ date('d M Y', strtotime($endDate)) }}</span>
             </div>
         </form>
@@ -121,10 +121,10 @@
                     @forelse($orderHistory as $order)
                     <tr class="border-t last:border-0 hover:bg-accent/30">
                         <td class="p-3 text-muted-foreground">{{ $order->id }}</td>
-                        <td class="p-3 font-medium">{{ $order->customer_name ?? '—' }}</td>
-                        <td class="p-3">{{ $order->table->number ?? '—' }}</td>
-                        <td class="p-3 capitalize">{{ $order->payment_method?->value ?? '—' }}</td>
-                        <td class="p-3">{{ $order->user->name ?? '—' }}</td>
+                        <td class="p-3 font-medium">{{ $order->customer_name ?? '-' }}</td>
+                        <td class="p-3">{{ $order->table->number ?? '-' }}</td>
+                        <td class="p-3 capitalize">{{ $order->payment_method?->value ?? '-' }}</td>
+                        <td class="p-3">{{ $order->user->name ?? '-' }}</td>
                         <td class="p-3 text-right font-medium">Rp {{ number_format($order->total_price, 0, ',', '.') }}
                         </td>
                         <td class="p-3 text-right text-muted-foreground">{{ $order->created_at->format('d M Y H:i') }}

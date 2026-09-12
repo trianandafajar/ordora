@@ -153,7 +153,7 @@
     </div>
 </x-modal>
 
-<x-modal id="detail-table-{{ $tbl->id }}" title="Table Detail — #{{ $tbl->number }}" maxWidth="max-w-2xl">
+<x-modal id="detail-table-{{ $tbl->id }}" title="Table Detail - #{{ $tbl->number }}" maxWidth="max-w-2xl">
     <div x-data="{
             qrSrc: '{{ route('admin.tables.qr', $tbl) }}',
             regenUrl: '{{ route('admin.tables.regenQr', $tbl) }}',
@@ -215,7 +215,7 @@
                         <span class="rounded-full px-2 py-0.5 text-xs capitalize font-medium
                             bg-muted text-muted-foreground">{{ $order->status }}</span>
                     </div>
-                    <div class="text-muted-foreground text-xs">Customer: {{ $order->customer_name ?? '—' }}</div>
+                    <div class="text-muted-foreground text-xs">Customer: {{ $order->customer_name ?? '-' }}</div>
                     <div class="font-medium">Rp {{ number_format($order->total_price, 0, ',', '.') }}</div>
                     <div class="text-xs text-muted-foreground">{{ $order->created_at->format('d M Y H:i') }}</div>
                 </div>

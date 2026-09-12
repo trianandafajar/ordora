@@ -32,7 +32,7 @@
     </div>
 
     <div class="sub-header">
-        <span>Periode: <strong>{{ date('d M Y', strtotime($startDate)) }}</strong> — <strong>{{ date('d M Y', strtotime($endDate)) }}</strong></span>
+        <span>Periode: <strong>{{ date('d M Y', strtotime($startDate)) }}</strong> - <strong>{{ date('d M Y', strtotime($endDate)) }}</strong></span>
         <span>Dicetak: {{ now()->format('d M Y H:i') }}</span>
     </div>
 
@@ -96,10 +96,10 @@
             @forelse($orderHistory as $order)
             <tr>
                 <td>{{ $order->id }}</td>
-                <td>{{ $order->customer_name ?? '—' }}</td>
-                <td>{{ $order->table->number ?? '—' }}</td>
-                <td>{{ strtoupper($order->payment_method?->value ?? '—') }}</td>
-                <td>{{ $order->user->name ?? '—' }}</td>
+                <td>{{ $order->customer_name ?? '-' }}</td>
+                <td>{{ $order->table->number ?? '-' }}</td>
+                <td>{{ strtoupper($order->payment_method?->value ?? '-') }}</td>
+                <td>{{ $order->user->name ?? '-' }}</td>
                 <td class="text-right">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
                 <td>{{ $order->created_at->format('d M Y H:i') }}</td>
             </tr>
