@@ -1,5 +1,9 @@
 import './echo';
+import Alpine from 'alpinejs';
 import Sortable from 'sortablejs';
+
+window.Alpine = Alpine;
+Alpine.start();
 
 let sortableInstances = [];
 let sortableRefreshTimer = null;
