@@ -100,12 +100,12 @@
                 <div class="flex items-center justify-between p-4 gap-3">
                     <div class="flex-1 min-w-0">
                         <p class="font-medium text-sm truncate">{{ $item['name'] }}</p>
-                        <p class="text-xs text-muted-foreground mt-0.5">Rp {{ number_format($item['price'], 0, ',', '.')
+                        <p class="text-xs text-muted-foreground mt-0.5">$ {{ number_format($item['price'], 0, '.', ',')
                             }}
                             &times; {{ $item['quantity'] }}</p>
                     </div>
                     <div class="flex items-center gap-3 shrink-0">
-                        <span class="font-bold text-sm">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',',
+                        <span class="font-bold text-sm">$ {{ number_format($item['price'] * $item['quantity'], 0, ',',
                             '.')
                             }}</span>
                         <form action="{{ route('table.cart.remove', [session('table_qr'), $item['product_id']]) }}"
@@ -131,7 +131,7 @@
         <div class="absolute bottom-0 left-0 right-0 bg-background border-t p-4 space-y-3">
             <div class="flex justify-between items-center">
                 <span class="text-sm font-medium text-muted-foreground">Total</span>
-                <span class="font-bold text-xl">Rp {{ number_format(collect($cart)->sum(fn($i) => $i['price'] *
+                <span class="font-bold text-xl">$ {{ number_format(collect($cart)->sum(fn($i) => $i['price'] *
                     $i['quantity']), 0, ',', '.') }}</span>
             </div>
 

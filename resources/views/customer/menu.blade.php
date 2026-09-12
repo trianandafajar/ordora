@@ -112,7 +112,7 @@
                             <h3 class="font-semibold text-sm truncate">{{ $product->name }}</h3>
                             <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">{{ $product->description }}</p>
                             <div class="flex items-center justify-between mt-auto pt-3">
-                                <span class="font-bold text-sm">Rp {{ number_format($product->price, 0, ',', '.')
+                                <span class="font-bold text-sm">$ {{ number_format($product->price, 0, '.', ',')
                                     }}</span>
                                 <form action="{{ route('table.cart.add', $table->qr_token) }}" method="POST"
                                     x-data="{ qty: 1 }" class="w-full flex items-center justify-end gap-2">

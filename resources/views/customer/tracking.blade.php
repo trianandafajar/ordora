@@ -70,12 +70,12 @@
                 <div class="flex justify-between text-sm py-2 gap-3">
                     <span class="text-muted-foreground">{{ $item->quantity }} &times;</span>
                     <span class="flex-1">{{ $item->product->name }}</span>
-                    <span class="font-medium shrink-0">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                    <span class="font-medium shrink-0">$ {{ number_format($item->subtotal, 0, '.', ',') }}</span>
                 </div>
                 @endforeach
                 <div class="pt-3 flex justify-between items-center">
                     <span class="text-sm font-medium">Total</span>
-                    <span class="font-bold text-lg">Rp {{ number_format($order->orderItems->sum('subtotal'), 0, ',',
+                    <span class="font-bold text-lg">$ {{ number_format($order->orderItems->sum('subtotal'), 0, ',',
                         '.') }}</span>
                 </div>
                 @if($order->payment_method)

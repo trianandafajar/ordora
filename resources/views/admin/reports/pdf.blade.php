@@ -1,30 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <title>Sales Report</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2937; padding: 24px; }
-        .header { text-align: center; border-bottom: 2px solid #111827; padding-bottom: 12px; margin-bottom: 20px; }
-        .header h1 { font-size: 22px; font-weight: bold; color: #111827; }
-        .header p { color: #6b7280; margin-top: 4px; }
-        .sub-header { margin-bottom: 16px; display: flex; justify-content: space-between; }
-        .sub-header span { font-size: 11px; color: #6b7280; }
-        .stats { display: flex; gap: 12px; margin-bottom: 24px; }
-        .stat-box { flex: 1; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; text-align: center; }
-        .stat-box .label { font-size: 11px; color: #6b7280; text-transform: uppercase; }
-        .stat-box .value { font-size: 16px; font-weight: bold; margin-top: 4px; }
-        h2 { font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #111827; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-        th { background-color: #f3f4f6; text-align: left; padding: 8px; font-size: 11px; text-transform: uppercase; color: #374151; border: 1px solid #e5e7eb; }
-        td { padding: 8px; border: 1px solid #e5e7eb; font-size: 12px; }
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .footer { position: fixed; bottom: 24px; left: 24px; right: 24px; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 8px; }
-        .brand { font-size: 12px; font-weight: bold; color: #374151; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+            color: #1f2937;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #111827;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .header p {
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .sub-header {
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .sub-header span {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-box {
+            flex: 1;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-box .label {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .stat-box .value {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        h2 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #111827;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            text-align: left;
+            padding: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            font-size: 12px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 8px;
+        }
+
+        .brand {
+            font-size: 12px;
+            font-weight: bold;
+            color: #374151;
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>Ordora Coffee Shop</h1>
@@ -32,14 +137,15 @@
     </div>
 
     <div class="sub-header">
-        <span>Period: <strong>{{ date('d M Y', strtotime($startDate)) }}</strong> - <strong>{{ date('d M Y', strtotime($endDate)) }}</strong></span>
+        <span>Period: <strong>{{ date('d M Y', strtotime($startDate)) }}</strong> - <strong>{{ date('d M Y',
+                strtotime($endDate)) }}</strong></span>
         <span>Printed: {{ now()->format('d M Y H:i') }}</span>
     </div>
 
     <div class="stats">
         <div class="stat-box">
             <div class="label">Revenue</div>
-            <div class="value">Rp {{ number_format($stats['period_revenue'], 0, ',', '.') }}</div>
+            <div class="value">$ {{ number_format($stats['period_revenue'], 0, '.', ',') }}</div>
         </div>
         <div class="stat-box">
             <div class="label">Paid Orders</div>
@@ -47,11 +153,11 @@
         </div>
         <div class="stat-box">
             <div class="label">Avg Per Order</div>
-            <div class="value">Rp {{ number_format($stats['aov'], 0, ',', '.') }}</div>
+            <div class="value">$ {{ number_format($stats['aov'], 0, '.', ',') }}</div>
         </div>
         <div class="stat-box">
             <div class="label">All-Time Revenue</div>
-            <div class="value">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</div>
+            <div class="value">$ {{ number_format($stats['total_revenue'], 0, '.', ',') }}</div>
         </div>
     </div>
 
@@ -71,10 +177,12 @@
                 <td class="text-center">{{ $i + 1 }}</td>
                 <td>{{ $prod->name }}</td>
                 <td class="text-center">{{ $prod->sold }}</td>
-                <td class="text-right">Rp {{ number_format($prod->revenue, 0, ',', '.') }}</td>
+                <td class="text-right">$ {{ number_format($prod->revenue, 0, '.', ',') }}</td>
             </tr>
             @empty
-            <tr><td colspan="4" class="text-center">No data for this period.</td></tr>
+            <tr>
+                <td colspan="4" class="text-center">No data for this period.</td>
+            </tr>
             @endforelse
         </tbody>
     </table>
@@ -100,11 +208,13 @@
                 <td>{{ $order->table->number ?? '-' }}</td>
                 <td>{{ strtoupper($order->payment_method?->value ?? '-') }}</td>
                 <td>{{ $order->user->name ?? '-' }}</td>
-                <td class="text-right">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
+                <td class="text-right">$ {{ number_format($order->total_price, 0, '.', ',') }}</td>
                 <td>{{ $order->created_at->format('d M Y H:i') }}</td>
             </tr>
             @empty
-            <tr><td colspan="7" class="text-center">No transactions for this period.</td></tr>
+            <tr>
+                <td colspan="7" class="text-center">No transactions for this period.</td>
+            </tr>
             @endforelse
         </tbody>
     </table>
@@ -113,4 +223,5 @@
         <span class="brand">Ordora Coffee Shop</span> &mdash; QR Ordering System &copy; {{ now()->year }}
     </div>
 </body>
+
 </html>

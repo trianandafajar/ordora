@@ -19,7 +19,7 @@ class ProductFactory extends Factory
             'category_id' => Category::factory(),
             'name' => fake()->words(2, true),
             'description' => fake()->sentence(),
-            'price' => fake()->randomFloat(2, 10000, 50000),
+            'price' => fake()->randomFloat(2, 2.00, 10.00),
             'image' => null,
             'is_available' => true,
         ];

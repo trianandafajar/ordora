@@ -70,7 +70,7 @@
         'total_tables' => 'Registered tables in coffee shop',
         ];
         $cardValues = [
-        'today_revenue' => 'Rp ' . number_format($stats['today_revenue'], 0, ',', '.'),
+        'today_revenue' => '$ ' . number_format($stats['today_revenue'], 0, '.', ','),
         'pending_orders' => (string) $stats['pending_orders'],
         'active_kasir' => (string) $stats['active_kasir'],
         'total_tables' => (string) $stats['total_tables'],
@@ -177,7 +177,7 @@
                             <div class="bg-primary rounded-full h-full transition-all"
                                 style="width: {{ round(($item['revenue'] / $maxRev) * 100) }}%"></div>
                         </div>
-                        <span class="w-28 text-right font-medium">Rp {{ number_format($item['revenue'], 0, ',', '.')
+                        <span class="w-28 text-right font-medium">$ {{ number_format($item['revenue'], 0, '.', ',')
                             }}</span>
                     </div>
                     @endforeach
@@ -229,13 +229,14 @@
                     </div>
                     <span class="font-mono text-xs text-muted-foreground truncate flex-1">{{ $order->order_token
                         }}</span>
-                    <span class="text-xs text-muted-foreground">{{ $order->table ? 'Table ' . $order->table->number : '-' }}</span>
+                    <span class="text-xs text-muted-foreground">{{ $order->table ? 'Table ' . $order->table->number :
+                        '-' }}</span>
                     <span class="text-xs text-muted-foreground">{{ $order->customer_name ?? '-' }}</span>
                     <span
                         class="text-xs capitalize rounded-full px-2.5 py-0.5 {{ $order->status->value === 'paid' ? 'bg-green-100 text-green-800' : ($order->status->value === 'preparing' ? 'bg-amber-100 text-amber-800' : ($order->status->value === 'ready' ? 'bg-blue-100 text-blue-800' : ($order->status->value === 'served' ? 'bg-purple-100 text-purple-800' : 'bg-red-100 text-red-800'))) }}">
                         {{ $order->status->value }}
                     </span>
-                    <span class="font-medium w-28 text-right">Rp {{ number_format($order->total_price, 0, ',', '.')
+                    <span class="font-medium w-28 text-right">$ {{ number_format($order->total_price, 0, '.', ',')
                         }}</span>
                 </div>
                 @endforeach

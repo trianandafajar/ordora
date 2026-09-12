@@ -49,7 +49,7 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-xl border bg-card shadow-sm p-6">
             <p class="text-sm text-muted-foreground">Revenue (Period)</p>
-            <p class="text-2xl font-bold mt-1">Rp {{ number_format($stats['period_revenue'], 0, ',', '.') }}</p>
+            <p class="text-2xl font-bold mt-1">$ {{ number_format($stats['period_revenue'], 0, '.', ',') }}</p>
         </div>
         <div class="rounded-xl border bg-card shadow-sm p-6">
             <p class="text-sm text-muted-foreground">Paid Orders (Period)</p>
@@ -57,11 +57,11 @@
         </div>
         <div class="rounded-xl border bg-card shadow-sm p-6">
             <p class="text-sm text-muted-foreground">Avg Per Order</p>
-            <p class="text-2xl font-bold mt-1">Rp {{ number_format($stats['aov'], 0, ',', '.') }}</p>
+            <p class="text-2xl font-bold mt-1">$ {{ number_format($stats['aov'], 0, '.', ',') }}</p>
         </div>
         <div class="rounded-xl border bg-card shadow-sm p-6">
             <p class="text-sm text-muted-foreground">All-Time Revenue</p>
-            <p class="text-2xl font-bold mt-1">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</p>
+            <p class="text-2xl font-bold mt-1">$ {{ number_format($stats['total_revenue'], 0, '.', ',') }}</p>
         </div>
     </div>
 
@@ -86,7 +86,7 @@
                         <td class="p-3 text-muted-foreground">{{ $i + 1 }}</td>
                         <td class="p-3 font-medium">{{ $prod->name }}</td>
                         <td class="p-3 text-right">{{ $prod->sold }}</td>
-                        <td class="p-3 text-right font-medium">Rp {{ number_format($prod->revenue, 0, ',', '.') }}</td>
+                        <td class="p-3 text-right font-medium">$ {{ number_format($prod->revenue, 0, '.', ',') }}</td>
                     </tr>
                     @empty
                     <tr>
@@ -125,7 +125,7 @@
                         <td class="p-3">{{ $order->table->number ?? '-' }}</td>
                         <td class="p-3 capitalize">{{ $order->payment_method?->value ?? '-' }}</td>
                         <td class="p-3">{{ $order->user->name ?? '-' }}</td>
-                        <td class="p-3 text-right font-medium">Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                        <td class="p-3 text-right font-medium">$ {{ number_format($order->total_price, 0, '.', ',') }}
                         </td>
                         <td class="p-3 text-right text-muted-foreground">{{ $order->created_at->format('d M Y H:i') }}
                         </td>

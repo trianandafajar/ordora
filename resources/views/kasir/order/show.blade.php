@@ -11,7 +11,8 @@
 <body class="min-h-screen bg-background text-foreground">
     <header class="border-b">
         <div class="mx-auto flex h-14 items-center justify-between px-4 max-w-3xl">
-            <a href="{{ route('cashier.dashboard') }}" class="text-sm text-muted-foreground hover:text-foreground">&larr;
+            <a href="{{ route('cashier.dashboard') }}"
+                class="text-sm text-muted-foreground hover:text-foreground">&larr;
                 Back to orders</a>
             <span class="text-xs text-muted-foreground">Order #{{ $order->id }}</span>
         </div>
@@ -33,8 +34,8 @@
         <div class="rounded-xl border bg-card shadow-sm p-4 flex items-center justify-between">
             <div>
                 <p class="font-medium text-sm">{{ $order->customer_name }}</p>
-                <p class="text-xs text-muted-foreground">Table {{ $order->table->number ?? '-' }} &middot; Total: Rp {{
-                    number_format($order->total_price, 0, ',', '.') }}</p>
+                <p class="text-xs text-muted-foreground">Table {{ $order->table->number ?? '-' }} &middot; Total: $ {{
+                    number_format($order->total_price, 0, '.', ',') }}</p>
             </div>
             <span class="text-xs px-2.5 py-1 rounded-full font-medium capitalize
                 {{ $order->status === \App\Enums\OrderStatus::Pending ? 'bg-yellow-100 text-yellow-800' : '' }}
@@ -52,7 +53,7 @@
                 @foreach($order->orderItems as $item)
                 <div class="flex justify-between text-sm">
                     <span>{{ $item->quantity }} &times; {{ $item->product->name }}</span>
-                    <span>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                    <span>$ {{ number_format($item->subtotal, 0, '.', ',') }}</span>
                 </div>
                 @endforeach
             </div>
@@ -153,8 +154,8 @@
             <div class="mt-5 rounded-xl border bg-muted/30 p-4 text-sm">
                 <div class="flex justify-between gap-3"><span>{{ $order->customer_name }}</span><span>Table {{
                         $order->table->number ?? '-' }}</span></div>
-                <div class="mt-3 flex justify-between border-t pt-3 font-semibold"><span>Total</span><span>Rp {{
-                        number_format($order->total_price, 0, ',', '.') }}</span></div>
+                <div class="mt-3 flex justify-between border-t pt-3 font-semibold"><span>Total</span><span>$ {{
+                        number_format($order->total_price, 0, '.', ',') }}</span></div>
             </div>
 
             <div data-payment-step="method">

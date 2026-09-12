@@ -44,7 +44,7 @@
                         <div class="text-xs text-muted-foreground font-mono">{{ $prod->slug }}</div>
                     </td>
                     <td class="p-4 text-muted-foreground">{{ $prod->category->name ?? '-' }}</td>
-                    <td class="p-4 font-medium">Rp {{ number_format($prod->price, 0, ',', '.') }}</td>
+                    <td class="p-4 font-medium">$ {{ number_format($prod->price, 0, '.', ',') }}</td>
                     <td class="p-4 text-center">
                         <span class="rounded-full px-2.5 py-0.5 text-xs capitalize font-medium
                                 {{ $prod->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">

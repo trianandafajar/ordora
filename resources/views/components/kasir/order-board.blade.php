@@ -417,7 +417,7 @@ new class extends Component
     ['label' => 'Active orders', 'value' => $this->kpis['active_orders'], 'icon' => 'shopping-bag'],
     ['label' => 'Occupied tables', 'value' => $this->kpis['occupied_tables'], 'icon' => 'table'],
     ['label' => 'Pending orders', 'value' => $this->kpis['pending_orders'], 'icon' => 'clock'],
-    ['label' => "Today's revenue", 'value' => 'Rp ' . number_format($this->kpis['today_revenue'], 0, ',', '.'), 'icon'
+    ['label' => "Today's revenue", 'value' => '$ ' . number_format($this->kpis['today_revenue'], 0, '.', ','), 'icon'
     => 'banknotes'],
     ];
     @endphp
@@ -499,10 +499,10 @@ new class extends Component
                     <p class="mt-3 text-xs text-muted-foreground">{{ $order->created_at?->format('d M Y, H:i') }}</p>
                     <div class="mt-3 space-y-1 border-y py-3 text-sm">@foreach($order->orderItems as $item)<div
                             class="flex justify-between gap-3"><span class="truncate">{{ $item->quantity }}&times; {{
-                                $item->product->name }}</span><span class="shrink-0 text-muted-foreground">Rp {{
-                                number_format($item->subtotal, 0, ',', '.') }}</span></div>@endforeach</div>
+                                $item->product->name }}</span><span class="shrink-0 text-muted-foreground">$ {{
+                                number_format($item->subtotal, 0, '.', ',') }}</span></div>@endforeach</div>
                     <div class="mt-3 flex flex-wrap items-center justify-between gap-2"><span
-                            class="text-sm font-semibold">Rp {{ number_format($order->total_price, 0, ',', '.')
+                            class="text-sm font-semibold">$ {{ number_format($order->total_price, 0, '.', ',')
                             }}</span>@if($status !== App\Enums\OrderStatus::Served)<button type="button"
                             wire:click="moveOrder({{ $order->id }}, '{{ $this->nextStatus($status)->value }}')"
                             wire:loading.attr="disabled"
@@ -548,7 +548,7 @@ new class extends Component
                         <td class="px-3 py-3">{{ $order->customer_name }}</td>
                         <td class="px-3 py-3">{{ $order->table?->number ?? '-' }}</td>
                         <td class="px-3 py-3">{{ $order->orderItems->sum('quantity') }} item(s)</td>
-                        <td class="px-3 py-3 text-right font-semibold">Rp {{ number_format($order->total_price, 0, ',',
+                        <td class="px-3 py-3 text-right font-semibold">$ {{ number_format($order->total_price, 0, ',',
                             '.')
                             }}</td>
                     </tr>@empty<tr>
@@ -584,9 +584,9 @@ new class extends Component
                         {{ $paymentData['table_number'] ?? '-' }}</span></div>
                 <div class="mt-3 space-y-1 border-t pt-3 text-sm">@foreach($paymentData['items'] as $item)<div
                         class="flex justify-between gap-3"><span>{{ $item['quantity'] }}&times; {{ $item['product_name']
-                            }}</span><span>Rp {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>
+                            }}</span><span>$ {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>
                     @endforeach</div>
-                <div class="mt-3 flex justify-between border-t pt-3 text-base font-semibold"><span>Total</span><span>Rp
+                <div class="mt-3 flex justify-between border-t pt-3 text-base font-semibold"><span>Total</span><span>$
                         {{
                         number_format((float) $paymentData['total_price'], 0, ',', '.') }}</span></div>
             </div>
@@ -660,13 +660,13 @@ new class extends Component
                 <div class="flex justify-between gap-3"><span>Cashier</span><span class="font-medium">{{
                         $receiptData['cashier_name'] ?? '-' }}</span></div>
                 <div class="flex justify-between gap-3 border-t pt-3"><span>Total</span><span
-                        class="text-base font-semibold">Rp {{ number_format((float) ($receiptData['total_price'] ?? 0),
+                        class="text-base font-semibold">$ {{ number_format((float) ($receiptData['total_price'] ?? 0),
                         0,
                         ',', '.') }}</span></div>
             </div>
             <div class="mt-4 space-y-1 text-sm">@foreach($receiptData['items'] ?? [] as $item)<div
                     class="flex justify-between gap-3"><span>{{ $item['quantity'] }}&times; {{ $item['product_name']
-                        }}</span><span>Rp {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>
+                        }}</span><span>$ {{ number_format((float) $item['subtotal'], 0, ',', '.') }}</span></div>
                 @endforeach</div>
             <div class="mt-6 flex justify-end gap-3"><button type="button" wire:click="closeReceiptDialog"
                     class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Close</button><a

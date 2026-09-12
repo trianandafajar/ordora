@@ -65,7 +65,7 @@
                 @foreach($order->orderItems as $item)
                 <div class="flex justify-between gap-4 text-sm">
                     <span>{{ $item->quantity }} × {{ $item->product->name }}</span>
-                    <span class="shrink-0">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                    <span class="shrink-0">$ {{ number_format($item->subtotal, 0, '.', ',') }}</span>
                 </div>
                 @endforeach
             </div>
@@ -78,7 +78,7 @@
             </div>
             <div class="flex justify-between border-t pt-3 text-base font-bold">
                 <span>Total</span>
-                <span>Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                <span>$ {{ number_format($order->total_price, 0, '.', ',') }}</span>
             </div>
         </div>
 

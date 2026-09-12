@@ -13,17 +13,17 @@ class ProductSeeder extends Seeder
         $categories = Category::pluck('id', 'name');
 
         $products = [
-            ['name' => 'Espresso', 'description' => 'Shot espresso pekat', 'price' => 18000, 'category' => 'Coffee'],
-            ['name' => 'Americano', 'description' => 'Espresso dengan air panas', 'price' => 20000, 'category' => 'Coffee'],
-            ['name' => 'Cappuccino', 'description' => 'Espresso, susu, foam', 'price' => 25000, 'category' => 'Coffee'],
-            ['name' => 'Latte', 'description' => 'Espresso dengan susu', 'price' => 25000, 'category' => 'Coffee'],
-            ['name' => 'Caramel Macchiato', 'description' => 'Latte dengan saus karamel', 'price' => 30000, 'category' => 'Coffee'],
-            ['name' => 'Matcha Latte', 'description' => 'Teh matcha dengan susu', 'price' => 28000, 'category' => 'Non-Coffee'],
-            ['name' => 'Chocolate', 'description' => 'Minuman coklat panas', 'price' => 25000, 'category' => 'Non-Coffee'],
-            ['name' => 'Lemon Tea', 'description' => 'Teh lemon segar', 'price' => 20000, 'category' => 'Non-Coffee'],
-            ['name' => 'Croissant', 'description' => 'Roti croissant mentega', 'price' => 22000, 'category' => 'Snack'],
-            ['name' => 'French Fries', 'description' => 'Kentang goreng', 'price' => 22000, 'category' => 'Snack'],
-            ['name' => 'Cheese Cake', 'description' => 'Kue keju lembut', 'price' => 32000, 'category' => 'Snack'],
+            ['name' => 'Espresso', 'description' => 'Strong espresso shot', 'price' => 2.50, 'category' => 'Coffee'],
+            ['name' => 'Americano', 'description' => 'Espresso with hot water', 'price' => 3.00, 'category' => 'Coffee'],
+            ['name' => 'Cappuccino', 'description' => 'Espresso, milk, foam', 'price' => 3.50, 'category' => 'Coffee'],
+            ['name' => 'Latte', 'description' => 'Espresso with milk', 'price' => 3.50, 'category' => 'Coffee'],
+            ['name' => 'Caramel Macchiato', 'description' => 'Latte with caramel sauce', 'price' => 4.00, 'category' => 'Coffee'],
+            ['name' => 'Matcha Latte', 'description' => 'Matcha green tea with milk', 'price' => 3.80, 'category' => 'Non-Coffee'],
+            ['name' => 'Chocolate', 'description' => 'Hot chocolate drink', 'price' => 3.50, 'category' => 'Non-Coffee'],
+            ['name' => 'Lemon Tea', 'description' => 'Fresh lemon tea', 'price' => 3.00, 'category' => 'Non-Coffee'],
+            ['name' => 'Croissant', 'description' => 'Buttered croissant', 'price' => 3.20, 'category' => 'Snack'],
+            ['name' => 'French Fries', 'description' => 'Fried potato chips', 'price' => 3.00, 'category' => 'Snack'],
+            ['name' => 'Cheese Cake', 'description' => 'Soft cheese cake', 'price' => 4.20, 'category' => 'Snack'],
         ];
 
         foreach ($products as $product) {

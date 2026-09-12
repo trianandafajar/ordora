@@ -216,7 +216,7 @@
                             bg-muted text-muted-foreground">{{ $order->status }}</span>
                     </div>
                     <div class="text-muted-foreground text-xs">Customer: {{ $order->customer_name ?? '-' }}</div>
-                    <div class="font-medium">Rp {{ number_format($order->total_price, 0, ',', '.') }}</div>
+                    <div class="font-medium">$ {{ number_format($order->total_price, 0, '.', ',') }}</div>
                     <div class="text-xs text-muted-foreground">{{ $order->created_at->format('d M Y H:i') }}</div>
                 </div>
                 @empty
