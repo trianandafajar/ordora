@@ -2,12 +2,36 @@ import './echo';
 import Alpine from 'alpinejs';
 import Sortable from 'sortablejs';
 
-window.Alpine = Alpine;
+if (!window.Alpine) {
+    window.Alpine = Alpine;
+}
+
+window.sidebarState = sidebarState;
+
+function registerAlpineComponents() {
+    const A = window.Alpine;
+    if (!A.data.hasOwnProperty('sidebarState')) {
+        A.data('sidebarState', sidebarState);
+    }
+    registerOrderBoardAlpineComponent();
+}
+
+document.addEventListener('livewire:init', () => {
+    registerAlpineComponents();
+});
+
+if (!window.Livewire) {
+    document.addEventListener('DOMContentLoaded', () => {
+        registerAlpineComponents();
+        window.Alpine.start();
+    });
+}
 
 function registerOrderBoardAlpineComponent() {
-    if (Alpine.data.hasOwnProperty('orderBoardRealtimeState')) return;
+    const A = window.Alpine;
+    if (A.data.hasOwnProperty('orderBoardRealtimeState')) return;
 
-    Alpine.data('orderBoardRealtimeState', () => ({
+    A.data('orderBoardRealtimeState', () => ({
         now: new Date(),
         timer: null,
         soundEnabled: window.localStorage.getItem('ordora.soundEnabled') === 'true',
@@ -86,8 +110,3 @@ function sidebarState() {
         }
     };
 }
-
-Alpine.data('sidebarState', sidebarState);
-registerOrderBoardAlpineComponent();
-
-Alpine.start();

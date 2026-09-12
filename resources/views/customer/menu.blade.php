@@ -13,7 +13,27 @@
     </style>
 </head>
 
-<body class="min-h-screen bg-muted text-foreground">
+<body class="min-h-screen bg-muted text-foreground" x-data="{ 
+    toast: {
+        show: false,
+        message: '',
+        type: 'success'
+    },
+    showToast(msg, type = 'success') {
+        this.toast.message = msg;
+        this.toast.type = type;
+        this.toast.show = true;
+        setTimeout(() => this.toast.show = false, 4000);
+    },
+    init() {
+        @if(session('success'))
+            this.showToast('{{ session('success') }}', 'success');
+        @endif
+        @if(session('error'))
+            this.showToast('{{ session('error') }}', 'error');
+        @endif
+    }
+}">
     <div class="mx-auto max-w-md min-h-screen bg-background shadow-xl border-x relative">
         <header
             class="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -41,14 +61,36 @@
             </div>
         </header>
 
-        @if(session('success'))
-        <div class="mx-4 mt-4 rounded-xl border border-green-300 bg-green-50 text-green-800 p-3 text-sm">{{
-            session('success') }}</div>
-        @endif
-        @if(session('error'))
-        <div class="mx-4 mt-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive p-3 text-sm">{{
-            session('error') }}</div>
-        @endif
+        {{-- Toast --}}
+        <div x-show="toast.show" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-2"
+            class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md rounded-xl border p-4 shadow-lg flex items-center justify-between"
+            :class="{
+                'bg-white border-green-200 text-green-800': toast.type === 'success',
+                'bg-white border-red-200 text-red-800': toast.type === 'error'
+            }">
+            <div class="flex items-center gap-3">
+                <template x-if="toast.type === 'success'">
+                    <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </template>
+                <template x-if="toast.type === 'error'">
+                    <svg class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </template>
+                <span class="text-sm font-medium" x-text="toast.message"></span>
+            </div>
+            <button @click="toast.show = false" class="ml-4 text-muted-foreground hover:text-foreground cursor-pointer">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
 
         <main class="px-4 py-4 space-y-8 pb-8">
             @foreach($categories as $category)
@@ -95,7 +137,7 @@
                                         </button>
                                     </div>
                                     <button type="submit"
-                                        class="h-8 rounded-lg bg-primary text-primary-foreground px-4 text-xs font-semibold active:scale-95 transition-transform cursor-pointer">Add</button>
+                                        class="h-8 rounded-lg bg-primary text-primary-foreground px-4 text-xs font-semibold active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Add</button>
                                 </form>
                             </div>
                         </div>
@@ -113,7 +155,13 @@
                 var btn = form.querySelector('button[type="submit"]');
                 if (btn) {
                     btn.disabled = true;
-                    btn.textContent = 'Adding...';
+                    btn.innerHTML = `
+                        <svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Adding...
+                    `;
                 }
             });
         });
