@@ -9,8 +9,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased bg-background text-foreground"
-    x-data="{ sidebarOpen: true, hoverOpen: false, mobileOpen: false }">
+<body class="font-sans antialiased bg-background text-foreground" x-data="sidebarState()">
     <div class="min-h-screen">
 
         <aside @mouseenter="hoverOpen = true" @mouseleave="hoverOpen = false"
@@ -89,6 +88,27 @@
     </div>
     @livewireScripts
     <script>
+        function sidebarState() {
+            return {
+                sidebarOpen: false,
+                hoverOpen: false,
+                mobileOpen: false,
+                init() {
+                    const mql = window.matchMedia('(min-width: 1024px)');
+                    this.sidebarOpen = mql.matches;
+
+                    if (mql.addEventListener) {
+                        mql.addEventListener('change', (e) => {
+                            this.sidebarOpen = e.matches;
+                            if (!e.matches) {
+                                this.hoverOpen = false;
+                            }
+                        });
+                    }
+                }
+            };
+        }
+
         document.addEventListener('submit', function(e) {
             var form = e.target;
             if (form.matches('form') && !form.hasAttribute('wire:submit')) {
