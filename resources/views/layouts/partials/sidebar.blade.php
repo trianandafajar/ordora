@@ -1,9 +1,8 @@
 <div class="flex flex-col h-full w-full bg-sidebar text-sidebar-foreground">
     <div class="flex items-center gap-2 px-4 h-16 border-b border-sidebar-border"
         :class="(sidebarOpen || hoverOpen) ? 'px-6' : 'px-4 justify-center'">
-        <div
-            class="size-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shrink-0">
-            O
+        <div class="rounded-lg flex items-center justify-center shrink-0">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-10">
         </div>
         <div class="flex flex-col flex-1" x-show="sidebarOpen || hoverOpen" x-cloak
             x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0"

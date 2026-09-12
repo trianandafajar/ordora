@@ -1,5 +1,8 @@
 <div class="flex items-center justify-between h-full w-full">
     <div class="flex items-center gap-3">
+        <div class="rounded-lg flex items-center justify-center shrink-0 md:hidden">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-10">
+        </div>
         <button @click="mobileOpen = true"
             class="md:hidden p-1.5 rounded hover:bg-accent transition-colors cursor-pointer" aria-label="Open sidebar">
             <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
