@@ -72,20 +72,30 @@
                             <div class="flex items-center justify-between mt-auto pt-3">
                                 <span class="font-bold text-sm">Rp {{ number_format($product->price, 0, ',', '.')
                                     }}</span>
-                                <form action="{{ route('meja.cart.add', $table->qr_token) }}" method="POST">
+                                <form action="{{ route('meja.cart.add', $table->qr_token) }}" method="POST"
+                                    x-data="{ qty: 1 }" class="w-full flex items-center justify-end gap-2">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                    <div class="flex items-center gap-2">
-                                        <select name="quantity"
-                                            class="h-8 w-12 rounded-lg border border-input bg-transparent px-1 text-center text-sm">
-                                            @for($i = 1; $i <= 10; $i++) <option value="{{ $i }}" {{ $i===1 ? 'selected'
-                                                : '' }}>{{
-                                                $i }}</option>
-                                                @endfor
-                                        </select>
-                                        <button type="submit"
-                                            class="h-8 rounded-lg bg-primary text-primary-foreground px-3 text-xs font-semibold active:scale-95 transition-transform cursor-pointer">Add</button>
+                                    <input type="hidden" name="quantity" x-model.number="qty">
+                                    <div class="flex items-center gap-1 border rounded-lg overflow-hidden">
+                                        <button type="button" @click.prevent="if(qty > 1) qty--"
+                                            class="h-8 w-8 flex items-center justify-center bg-muted hover:bg-accent transition-colors cursor-pointer">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M20 12H4" />
+                                            </svg>
+                                        </button>
+                                        <span x-text="qty" class="w-8 text-center text-sm font-medium"></span>
+                                        <button type="button" @click.prevent="if(qty < 99) qty++"
+                                            class="h-8 w-8 flex items-center justify-center bg-muted hover:bg-accent transition-colors cursor-pointer">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 4v16m8-8H4" />
+                                            </svg>
+                                        </button>
                                     </div>
+                                    <button type="submit"
+                                        class="h-8 rounded-lg bg-primary text-primary-foreground px-4 text-xs font-semibold active:scale-95 transition-transform cursor-pointer">Add</button>
                                 </form>
                             </div>
                         </div>
