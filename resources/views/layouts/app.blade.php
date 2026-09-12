@@ -89,7 +89,7 @@
         {{-- logout modal --}}
         <div x-show="showLogoutModal" x-cloak x-transition:opacity
             class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="display: none;">
-            <div class="absolute inset-0 bg-black/50" @click="showLogoutModal = false"></div>
+            <div class="absolute inset-0 bg-black/50" @click="loggingOut || (showLogoutModal = false)"></div>
             <div x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95"
                 x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-100"
                 x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
@@ -108,13 +108,21 @@
                     </div>
                 </div>
                 <div class="flex gap-3">
-                    <button @click="showLogoutModal = false" type="button"
-                        class="flex-1 inline-flex items-center justify-center rounded-lg border bg-background text-foreground font-medium text-sm h-10 px-4 hover:bg-accent transition-colors cursor-pointer">
+                    <button @click="showLogoutModal = false" type="button" :disabled="loggingOut"
+                        class="flex-1 inline-flex items-center justify-center rounded-lg border bg-background text-foreground font-medium text-sm h-10 px-4 hover:bg-accent transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                         Cancel
                     </button>
-                    <button @click="document.getElementById('logout-form').submit()" type="button"
-                        class="flex-1 inline-flex items-center justify-center rounded-lg bg-destructive text-white font-medium text-sm h-10 px-4 hover:bg-destructive/90 transition-colors cursor-pointer">
-                        Sign Out
+                    <button @click="loggingOut = true; document.getElementById('logout-form').submit()" type="button"
+                        :disabled="loggingOut"
+                        class="flex-1 inline-flex items-center justify-center rounded-lg bg-destructive text-white font-medium text-sm h-10 px-4 hover:bg-destructive/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                        <template x-if="loggingOut">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </template>
+                        <span x-show="loggingOut" x-cloak>Signing Out...</span>
+                        <span x-show="!loggingOut">Sign Out</span>
                     </button>
                 </div>
             </div>
@@ -130,6 +138,7 @@
                 hoverOpen: false,
                 mobileOpen: false,
                 showLogoutModal: false,
+                loggingOut: false,
                 init() {
                     const mql = window.matchMedia('(min-width: 1024px)');
                     this.sidebarOpen = mql.matches;
