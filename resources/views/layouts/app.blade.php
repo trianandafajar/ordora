@@ -85,14 +85,51 @@
                 </svg>
             </button>
         </div>
-    </div>
-    @livewireScripts
-    <script>
-        function sidebarState() {
+
+        {{-- logout modal --}}
+        <div x-show="showLogoutModal" x-cloak x-transition:opacity
+            class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="display: none;">
+            <div class="absolute inset-0 bg-black/50" @click="showLogoutModal = false"></div>
+            <div x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                class="relative bg-card border rounded-xl shadow-xl p-6 w-full max-w-sm space-y-4">
+                <div class="flex flex-col items-center text-center gap-3">
+                    <div class="size-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                        <svg class="size-5 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-semibold">Sign Out</h3>
+                        <p class="text-sm text-muted-foreground mt-1">Are you sure you want to sign out of your account?
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button @click="showLogoutModal = false" type="button"
+                        class="flex-1 inline-flex items-center justify-center rounded-lg border bg-background text-foreground font-medium text-sm h-10 px-4 hover:bg-accent transition-colors cursor-pointer">
+                        Cancel
+                    </button>
+                    <button @click="document.getElementById('logout-form').submit()" type="button"
+                        class="flex-1 inline-flex items-center justify-center rounded-lg bg-destructive text-white font-medium text-sm h-10 px-4 hover:bg-destructive/90 transition-colors cursor-pointer">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @auth
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
+        @endauth
+        <script>
+            function sidebarState() {
             return {
                 sidebarOpen: false,
                 hoverOpen: false,
                 mobileOpen: false,
+                showLogoutModal: false,
                 init() {
                     const mql = window.matchMedia('(min-width: 1024px)');
                     this.sidebarOpen = mql.matches;
@@ -120,7 +157,7 @@
                 }
             }
         }, true);
-    </script>
+        </script>
 </body>
 
 </html>
