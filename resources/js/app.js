@@ -189,6 +189,7 @@ function sidebarState() {
         hoverOpen: false,
         mobileOpen: false,
         showLogoutModal: false,
+        loggingOut: false,
         init() {
             const mql = window.matchMedia('(min-width: 1024px)');
             this.sidebarOpen = mql.matches;
