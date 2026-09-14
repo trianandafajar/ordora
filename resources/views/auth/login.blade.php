@@ -25,20 +25,6 @@
             <p class="text-white/70 text-base leading-relaxed">
                 Manage your menu, track orders, and run your coffee shop seamlessly from one place.
             </p>
-            <div class="flex gap-8 pt-4">
-                <div>
-                    <p class="text-2xl font-bold">100+</p>
-                    <p class="text-white/50 text-sm">Menu Items</p>
-                </div>
-                <div>
-                    <p class="text-2xl font-bold">24/7</p>
-                    <p class="text-white/50 text-sm">Real-time Orders</p>
-                </div>
-                <div>
-                    <p class="text-2xl font-bold">100%</p>
-                    <p class="text-white/50 text-sm">Digital POS</p>
-                </div>
-            </div>
         </div>
 
         <div class="relative z-10">
