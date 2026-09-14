@@ -11,9 +11,11 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        User::query()->truncate();
+
         User::create([
             'name' => 'Admin',
-            'email' => 'admin@ordora.test',
+            'email' => 'admin@gmail.com',
             'password' => Hash::make('password'),
             'role' => UserRole::Admin,
             'is_active' => true,
@@ -21,7 +23,7 @@ class UserSeeder extends Seeder
 
         User::create([
             'name' => 'Kasir 1',
-            'email' => 'kasir1@ordora.test',
+            'email' => 'kasir1@gmail.com',
             'password' => Hash::make('password'),
             'role' => UserRole::Kasir,
             'is_active' => true,
@@ -29,7 +31,7 @@ class UserSeeder extends Seeder
 
         User::create([
             'name' => 'Kasir 2',
-            'email' => 'kasir2@ordora.test',
+            'email' => 'kasir2@gmail.com',
             'password' => Hash::make('password'),
             'role' => UserRole::Kasir,
             'is_active' => true,

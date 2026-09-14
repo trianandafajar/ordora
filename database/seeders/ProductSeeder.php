@@ -10,6 +10,8 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
+        Product::query()->truncate();
+
         $categories = Category::pluck('id', 'name');
 
         $products = [

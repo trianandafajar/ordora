@@ -10,6 +10,8 @@ class TableSeeder extends Seeder
 {
     public function run(): void
     {
+        Table::query()->truncate();
+
         for ($i = 1; $i <= 10; $i++) {
             Table::create([
                 'number' => (string) $i,
