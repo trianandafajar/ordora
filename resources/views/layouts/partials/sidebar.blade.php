@@ -8,7 +8,7 @@
             x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100" @endunless>
             <span class="font-bold text-sm tracking-tight whitespace-nowrap">Ordora</span>
-            <span class="text-xs text-muted-foreground whitespace-nowrap">Coffee Shop OS</span>
+            <span class="text-xs text-sidebar-foreground/60 whitespace-nowrap">Coffee Shop OS</span>
         </div>
         @if($mobile)
         <button @click="mobileOpen = false"
@@ -27,11 +27,11 @@
         <div class="space-y-1">
             @if($mobile)
             <div
-                class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 whitespace-nowrap">
+                class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap">
                 General
             </div>
             <a href="{{ route('admin.dashboard') }}" @click="mobileOpen = false"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -40,13 +40,13 @@
                 <span class="whitespace-nowrap">Dashboard</span>
             </a>
             @else
-            <div class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 whitespace-nowrap"
+            <div class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap"
                 x-show="sidebarOpen || hoverOpen" x-cloak>
                 General
             </div>
             <a href="{{ route('admin.dashboard') }}" @click="mobileOpen = false"
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -60,18 +60,18 @@
         <div class="space-y-1">
             @if($mobile)
             <div
-                class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 whitespace-nowrap">
+                class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap">
                 System Management
             </div>
             @else
-            <div class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 whitespace-nowrap"
+            <div class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap"
                 x-show="sidebarOpen || hoverOpen" x-cloak>
                 System Management
             </div>
             @endif
             <a href="{{ route('admin.categories.index') }}" @click="mobileOpen = false" @unless($mobile)
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'" @endunless
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('admin.categories.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('admin.categories.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -83,7 +83,7 @@
             </a>
             <a href="{{ route('admin.products.index') }}" @click="mobileOpen = false" @unless($mobile)
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'" @endunless
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('admin.products.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('admin.products.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -94,7 +94,7 @@
             </a>
             <a href="{{ route('admin.tables.index') }}" @click="mobileOpen = false" @unless($mobile)
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'" @endunless
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('admin.tables.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('admin.tables.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -107,7 +107,7 @@
             </a>
             <a href="{{ route('admin.cashiers.index') }}" @click="mobileOpen = false" @unless($mobile)
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'" @endunless
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('admin.cashiers.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('admin.cashiers.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg class="size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -117,7 +117,7 @@
             </a>
             <a href="{{ route('admin.reports') }}" @click="mobileOpen = false" @unless($mobile)
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'" @endunless
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('admin.reports*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('admin.reports*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -131,11 +131,11 @@
         <div class="space-y-1">
             @if($mobile)
             <div
-                class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 whitespace-nowrap">
+                class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap">
                 Cashier
             </div>
             <a href="{{ route('cashier.dashboard') }}" @click="mobileOpen = false"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('cashier.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('cashier.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -144,13 +144,13 @@
                 <span class="whitespace-nowrap">Incoming Orders</span>
             </a>
             @else
-            <div class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 whitespace-nowrap"
+            <div class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap"
                 x-show="sidebarOpen || hoverOpen" x-cloak>
                 Cashier
             </div>
             <a href="{{ route('cashier.dashboard') }}" @click="mobileOpen = false"
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors {{ request()->routeIs('cashier.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('cashier.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -174,7 +174,7 @@
             </div>
             <div class="flex flex-col truncate" @unless($mobile) x-show="sidebarOpen || hoverOpen" x-cloak @endunless>
                 <span class="text-sm font-medium truncate">{{ auth()->user()->name }}</span>
-                <span class="text-xs text-muted-foreground capitalize">{{ auth()->user()->role->value }}</span>
+                <span class="text-xs text-sidebar-foreground/70 capitalize">{{ auth()->user()->role->value }}</span>
             </div>
         </div>
         @endauth
