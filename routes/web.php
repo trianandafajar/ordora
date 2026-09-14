@@ -20,7 +20,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 Route::get('/', function () {
     if (auth()->check()) {
-        return redirect(auth()->user()->role->value === 'admin' ? '/admin/dashboard' : '/kasir/dashboard');
+        return redirect(auth()->user()->role->value === 'admin' ? '/admin/dashboard' : '/cashier/dashboard');
     }
 
     return redirect()->route('login');
