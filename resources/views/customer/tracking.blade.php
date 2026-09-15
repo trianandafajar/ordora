@@ -90,7 +90,7 @@
                 style="{{ $order->status->value === 'paid' ? '' : 'display: none;' }}">
                 <a href="{{ route('table.menu', $order->table->qr_token) }}"
                     class="w-full inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground font-semibold h-12 hover:opacity-90 transition-all cursor-pointer">
-                    Pesan Lagi
+                    Order Again
                 </a>
             </div>
 
@@ -139,11 +139,11 @@
                 customer_name: '{{ $order->customer_name }}',
                 table: {{ Js::from($order->table->number) }},
                 total: {{ $order->orderItems->sum('subtotal') }},
-                items: @json($order->orderItems->map(fn($item) => [
+                items: {{ Js::from($order->orderItems->map(fn($item) => [
                     'name' => $item->product->name,
                     'qty' => $item->quantity,
                     'subtotal' => $item->subtotal,
-                ])),
+                ])->values()->toArray()) }},
                 created_at: '{{ $order->created_at->format("Y-m-d H:i") }}'
             };
 
