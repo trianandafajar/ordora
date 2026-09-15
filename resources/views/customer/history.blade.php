@@ -12,7 +12,8 @@
     <div class="mx-auto max-w-md min-h-screen bg-background shadow-xl border-x relative">
         <header class="border-b">
             <div class="flex h-14 items-center justify-between px-4">
-                <p class="font-bold">Ordora</p>
+                <a href="{{ url()->previous() }}" class="text-xs text-primary font-medium hover:underline">&larr; Back</a>
+                <p class="font-bold">Ordora History</p>
                 <p class="text-xs text-muted-foreground">History</p>
             </div>
         </header>
@@ -40,7 +41,7 @@
                     </div>
                     <div class="text-xs text-muted-foreground">${order.created_at} - Table ${order.table}</div>
                     <div class="font-medium">$ ${order.total.toLocaleString()}</div>
-                    <a href="#" class="block text-center text-xs text-primary font-medium mt-2">View Details</a>
+                    <a href="/table/tracking/${order.token}" class="block text-center text-xs text-primary font-medium mt-2">View Details</a>
                 </div>
             `).join('');
         }

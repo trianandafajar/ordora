@@ -18,7 +18,10 @@
         <header class="border-b">
             <div class="flex h-14 items-center justify-between px-4">
                 <p class="font-bold">Ordora</p>
-                <p class="text-xs text-muted-foreground">Order #{{ $order->id }}</p>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('table.history') }}" class="text-xs text-primary font-medium hover:underline">Order History</a>
+                    <p class="text-xs text-muted-foreground">Order #{{ $order->id }}</p>
+                </div>
             </div>
         </header>
 
