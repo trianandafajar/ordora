@@ -23,7 +23,7 @@ class PaymentTest extends TestCase
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
-        $order = $this->makeOrder(OrderStatus::Served);
+        $order = $this->makeOrder(OrderStatus::Pending);
 
         $response = $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'cash',
@@ -37,7 +37,7 @@ class PaymentTest extends TestCase
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
-        $order = $this->makeOrder(OrderStatus::Served);
+        $order = $this->makeOrder(OrderStatus::Pending);
 
         $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'qris',
@@ -46,12 +46,12 @@ class PaymentTest extends TestCase
         $this->assertPaymentCompleted($order, $cashier, PaymentMethod::Qris);
     }
 
-    public function test_payment_is_rejected_before_order_is_served(): void
+    public function test_payment_is_rejected_for_an_order_that_is_not_pending(): void
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
 
-        foreach ([OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Ready] as $status) {
+        foreach ([OrderStatus::Preparing, OrderStatus::Ready, OrderStatus::Served] as $status) {
             $order = $this->makeOrder($status);
 
             $response = $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
@@ -71,7 +71,7 @@ class PaymentTest extends TestCase
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
-        $order = $this->makeOrder(OrderStatus::Served);
+        $order = $this->makeOrder(OrderStatus::Pending);
 
         $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'cash',
@@ -92,7 +92,7 @@ class PaymentTest extends TestCase
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
-        $order = $this->makeOrder(OrderStatus::Served);
+        $order = $this->makeOrder(OrderStatus::Pending);
 
         $response = $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'card',
@@ -101,8 +101,9 @@ class PaymentTest extends TestCase
         $response->assertSessionHasErrors('payment_method');
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'status' => OrderStatus::Served->value,
+            'status' => OrderStatus::Pending->value,
             'payment_method' => null,
+            'paid_at' => null,
         ]);
     }
 
@@ -110,7 +111,7 @@ class PaymentTest extends TestCase
     {
         Event::fake([OrderStatusUpdated::class]);
         $admin = User::factory()->create(['role' => UserRole::Admin]);
-        $order = $this->makeOrder(OrderStatus::Served);
+        $order = $this->makeOrder(OrderStatus::Pending);
 
         $this->actingAs($admin)->post(route('cashier.order.pay', $order), [
             'payment_method' => 'cash',
@@ -127,7 +128,7 @@ class PaymentTest extends TestCase
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
-        $unpaidOrder = $this->makeOrder(OrderStatus::Served);
+        $unpaidOrder = $this->makeOrder(OrderStatus::Pending);
 
         $this->actingAs($cashier)
             ->get(route('cashier.order.receipt', $unpaidOrder))
@@ -144,11 +145,11 @@ class PaymentTest extends TestCase
             ->assertSee($unpaidOrder->customer_name);
     }
 
-    public function test_served_order_renders_payment_confirmation_dialog(): void
+    public function test_pending_order_renders_payment_confirmation_dialog(): void
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
-        $order = $this->makeOrder(OrderStatus::Served);
+        $order = $this->makeOrder(OrderStatus::Pending);
 
         $this->actingAs($cashier)
             ->get(route('cashier.order.show', $order))
@@ -162,7 +163,7 @@ class PaymentTest extends TestCase
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
-        $order = $this->makeOrder(OrderStatus::Served);
+        $order = $this->makeOrder(OrderStatus::Pending);
         Event::fake([OrderStatusUpdated::class]);
 
         $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
@@ -174,7 +175,7 @@ class PaymentTest extends TestCase
             $payload = $event->broadcastWith();
 
             return $event->changeType === 'paid'
-                && $event->previousStatus === OrderStatus::Served->value
+                && $event->previousStatus === OrderStatus::Pending->value
                 && $payload['order']['id'] === $order->id
                 && $payload['order']['status'] === OrderStatus::Paid->value
                 && $payload['order']['payment_method'] === PaymentMethod::Qris->value;
@@ -207,6 +208,6 @@ class PaymentTest extends TestCase
             'status' => OrderStatus::Paid->value,
             'changed_by' => $cashier->id,
         ]);
-        $this->assertSame(TableStatus::Available, $order->table->fresh()->status);
+        $this->assertSame(TableStatus::Occupied, $order->table->fresh()->status);
     }
 }

@@ -44,7 +44,7 @@
             </div>
             <div class="text-right">
                 <p class="text-xs text-muted-foreground">Paid at</p>
-                <p class="font-semibold">{{ $order->updated_at?->format('d M Y, H:i') }}</p>
+                <p class="font-semibold">{{ $order->paid_at?->format('d M Y, H:i') }}</p>
             </div>
             <div>
                 <p class="text-xs text-muted-foreground">Customer</p>

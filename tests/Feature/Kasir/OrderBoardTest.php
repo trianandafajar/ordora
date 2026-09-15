@@ -25,11 +25,11 @@ class OrderBoardTest extends TestCase
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $this->makeOrder('Active customer');
         $paid = $this->makeOrder('Paid customer');
-        $paid->update(['status' => OrderStatus::Paid, 'payment_method' => PaymentMethod::Cash]);
+        $paid->update(['status' => OrderStatus::Paid, 'payment_method' => PaymentMethod::Cash, 'paid_at' => now()]);
 
         Livewire::actingAs($cashier)->test('kasir.order-board')
             ->assertSee('Active customer')
-            ->assertDontSee('Paid customer')
+            ->assertSee('Paid customer')
             ->set('activeTab', 'history')
             ->assertSee('Paid customer')
             ->assertDontSee('Active customer');
@@ -59,17 +59,8 @@ class OrderBoardTest extends TestCase
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $order = $this->makeOrder();
 
-        $component = Livewire::actingAs($cashier)->test('kasir.order-board');
-
-        $component
-            ->call('moveOrder', $order->id, 'preparing')
-            ->assertHasNoErrors();
-
-        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'preparing']);
-
-        $order->update(['status' => OrderStatus::Served]);
         $component = Livewire::actingAs($cashier)->test('kasir.order-board')
-            ->assertSee('Pay')
+            ->assertSee('Confirm Payment')
             ->assertDontSee('Bayar cash')
             ->assertDontSee('Bayar QRIS');
 
@@ -79,7 +70,7 @@ class OrderBoardTest extends TestCase
             ->assertSet('paymentMethod', PaymentMethod::Cash->value)
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => OrderStatus::Served->value]);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => OrderStatus::Pending->value]);
 
         $component
             ->call('continuePayment')
@@ -90,7 +81,7 @@ class OrderBoardTest extends TestCase
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'paid', 'payment_method' => 'cash']);
-        $this->assertSame(TableStatus::Available, $order->table->fresh()->status);
+        $this->assertSame(TableStatus::Occupied, $order->table->fresh()->status);
     }
 
     public function test_cashier_must_confirm_qris_payment_before_order_is_paid(): void
@@ -98,7 +89,6 @@ class OrderBoardTest extends TestCase
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $order = $this->makeOrder();
-        $order->update(['status' => OrderStatus::Served]);
 
         $component = Livewire::actingAs($cashier)->test('kasir.order-board')
             ->call('openPaymentDialog', $order->id, PaymentMethod::Qris->value)
@@ -108,7 +98,7 @@ class OrderBoardTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'status' => OrderStatus::Served->value,
+            'status' => OrderStatus::Pending->value,
             'payment_method' => null,
         ]);
 
@@ -123,15 +113,14 @@ class OrderBoardTest extends TestCase
             'payment_method' => PaymentMethod::Qris->value,
             'user_id' => $cashier->id,
         ]);
-        $this->assertSame(TableStatus::Available, $order->table->fresh()->status);
+        $this->assertSame(TableStatus::Occupied, $order->table->fresh()->status);
     }
 
-    public function test_canceling_payment_dialog_keeps_served_order_unpaid(): void
+    public function test_canceling_payment_dialog_keeps_pending_order_unpaid(): void
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $order = $this->makeOrder();
-        $order->update(['status' => OrderStatus::Served]);
 
         Livewire::actingAs($cashier)->test('kasir.order-board')
             ->call('openPaymentDialog', $order->id, PaymentMethod::Cash->value)
@@ -141,17 +130,17 @@ class OrderBoardTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'status' => OrderStatus::Served->value,
+            'status' => OrderStatus::Pending->value,
             'payment_method' => null,
         ]);
     }
 
-    public function test_cashier_can_move_an_active_order_backward(): void
+    public function test_cashier_can_move_a_paid_order_through_the_kitchen(): void
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
         $order = $this->makeOrder();
-        $order->update(['status' => OrderStatus::Ready]);
+        $order->update(['status' => OrderStatus::Paid, 'paid_at' => now()]);
 
         Livewire::actingAs($cashier)->test('kasir.order-board')
             ->call('moveOrder', $order->id, 'preparing')

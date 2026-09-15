@@ -12,7 +12,7 @@ class TableController extends Controller
 {
     public function index()
     {
-        $tables = Table::with(['orders' => fn($q) => $q->where('status', '!=', 'paid')->latest()])
+        $tables = Table::with(['orders' => fn ($q) => $q->where('status', '!=', 'paid')->latest()])
             ->orderBy('id')
             ->get();
 
@@ -37,7 +37,7 @@ class TableController extends Controller
     public function update(Request $request, Table $table)
     {
         $data = $request->validate([
-            'number' => ['required', 'string', 'max:20', 'unique:tables,number,' . $table->id],
+            'number' => ['required', 'string', 'max:20', 'unique:tables,number,'.$table->id],
             'capacity' => ['required', 'integer', 'min:1', 'max:50'],
         ]);
 

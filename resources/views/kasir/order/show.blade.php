@@ -73,8 +73,23 @@
         </div>
 
         <div class="space-y-3">
-            @if($order->status !== \App\Enums\OrderStatus::Paid)
             @if($order->status === \App\Enums\OrderStatus::Pending)
+            <div class="rounded-xl border bg-card shadow-sm p-4">
+                <h3 class="text-sm font-medium mb-1">Confirm payment</h3>
+                <p class="mb-3 text-xs text-muted-foreground">Choose Cash or QRIS in the confirmation dialog.</p>
+                <div>
+                    <button type="button" data-open-payment="cash"
+                        class="w-full rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 hover:opacity-90 transition-opacity cursor-pointer">
+                        Confirm Payment
+                    </button>
+                </div>
+                <form id="payment-submit-form" method="POST" action="{{ route('cashier.order.pay', $order->id) }}"
+                    class="hidden">
+                    @csrf
+                    <input type="hidden" name="payment_method" id="payment-method-input">
+                </form>
+            </div>
+            @elseif($order->status === \App\Enums\OrderStatus::Paid)
             <form method="POST" action="{{ route('cashier.order.status', $order->id) }}">
                 @csrf
                 <input type="hidden" name="status" value="preparing">
@@ -83,6 +98,14 @@
                     Move to Preparing
                 </button>
             </form>
+            <div class="rounded-xl border border-green-50 bg-green-50 p-4 text-center text-sm text-green-800">
+                Payment processed using <span class="font-semibold uppercase">{{ $order->payment_method?->value
+                    }}</span>.
+                <a href="{{ route('cashier.order.receipt', $order) }}"
+                    class="mt-2 inline-flex rounded-md bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-800 cursor-pointer">
+                    View / Print receipt
+                </a>
+            </div>
             @elseif($order->status === \App\Enums\OrderStatus::Preparing)
             <form method="POST" action="{{ route('cashier.order.status', $order->id) }}">
                 @csrf
@@ -101,43 +124,21 @@
                     Move to Served
                 </button>
             </form>
-            @endif
-
-            @if($order->status === \App\Enums\OrderStatus::Served)
-            <div class="rounded-xl border bg-card shadow-sm p-4">
-                <h3 class="text-sm font-medium mb-1">Process payment</h3>
-                <p class="mb-3 text-xs text-muted-foreground">Choose Cash or QRIS in the confirmation dialog.</p>
-                <div>
-                    <button type="button" data-open-payment="cash"
-                        class="w-full rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 hover:opacity-90 transition-opacity cursor-pointer">
-                        Pay
-                    </button>
-                </div>
-                <form id="payment-submit-form" method="POST" action="{{ route('cashier.order.pay', $order->id) }}"
-                    class="hidden">
-                    @csrf
-                    <input type="hidden" name="payment_method" id="payment-method-input">
-                </form>
-            </div>
-            @elseif($order->status !== \App\Enums\OrderStatus::Paid)
-            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center text-sm text-amber-800">
-                Payment is available after the order is served.
-            </div>
-            @endif
-            @else
-            <div class="rounded-xl border bg-green-50 p-4 text-center text-sm text-green-800 space-y-2">
-                <p>Payment processed using <span class="font-semibold uppercase">{{ $order->payment_method?->value
-                        }}</span>. Table {{ $order->table->number }} is now available.</p>
+            @elseif($order->status === \App\Enums\OrderStatus::Served)
+            <div class="rounded-xl border bg-green-50 p-4 text-center text-sm text-green-800">
+                <p>Order completed. Table {{ $order->table->number }} is now available.</p>
+                @if($order->paid_at)
                 <a href="{{ route('cashier.order.receipt', $order) }}"
-                    class="inline-flex rounded-md bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-800 cursor-pointer">
+                    class="mt-2 inline-flex rounded-md bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-800 cursor-pointer">
                     View / Print receipt
                 </a>
+                @endif
             </div>
             @endif
         </div>
     </main>
 
-    @if($order->status === \App\Enums\OrderStatus::Served)
+    @if($order->status === \App\Enums\OrderStatus::Pending)
     <dialog id="payment-confirmation-dialog"
         class="w-full max-w-md rounded-2xl border bg-card p-0 shadow-2xl backdrop:bg-black/50">
         <div class="p-6">
@@ -182,9 +183,8 @@
                 <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
                     <p>This order will be marked as <strong>paid</strong> using <strong
                             data-confirm-payment-method>Cash</strong>.</p><label data-qris-confirmation
-                        class="mt-4 hidden items-start gap-3"><input type="checkbox" data-qris-checkbox
-                            class="mt-0.5 rounded border-amber-500 text-primary focus:ring-primary"><span>I have
-                            received and manually verified the QRIS payment.</span></label>
+                            class="mt-4 hidden items-start gap-3"><input type="checkbox" data-qris-checkbox
+                                class="mt-0.5 rounded border-amber-500 text-primary focus:ring-primary"><span>I have received and manually verified the QRIS payment.</span></label>
                 </div>
                 <div class="mt-6 flex justify-between gap-3"><button type="button" data-back-payment
                         class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Back</button><button

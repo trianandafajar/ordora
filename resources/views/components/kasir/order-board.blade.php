@@ -18,7 +18,7 @@ use Livewire\Component;
 
 new class extends Component
 {
-    private const ACTIVE_STATUS_VALUES = ['pending', 'preparing', 'ready', 'served'];
+    private const ACTIVE_STATUS_VALUES = ['pending', 'paid', 'preparing', 'ready'];
 
     #[Url]
     public string $activeTab = 'orders';
@@ -41,16 +41,16 @@ new class extends Component
 
     public function activeStatuses(): array
     {
-        return [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Ready, OrderStatus::Served];
+        return [OrderStatus::Pending, OrderStatus::Paid, OrderStatus::Preparing, OrderStatus::Ready];
     }
 
     public function statusMeta(): array
     {
         return [
             'pending' => ['label' => 'Pending', 'description' => 'New orders', 'dot' => 'bg-amber-500', 'surface' => 'bg-amber-500/10', 'line' => 'border-amber-500/30'],
+            'paid' => ['label' => 'Paid', 'description' => 'Payment confirmed', 'dot' => 'bg-emerald-500', 'surface' => 'bg-emerald-500/10', 'line' => 'border-emerald-500/30'],
             'preparing' => ['label' => 'Preparing', 'description' => 'In progress', 'dot' => 'bg-blue-500', 'surface' => 'bg-blue-500/10', 'line' => 'border-blue-500/30'],
             'ready' => ['label' => 'Ready', 'description' => 'Ready to serve', 'dot' => 'bg-emerald-500', 'surface' => 'bg-emerald-500/10', 'line' => 'border-emerald-500/30'],
-            'served' => ['label' => 'Served', 'description' => 'Awaiting payment', 'dot' => 'bg-violet-500', 'surface' => 'bg-violet-500/10', 'line' => 'border-violet-500/30'],
         ];
     }
 
@@ -76,17 +76,17 @@ new class extends Component
     {
         $query = Order::query()
             ->with(['table:id,number', 'orderItems.product:id,name'])
-            ->where('status', OrderStatus::Paid)
-            ->latest('updated_at')->latest('id');
+            ->whereNotNull('paid_at')
+            ->latest('paid_at')->latest('id');
 
         $this->applySearch($query);
 
         if ($this->historyFrom !== '') {
-            $query->whereDate('updated_at', '>=', $this->historyFrom);
+            $query->whereDate('paid_at', '>=', $this->historyFrom);
         }
 
         if ($this->historyTo !== '') {
-            $query->whereDate('updated_at', '<=', $this->historyTo);
+            $query->whereDate('paid_at', '<=', $this->historyTo);
         }
 
         return $query->limit(100)->get();
@@ -99,7 +99,7 @@ new class extends Component
             'active_orders' => Order::whereIn('status', self::ACTIVE_STATUS_VALUES)->count(),
             'occupied_tables' => DB::table('tables')->where('status', TableStatus::Occupied->value)->count(),
             'pending_orders' => Order::where('status', OrderStatus::Pending)->count(),
-            'today_revenue' => Order::where('status', OrderStatus::Paid)->whereDate('updated_at', today())->sum('total_price'),
+            'today_revenue' => Order::whereNotNull('paid_at')->whereDate('paid_at', today())->sum('total_price'),
         ];
     }
 
@@ -139,7 +139,13 @@ new class extends Component
         DB::transaction(function () use ($orderId, $target, $user): void {
             $order = Order::query()->lockForUpdate()->findOrFail($orderId);
 
-            if ($order->status === OrderStatus::Paid || ! in_array($target, $this->activeStatuses(), true)) {
+            $allowedTargets = [...$this->activeStatuses(), OrderStatus::Served];
+
+            if ($order->status === OrderStatus::Paid && $target !== OrderStatus::Preparing) {
+                throw ValidationException::withMessages(['status' => 'The target status is invalid for this order.']);
+            }
+
+            if ($order->status !== OrderStatus::Paid && ! in_array($target, $allowedTargets, true)) {
                 throw ValidationException::withMessages(['status' => 'The target status is invalid for this order.']);
             }
 
@@ -165,8 +171,8 @@ new class extends Component
             ->with(['table:id,number', 'orderItems.product:id,name'])
             ->findOrFail($orderId);
 
-        if ($order->status !== OrderStatus::Served) {
-            $this->paymentError = 'An order can only be paid after it reaches served status.';
+        if ($order->status !== OrderStatus::Pending) {
+            $this->paymentError = 'Payment can only be confirmed for pending orders.';
             $this->refreshBoard();
 
             return;
@@ -211,7 +217,7 @@ new class extends Component
         }
 
         $order = Order::query()->find($this->paymentOrderId);
-        if (! $order || $order->status !== OrderStatus::Served) {
+        if (! $order || $order->status !== OrderStatus::Pending) {
             $this->paymentError = 'This order has changed and cannot be paid from this dialog.';
             $this->paymentDialogOpen = false;
             $this->refreshBoard();
@@ -270,7 +276,7 @@ new class extends Component
             ...$this->serializeOrder($paidOrder),
             'payment_method' => $paidOrder->payment_method?->value,
             'cashier_name' => $paidOrder->user?->name ?? auth()->user()?->name ?? 'Cashier',
-            'paid_at' => $paidOrder->updated_at?->format('d M Y, H:i'),
+            'paid_at' => $paidOrder->paid_at?->format('d M Y, H:i'),
             'receipt_url' => route('cashier.order.receipt', $paidOrder),
         ];
 
@@ -297,11 +303,11 @@ new class extends Component
     private function nextStatus(OrderStatus $status): ?OrderStatus
     {
         return match ($status) {
-            OrderStatus::Pending => OrderStatus::Preparing,
+            OrderStatus::Pending => OrderStatus::Paid,
+            OrderStatus::Paid => OrderStatus::Preparing,
             OrderStatus::Preparing => OrderStatus::Ready,
             OrderStatus::Ready => OrderStatus::Served,
-            OrderStatus::Served => OrderStatus::Paid,
-            OrderStatus::Paid => null,
+            default => null,
         };
     }
 
@@ -503,15 +509,12 @@ new class extends Component
                                 number_format($item->subtotal, 0, '.', ',') }}</span></div>@endforeach</div>
                     <div class="mt-3 flex flex-wrap items-center justify-between gap-2"><span
                             class="text-sm font-semibold">$ {{ number_format($order->total_price, 0, '.', ',')
-                            }}</span>@if($status !== App\Enums\OrderStatus::Served)<button type="button"
-                            wire:click="moveOrder({{ $order->id }}, '{{ $this->nextStatus($status)->value }}')"
+                            }}</span>{{ $next = $this->nextStatus($status) }}@if($next)<button type="button"
+                            wire:click="moveOrder({{ $order->id }}, '{{ $next->value }}')"
                             wire:loading.attr="disabled"
                             class="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">{{
-                            $this->statusMeta()[$this->nextStatus($status)->value]['label'] }}</button>@else<div
-                            class="flex flex-wrap justify-end gap-2"><button type="button"
-                                wire:click="openPaymentDialog({{ $order->id }})" wire:loading.attr="disabled"
-                                class="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">Pay</button>
-                        </div>@endif</div>
+                            $next->value === 'paid' ? 'Confirm Payment' : $this->statusMeta()[$next->value]['label']
+                            }}</button>@endif</div>
                 </article>
                 @empty
                 <div class="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No orders
@@ -542,7 +545,7 @@ new class extends Component
                 </thead>
                 <tbody class="divide-y">@forelse($this->historyOrders as $order)<tr>
                         <td class="px-3 py-3 font-semibold">#{{ $order->id }}<div
-                                class="text-xs font-normal text-muted-foreground">{{ $order->updated_at?->format('d M Y,
+                                class="text-xs font-normal text-muted-foreground">{{ $order->paid_at?->format('d M Y,
                                 H:i') }}</div>
                         </td>
                         <td class="px-3 py-3">{{ $order->customer_name }}</td>

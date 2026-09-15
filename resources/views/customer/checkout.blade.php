@@ -139,9 +139,21 @@
                 @csrf
                 <input id="customer_name" name="customer_name" required maxlength="100" placeholder="Your name"
                     class="flex h-11 w-full rounded-xl border border-input bg-background px-4 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="flex items-center gap-2 rounded-xl border p-3 cursor-pointer text-sm font-medium hover:bg-muted/50">
+                        <input type="radio" name="payment_method" value="cash" checked class="text-primary focus:ring-primary">
+                        <span>Cash</span>
+                    </label>
+                    <label class="flex items-center gap-2 rounded-xl border p-3 cursor-pointer text-sm font-medium hover:bg-muted/50">
+                        <input type="radio" name="payment_method" value="qris" class="text-primary focus:ring-primary">
+                        <span>QRIS</span>
+                    </label>
+                </div>
+
                 <button type="submit"
                     class="w-full h-12 rounded-xl bg-primary text-primary-foreground text-sm font-semibold active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                    Place Order
+                    Place & Pay
                 </button>
             </form>
         </div>

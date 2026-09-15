@@ -45,7 +45,7 @@ class KasirOrderController extends Controller
 
     public function receipt(Order $order): View
     {
-        abort_unless($order->status === OrderStatus::Paid, 404);
+        abort_unless($order->paid_at !== null, 404);
 
         $order->load(['orderItems.product', 'table', 'user']);
 

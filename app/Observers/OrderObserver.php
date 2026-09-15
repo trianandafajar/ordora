@@ -21,7 +21,7 @@ class OrderObserver
      */
     public function updated(Order $order): void
     {
-        if (! $order->wasChanged(['status', 'payment_method'])) {
+        if (! $order->wasChanged(['status', 'payment_method', 'paid_at'])) {
             return;
         }
 

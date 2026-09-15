@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\CreateOrderAction;
+use App\Enums\PaymentMethod;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
@@ -16,7 +17,7 @@ class CheckoutController extends Controller
         $table = Table::where('qr_token', $qr_token)->firstOrFail();
         session(['table_id' => $table->id, 'table_qr' => $table->qr_token]);
 
-        $categories = Category::with(['products' => fn($q) => $q->where('is_available', true)])->get();
+        $categories = Category::with(['products' => fn ($q) => $q->where('is_available', true)])->get();
 
         return view('customer.menu', compact('table', 'categories'));
     }
@@ -54,13 +55,13 @@ class CheckoutController extends Controller
 
         session(['cart' => $cart]);
 
-        return back()->with('success', $product->name . ' added to cart.');
+        return back()->with('success', $product->name.' added to cart.');
     }
 
     public function removeFromCart(Request $request, string $qr_token)
     {
         $productId = $request->route('product_id');
-        $cart = collect(session('cart', []))->reject(fn($i) => $i['product_id'] == $productId)->values()->all();
+        $cart = collect(session('cart', []))->reject(fn ($i) => $i['product_id'] == $productId)->values()->all();
         session(['cart' => $cart]);
 
         return back()->with('success', 'Item removed from cart.');
@@ -85,6 +86,7 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'customer_name' => ['required', 'string', 'max:100'],
+            'payment_method' => ['required', 'in:cash,qris'],
         ]);
 
         $cart = session('cart', []);
@@ -97,7 +99,12 @@ class CheckoutController extends Controller
             return redirect()->route('login')->with('error', 'Please scan the QR code first.');
         }
 
-        $order = $action->execute($cart, $request->customer_name, $tableId);
+        $order = $action->execute(
+            $cart,
+            $request->customer_name,
+            $tableId,
+            PaymentMethod::from($request->payment_method),
+        );
         session()->forget('cart');
 
         return redirect()->route('table.tracking.show', $order->order_token)->with('order_id', $order->id);

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['table_id', 'user_id', 'order_token', 'customer_name', 'total_price', 'status', 'payment_method'])]
+#[Fillable(['table_id', 'user_id', 'order_token', 'customer_name', 'total_price', 'status', 'payment_method', 'paid_at'])]
 #[ObservedBy([OrderObserver::class])]
 class Order extends Model
 {
@@ -24,6 +24,7 @@ class Order extends Model
             'total_price' => 'decimal:2',
             'status' => OrderStatus::class,
             'payment_method' => PaymentMethod::class,
+            'paid_at' => 'datetime',
         ];
     }
 

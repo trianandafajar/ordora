@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\TableStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -14,9 +15,9 @@ use Illuminate\Support\Str;
 
 class CreateOrderAction
 {
-    public function execute(array $items, string $customerName, int $tableId): Order
+    public function execute(array $items, string $customerName, int $tableId, PaymentMethod $paymentMethod): Order
     {
-        return DB::transaction(function () use ($items, $customerName, $tableId): Order {
+        return DB::transaction(function () use ($items, $customerName, $tableId, $paymentMethod): Order {
             $table = Table::lockForUpdate()->findOrFail($tableId);
 
             $order = Order::create([
@@ -26,7 +27,7 @@ class CreateOrderAction
                 'customer_name' => $customerName,
                 'total_price' => 0,
                 'status' => OrderStatus::Pending,
-                'payment_method' => null,
+                'payment_method' => $paymentMethod,
             ]);
 
             $subtotal = 0;
