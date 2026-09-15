@@ -130,13 +130,57 @@
 
         renderStatus({{ Js::from($order->status->value) }});
 
+        // Save order to localStorage for history
+        const saveOrderToHistory = () => {
+            const orderData = {
+                id: {{ $order->id }},
+                token: orderToken,
+                status: '{{ $order->status->value }}',
+                customer_name: '{{ $order->customer_name }}',
+                table: {{ Js::from($order->table->number) }},
+                total: {{ $order->orderItems->sum('subtotal') }},
+                items: @json($order->orderItems->map(fn($item) => [
+                    'name' => $item->product->name,
+                    'qty' => $item->quantity,
+                    'subtotal' => $item->subtotal,
+                ])),
+                created_at: '{{ $order->created_at->format("Y-m-d H:i") }}'
+            };
+
+            const history = JSON.parse(localStorage.getItem('ordora-orders') || '[]');
+            const existingIndex = history.findIndex(o => o.id === orderData.id);
+            
+            if (existingIndex >= 0) {
+                history[existingIndex] = orderData;
+            } else {
+                history.unshift(orderData);
+            }
+
+            // Keep only last 20 orders
+            if (history.length > 20) history.pop();
+            
+            localStorage.setItem('ordora-orders', JSON.stringify(history));
+        };
+
+        saveOrderToHistory();
+
         const subscribeToOrderChannel = () => {
             if (window.__ordoraTrackingChannel || !window.Echo) return;
 
             const channel = window.Echo.channel(`order.${orderToken}`);
             window.__ordoraTrackingChannel = channel;
             channel.listen('.order.status.updated', (payload) => {
-                if (payload?.order?.status) renderStatus(payload.order.status);
+                if (payload?.order?.status) {
+                    renderStatus(payload.order.status);
+
+                    // update status in localStorage history
+                    const history = JSON.parse(localStorage.getItem('ordora-orders') || '[]');
+                    const idx = history.findIndex(o => o.id === {{ $order->id }});
+                    if (idx >= 0) {
+                        history[idx].status = payload.order.status;
+                        localStorage.setItem('ordora-orders', JSON.stringify(history));
+                    }
+                }
             });
         };
 

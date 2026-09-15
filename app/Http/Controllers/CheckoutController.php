@@ -100,7 +100,7 @@ class CheckoutController extends Controller
         $order = $action->execute($cart, $request->customer_name, $tableId);
         session()->forget('cart');
 
-        return redirect()->route('table.tracking.show', $order->order_token);
+        return redirect()->route('table.tracking.show', $order->order_token)->with('order_id', $order->id);
     }
 
     public function showTracking(string $order_token)
@@ -110,5 +110,10 @@ class CheckoutController extends Controller
             ->firstOrFail();
 
         return view('customer.tracking', compact('order'));
+    }
+
+    public function history()
+    {
+        return view('customer.history');
     }
 }
