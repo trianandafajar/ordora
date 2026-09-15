@@ -96,18 +96,18 @@
             <div class="col-span-2 sm:col-span-1">
                 <label class="block text-sm font-medium mb-1">Name</label>
                 <input name="name" required maxlength="255"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     oninput="document.querySelector('[name=slug]').value = generateSlug(this.value)">
             </div>
             <div class="col-span-2 sm:col-span-1">
                 <label class="block text-sm font-medium mb-1">Slug</label>
                 <input name="slug" maxlength="255"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
             </div>
             <div class="col-span-2 sm:col-span-1">
                 <label class="block text-sm font-medium mb-1">Category</label>
                 <select name="category_id" required
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     @foreach($categories as $cat)
                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                     @endforeach
@@ -116,17 +116,17 @@
             <div class="col-span-2 sm:col-span-1">
                 <label class="block text-sm font-medium mb-1">Price</label>
                 <input name="price" type="number" required min="0"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
             </div>
             <div class="col-span-2">
                 <label class="block text-sm font-medium mb-1">Description</label>
                 <textarea name="description" rows="3"
-                    class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"></textarea>
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"></textarea>
             </div>
             <div class="col-span-2">
                 <label class="block text-sm font-medium mb-1">Available</label>
                 <select name="is_available"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <option value="1">Yes</option>
                     <option value="0">No</option>
                 </select>
@@ -156,18 +156,18 @@
             <div class="col-span-2 sm:col-span-1">
                 <label class="block text-sm font-medium mb-1">Name</label>
                 <input name="name" required maxlength="255" value="{{ $prod->name }}"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     oninput="document.querySelector('[name=slug]').value = generateSlug(this.value)">
             </div>
             <div class="col-span-2 sm:col-span-1">
                 <label class="block text-sm font-medium mb-1">Slug</label>
                 <input name="slug" maxlength="255" value="{{ $prod->slug }}"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
             </div>
             <div class="col-span-2 sm:col-span-1">
                 <label class="block text-sm font-medium mb-1">Category</label>
                 <select name="category_id" required
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     @foreach($categories as $cat)
                     <option value="{{ $cat->id }}" {{ $prod->category_id == $cat->id ? 'selected' : '' }}>{{ $cat->name
                         }}</option>
@@ -177,17 +177,17 @@
             <div class="col-span-2 sm:col-span-1">
                 <label class="block text-sm font-medium mb-1">Price</label>
                 <input name="price" type="number" required min="0" value="{{ (int)$prod->price }}"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
             </div>
             <div class="col-span-2">
                 <label class="block text-sm font-medium mb-1">Description</label>
                 <textarea name="description" rows="3"
-                    class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none">{{ $prod->description }}</textarea>
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none">{{ $prod->description }}</textarea>
             </div>
             <div class="col-span-2">
                 <label class="block text-sm font-medium mb-1">Available</label>
                 <select name="is_available"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <option value="1" {{ $prod->is_available ? 'selected' : '' }}>Yes</option>
                     <option value="0" {{ !$prod->is_available ? 'selected' : '' }}>No</option>
                 </select>

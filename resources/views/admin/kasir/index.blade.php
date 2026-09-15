@@ -83,17 +83,17 @@
         <div>
             <label class="block text-sm font-medium mb-1">Name</label>
             <input name="name" required maxlength="255"
-                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
         </div>
         <div>
             <label class="block text-sm font-medium mb-1">Email</label>
             <input name="email" type="email" required maxlength="255"
-                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
         </div>
         <div>
             <label class="block text-sm font-medium mb-1">Password</label>
             <input name="password" type="password" required minlength="6"
-                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
         </div>
         <div class="flex justify-end gap-2 pt-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'create-kasir' })"

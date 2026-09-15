@@ -25,12 +25,12 @@
             <div>
                 <label class="block text-sm font-medium mb-1">Start Date</label>
                 <input type="date" name="start_date" value="{{ $startDate }}"
-                    class="h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">End Date</label>
                 <input type="date" name="end_date" value="{{ $endDate }}"
-                    class="h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
             </div>
             <div class="flex gap-2">
                 <button type="submit"

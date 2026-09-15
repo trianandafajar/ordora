@@ -90,13 +90,13 @@
             <div>
                 <label class="block text-sm font-medium mb-1">Table Number</label>
                 <input name="number" required maxlength="20"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     placeholder="e.g. 1, A1, VIP-2">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Capacity</label>
                 <input name="capacity" type="number" required min="1" max="50" value="4"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
             </div>
         </div>
         <div class="flex justify-end gap-2">
@@ -118,12 +118,12 @@
             <div>
                 <label class="block text-sm font-medium mb-1">Table Number</label>
                 <input name="number" required maxlength="20" value="{{ $tbl->number }}"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Capacity</label>
                 <input name="capacity" type="number" required min="1" max="50" value="{{ $tbl->capacity }}"
-                    class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
             </div>
         </div>
         <div class="flex justify-end gap-2">

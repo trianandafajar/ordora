@@ -68,13 +68,13 @@
         <div>
             <label class="block text-sm font-medium mb-1">Name</label>
             <input name="name" required maxlength="100"
-                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 oninput="document.querySelector('[name=slug]').value = generateSlug(this.value)">
         </div>
         <div>
             <label class="block text-sm font-medium mb-1">Slug</label>
             <input name="slug" maxlength="100"
-                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
+                class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
         </div>
         <div class="flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'create-category' })"
@@ -92,13 +92,13 @@
         <div>
             <label class="block text-sm font-medium mb-1">Name</label>
             <input name="name" required maxlength="100" value="{{ $cat->name }}"
-                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 oninput="document.querySelector('[name=slug]').value = generateSlug(this.value)">
         </div>
         <div>
             <label class="block text-sm font-medium mb-1">Slug</label>
             <input name="slug" maxlength="100" value="{{ $cat->slug }}"
-                class="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
+                class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
         </div>
         <div class="flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'edit-category-{{ $cat->id }}' })"
