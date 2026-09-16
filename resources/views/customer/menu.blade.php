@@ -61,7 +61,7 @@
             </div>
         </header>
 
-        {{-- Toast --}}
+        {{-- toast --}}
         <div x-show="toast.show" x-cloak x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
@@ -112,8 +112,9 @@
                             <h3 class="font-semibold text-sm truncate">{{ $product->name }}</h3>
                             <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">{{ $product->description }}</p>
                             <div class="flex items-center justify-between mt-auto pt-3">
-                                <span class="font-bold text-sm">$ {{ number_format($product->price, 0, '.', ',')
-                                    }}</span>
+                                <span class="font-bold text-sm whitespace-nowrap">
+                                    $ {{ number_format($product->price, 0, '.',',')}}
+                                </span>
                                 <form action="{{ route('table.cart.add', $table->qr_token) }}" method="POST"
                                     x-data="{ qty: 1 }" class="w-full flex items-center justify-end gap-2">
                                     @csrf
