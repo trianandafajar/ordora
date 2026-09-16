@@ -5,10 +5,14 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\File;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProductSeeder extends Seeder
 {
+    private const IMAGE_SOURCE_DIR = 'public/images/menu';
+
     public function run(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
@@ -31,15 +35,29 @@ class ProductSeeder extends Seeder
             ['name' => 'Cheese Cake', 'description' => 'Soft cheese cake', 'price' => 4.20, 'category' => 'Snack'],
         ];
 
-        foreach ($products as $product) {
+        foreach ($products as $index => $product) {
             Product::create([
                 'category_id' => $categories[$product['category']],
                 'name' => $product['name'],
                 'description' => $product['description'],
                 'price' => $product['price'],
-                'image' => null,
+                'image' => $this->importImage($index + 1),
                 'is_available' => true,
             ]);
         }
+    }
+
+    private function importImage(int $number): ?string
+    {
+        $fileName = "{$number}.png";
+        $sourcePath = base_path(self::IMAGE_SOURCE_DIR.'/'.$fileName);
+
+        if (! is_file($sourcePath)) {
+            return null;
+        }
+
+        Storage::disk('public')->putFileAs('products', new File($sourcePath), $fileName);
+
+        return 'products/'.$fileName;
     }
 }
