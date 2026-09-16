@@ -12,7 +12,7 @@ class TableController extends Controller
 {
     public function index()
     {
-        $tables = Table::with(['orders' => fn ($q) => $q->where('status', '!=', 'paid')->latest()])
+        $tables = Table::with(['orders' => fn ($q) => $q->where('status', '!=', 'served')->latest()])
             ->orderBy('id')
             ->get();
 
@@ -48,7 +48,7 @@ class TableController extends Controller
 
     public function destroy(Table $table)
     {
-        if ($table->orders()->where('status', '!=', 'paid')->exists()) {
+        if ($table->orders()->where('status', '!=', 'served')->exists()) {
             return back()->with('error', "Table \"{$table->number}\" has active order(s) and cannot be deleted.");
         }
 

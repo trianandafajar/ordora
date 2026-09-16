@@ -46,13 +46,15 @@ class PaymentTest extends TestCase
         $this->assertPaymentCompleted($order, $cashier, PaymentMethod::Qris);
     }
 
-    public function test_payment_is_rejected_for_an_order_that_is_not_pending(): void
+    public function test_payment_is_rejected_after_the_order_is_already_paid(): void
     {
         Event::fake([OrderStatusUpdated::class]);
         $cashier = User::factory()->create(['role' => UserRole::Kasir]);
+        $order = $this->makeOrder(OrderStatus::Pending);
+        $order->update(['paid_at' => now()]);
 
-        foreach ([OrderStatus::Preparing, OrderStatus::Ready, OrderStatus::Served] as $status) {
-            $order = $this->makeOrder($status);
+        foreach ([OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Ready] as $status) {
+            $order->update(['status' => $status]);
 
             $response = $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
                 'payment_method' => 'cash',
@@ -62,7 +64,7 @@ class PaymentTest extends TestCase
             $this->assertDatabaseHas('orders', [
                 'id' => $order->id,
                 'status' => $status->value,
-                'payment_method' => null,
+                'paid_at' => $order->fresh()->paid_at,
             ]);
         }
     }
@@ -177,7 +179,7 @@ class PaymentTest extends TestCase
             return $event->changeType === 'paid'
                 && $event->previousStatus === OrderStatus::Pending->value
                 && $payload['order']['id'] === $order->id
-                && $payload['order']['status'] === OrderStatus::Paid->value
+                && $payload['order']['status'] === OrderStatus::Pending->value
                 && $payload['order']['payment_method'] === PaymentMethod::Qris->value;
         });
     }
@@ -199,13 +201,13 @@ class PaymentTest extends TestCase
     {
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'status' => OrderStatus::Paid->value,
+            'status' => OrderStatus::Pending->value,
             'payment_method' => $method->value,
             'user_id' => $cashier->id,
         ]);
         $this->assertDatabaseHas('order_status_histories', [
             'order_id' => $order->id,
-            'status' => OrderStatus::Paid->value,
+            'status' => 'paid',
             'changed_by' => $cashier->id,
         ]);
         $this->assertSame(TableStatus::Occupied, $order->table->fresh()->status);

@@ -18,7 +18,7 @@ use Livewire\Component;
 
 new class extends Component
 {
-    private const ACTIVE_STATUS_VALUES = ['pending', 'paid', 'preparing', 'ready'];
+    private const ACTIVE_STATUS_VALUES = ['pending', 'preparing', 'ready'];
 
     #[Url]
     public string $activeTab = 'orders';
@@ -41,16 +41,16 @@ new class extends Component
 
     public function activeStatuses(): array
     {
-        return [OrderStatus::Pending, OrderStatus::Paid, OrderStatus::Preparing, OrderStatus::Ready];
+        return [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Ready];
     }
 
     public function statusMeta(): array
     {
         return [
             'pending' => ['label' => 'Pending', 'description' => 'New orders', 'dot' => 'bg-amber-500', 'surface' => 'bg-amber-500/10', 'line' => 'border-amber-500/30'],
-            'paid' => ['label' => 'Paid', 'description' => 'Payment confirmed', 'dot' => 'bg-emerald-500', 'surface' => 'bg-emerald-500/10', 'line' => 'border-emerald-500/30'],
             'preparing' => ['label' => 'Preparing', 'description' => 'In progress', 'dot' => 'bg-blue-500', 'surface' => 'bg-blue-500/10', 'line' => 'border-blue-500/30'],
             'ready' => ['label' => 'Ready', 'description' => 'Ready to serve', 'dot' => 'bg-emerald-500', 'surface' => 'bg-emerald-500/10', 'line' => 'border-emerald-500/30'],
+            'served' => ['label' => 'Served', 'description' => 'Completed', 'dot' => 'bg-violet-500', 'surface' => 'bg-violet-500/10', 'line' => 'border-violet-500/30'],
         ];
     }
 
@@ -130,22 +130,12 @@ new class extends Component
             throw ValidationException::withMessages(['status' => 'The target status is invalid.']);
         }
 
-        if ($target === OrderStatus::Paid) {
-            $this->openPaymentDialog($orderId, PaymentMethod::Cash->value);
-
-            return;
-        }
-
         DB::transaction(function () use ($orderId, $target, $user): void {
             $order = Order::query()->lockForUpdate()->findOrFail($orderId);
 
             $allowedTargets = [...$this->activeStatuses(), OrderStatus::Served];
 
-            if ($order->status === OrderStatus::Paid && $target !== OrderStatus::Preparing) {
-                throw ValidationException::withMessages(['status' => 'The target status is invalid for this order.']);
-            }
-
-            if ($order->status !== OrderStatus::Paid && ! in_array($target, $allowedTargets, true)) {
+            if (! in_array($target, $allowedTargets, true)) {
                 throw ValidationException::withMessages(['status' => 'The target status is invalid for this order.']);
             }
 
@@ -160,19 +150,19 @@ new class extends Component
     {
         abort_unless(auth()->user()?->role === UserRole::Kasir, 403);
 
-        $selectedMethod = PaymentMethod::tryFrom($method ?? PaymentMethod::Cash->value);
+        $order = Order::query()
+            ->with(['table:id,number', 'orderItems.product:id,name'])
+            ->findOrFail($orderId);
+
+        $selectedMethod = PaymentMethod::tryFrom($method ?? $order->payment_method?->value ?? PaymentMethod::Cash->value);
         if (! $selectedMethod) {
             $this->paymentError = 'The payment method is invalid.';
 
             return;
         }
 
-        $order = Order::query()
-            ->with(['table:id,number', 'orderItems.product:id,name'])
-            ->findOrFail($orderId);
-
-        if ($order->status !== OrderStatus::Pending) {
-            $this->paymentError = 'Payment can only be confirmed for pending orders.';
+        if ($order->paid_at !== null) {
+            $this->paymentError = 'This order has already been paid.';
             $this->refreshBoard();
 
             return;
@@ -181,11 +171,16 @@ new class extends Component
         $this->resetErrorBag();
         $this->paymentError = '';
         $this->paymentDialogOpen = true;
-        $this->paymentStep = 'method';
         $this->paymentOrderId = $order->id;
         $this->paymentMethod = $selectedMethod->value;
         $this->qrisConfirmed = false;
         $this->paymentData = $this->serializeOrder($order);
+
+        if ($order->payment_method !== null) {
+            $this->paymentStep = 'confirmation';
+        } else {
+            $this->paymentStep = 'method';
+        }
     }
 
     public function selectPaymentMethod(string $method): void
@@ -217,7 +212,7 @@ new class extends Component
         }
 
         $order = Order::query()->find($this->paymentOrderId);
-        if (! $order || $order->status !== OrderStatus::Pending) {
+        if (! $order || $order->paid_at !== null) {
             $this->paymentError = 'This order has changed and cannot be paid from this dialog.';
             $this->paymentDialogOpen = false;
             $this->refreshBoard();
@@ -303,8 +298,7 @@ new class extends Component
     private function nextStatus(OrderStatus $status): ?OrderStatus
     {
         return match ($status) {
-            OrderStatus::Pending => OrderStatus::Paid,
-            OrderStatus::Paid => OrderStatus::Preparing,
+            OrderStatus::Pending => OrderStatus::Preparing,
             OrderStatus::Preparing => OrderStatus::Ready,
             OrderStatus::Ready => OrderStatus::Served,
             default => null,
@@ -476,7 +470,7 @@ new class extends Component
         @endforeach
     </div>
 
-    <div class="grid gap-4 xl:grid-cols-4">
+    <div class="grid gap-4 xl:grid-cols-3">
         @foreach($this->activeStatuses() as $status)
         @php($meta = $this->statusMeta()[$status->value]) @php($columnOrders = $this->orderColumns[$status->value] ??
         collect())
@@ -509,12 +503,22 @@ new class extends Component
                                 number_format($item->subtotal, 0, '.', ',') }}</span></div>@endforeach</div>
                     <div class="mt-3 flex flex-wrap items-center justify-between gap-2"><span
                             class="text-sm font-semibold">$ {{ number_format($order->total_price, 0, '.', ',')
-                            }}</span>{{ $next = $this->nextStatus($status) }}@if($next)<button type="button"
-                            wire:click="moveOrder({{ $order->id }}, '{{ $next->value }}')"
-                            wire:loading.attr="disabled"
-                            class="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">{{
-                            $next->value === 'paid' ? 'Confirm Payment' : $this->statusMeta()[$next->value]['label']
-                            }}</button>@endif</div>
+                            }}</span>
+                            @if($order->paid_at === null)
+                            <button type="button" wire:click="openPaymentDialog({{ $order->id }})"
+                                wire:loading.attr="disabled"
+                                class="rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+                                Confirm Payment
+                            </button>
+                            @endif
+                            @if($next = $this->nextStatus($status))
+                            <button type="button"
+                                wire:click="moveOrder({{ $order->id }}, '{{ $next->value }}')"
+                                wire:loading.attr="disabled"
+                                class="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">{{
+                                $this->statusMeta()[$next->value]['label']
+                                }}</button>
+                            @endif</div>
                 </article>
                 @empty
                 <div class="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No orders

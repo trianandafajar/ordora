@@ -15,7 +15,7 @@ class DashboardController extends Controller
     public function admin()
     {
         $stats = [
-            'today_revenue' => Order::where('status', 'paid')->whereDate('created_at', today())->sum('total_price'),
+            'today_revenue' => Order::whereNotNull('paid_at')->whereDate('paid_at', today())->sum('total_price'),
             'pending_orders' => Order::where('status', 'pending')->count(),
             'active_kasir' => User::where('role', 'kasir')->where('is_active', true)->count(),
             'total_tables' => Table::count(),
@@ -23,20 +23,20 @@ class DashboardController extends Controller
 
         $recentOrders = Order::latest()->take(5)->get();
         $total = Order::count();
-        $total7d = Order::where('status', 'paid')->whereDate('created_at', '>=', now()->subDays(7))->sum('total_price');
+        $total7d = Order::whereNotNull('paid_at')->whereDate('paid_at', '>=', now()->subDays(7))->sum('total_price');
 
         $statusCounts = [
             'pending' => Order::where('status', 'pending')->count(),
             'preparing' => Order::where('status', 'preparing')->count(),
             'ready' => Order::where('status', 'ready')->count(),
             'served' => Order::where('status', 'served')->count(),
-            'paid' => Order::where('status', 'paid')->count(),
+            'paid' => Order::whereNotNull('paid_at')->count(),
         ];
 
         $revenueData = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i);
-            $rev = Order::where('status', 'paid')->whereDate('created_at', $date->toDateString())->sum('total_price') ?? 0;
+            $rev = Order::whereNotNull('paid_at')->whereDate('paid_at', $date->toDateString())->sum('total_price') ?? 0;
             $revenueData[] = [
                 'label' => $date->format('d M'),
                 'revenue' => $rev,
@@ -52,16 +52,16 @@ class DashboardController extends Controller
         $startDate = $request->get('start_date', today()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', today()->format('Y-m-d'));
 
-        $paidQuery = Order::where('status', 'paid')
-            ->whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate);
+        $paidQuery = Order::whereNotNull('paid_at')
+            ->whereDate('paid_at', '>=', $startDate)
+            ->whereDate('paid_at', '<=', $endDate);
 
         $stats = [
             'period_start' => $startDate,
             'period_end' => $endDate,
             'period_revenue' => (clone $paidQuery)->sum('total_price'),
             'period_paid_orders' => (clone $paidQuery)->count(),
-            'total_revenue' => Order::where('status', 'paid')->sum('total_price'),
+            'total_revenue' => Order::whereNotNull('paid_at')->sum('total_price'),
             'aov' => 0,
         ];
         $stats['aov'] = $stats['period_paid_orders'] > 0
@@ -79,7 +79,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $orderHistory = Order::where('status', 'paid')
+        $orderHistory = Order::whereNotNull('paid_at')
             ->whereDate('created_at', '>=', $startDate)
             ->whereDate('created_at', '<=', $endDate)
             ->with('table', 'user')
@@ -94,16 +94,16 @@ class DashboardController extends Controller
         $startDate = $request->get('start_date', today()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', today()->format('Y-m-d'));
 
-        $paidQuery = Order::where('status', 'paid')
-            ->whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate);
+        $paidQuery = Order::whereNotNull('paid_at')
+            ->whereDate('paid_at', '>=', $startDate)
+            ->whereDate('paid_at', '<=', $endDate);
 
         $stats = [
             'period_start' => $startDate,
             'period_end' => $endDate,
             'period_revenue' => (clone $paidQuery)->sum('total_price'),
             'period_paid_orders' => (clone $paidQuery)->count(),
-            'total_revenue' => Order::where('status', 'paid')->sum('total_price'),
+            'total_revenue' => Order::whereNotNull('paid_at')->sum('total_price'),
             'aov' => 0,
         ];
         $stats['aov'] = $stats['period_paid_orders'] > 0
@@ -121,7 +121,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $orderHistory = Order::where('status', 'paid')
+        $orderHistory = Order::whereNotNull('paid_at')
             ->whereDate('created_at', '>=', $startDate)
             ->whereDate('created_at', '<=', $endDate)
             ->with('table', 'user')

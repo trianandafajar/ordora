@@ -73,7 +73,7 @@
         </div>
 
         <div class="space-y-3">
-            @if($order->status === \App\Enums\OrderStatus::Pending)
+            @if($order->paid_at === null && $order->status !== \App\Enums\OrderStatus::Served)
             <div class="rounded-xl border bg-card shadow-sm p-4">
                 <h3 class="text-sm font-medium mb-1">Confirm payment</h3>
                 <p class="mb-3 text-xs text-muted-foreground">Choose Cash or QRIS in the confirmation dialog.</p>
@@ -89,7 +89,9 @@
                     <input type="hidden" name="payment_method" id="payment-method-input">
                 </form>
             </div>
-            @elseif($order->status === \App\Enums\OrderStatus::Paid)
+            @endif
+
+            @if($order->status === \App\Enums\OrderStatus::Pending)
             <form method="POST" action="{{ route('cashier.order.status', $order->id) }}">
                 @csrf
                 <input type="hidden" name="status" value="preparing">
@@ -98,14 +100,6 @@
                     Move to Preparing
                 </button>
             </form>
-            <div class="rounded-xl border border-green-50 bg-green-50 p-4 text-center text-sm text-green-800">
-                Payment processed using <span class="font-semibold uppercase">{{ $order->payment_method?->value
-                    }}</span>.
-                <a href="{{ route('cashier.order.receipt', $order) }}"
-                    class="mt-2 inline-flex rounded-md bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-800 cursor-pointer">
-                    View / Print receipt
-                </a>
-            </div>
             @elseif($order->status === \App\Enums\OrderStatus::Preparing)
             <form method="POST" action="{{ route('cashier.order.status', $order->id) }}">
                 @csrf
@@ -138,7 +132,7 @@
         </div>
     </main>
 
-    @if($order->status === \App\Enums\OrderStatus::Pending)
+    @if($order->paid_at === null)
     <dialog id="payment-confirmation-dialog"
         class="w-full max-w-md rounded-2xl border bg-card p-0 shadow-2xl backdrop:bg-black/50">
         <div class="p-6">

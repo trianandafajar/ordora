@@ -2,7 +2,6 @@
 
 namespace App\Actions;
 
-use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
@@ -18,20 +17,13 @@ class PayOrderAction
                 ->lockForUpdate()
                 ->findOrFail($order->id);
 
-            if ($lockedOrder->paid_at !== null || $lockedOrder->status === OrderStatus::Paid) {
+            if ($lockedOrder->paid_at !== null) {
                 throw ValidationException::withMessages([
                     'payment' => 'This order has already been paid.',
                 ]);
             }
 
-            if ($lockedOrder->status !== OrderStatus::Pending) {
-                throw ValidationException::withMessages([
-                    'payment' => 'Payment can only be confirmed for pending orders.',
-                ]);
-            }
-
             $lockedOrder->update([
-                'status' => OrderStatus::Paid,
                 'payment_method' => $method,
                 'user_id' => $processedBy,
                 'paid_at' => now(),
@@ -39,7 +31,7 @@ class PayOrderAction
 
             OrderStatusHistory::create([
                 'order_id' => $lockedOrder->id,
-                'status' => OrderStatus::Paid->value,
+                'status' => 'paid',
                 'changed_by' => $processedBy,
             ]);
 
