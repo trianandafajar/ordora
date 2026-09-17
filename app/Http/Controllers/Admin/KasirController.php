@@ -48,4 +48,36 @@ class KasirController extends Controller
             'is_active' => $user->is_active,
         ]);
     }
+
+    public function edit(User $user)
+    {
+        return response()->json($user);
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'password' => ['nullable', 'string', 'min:6'],
+        ]);
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return back()->with('success', 'Kasir updated.');
+    }
+
+    public function destroy(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Cannot delete yourself.');
+        }
+
+        $user->delete();
+
+        return back()->with('success', 'Kasir deleted.');
+    }
 }
