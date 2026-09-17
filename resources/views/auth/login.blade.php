@@ -34,11 +34,6 @@
 
     <div class="flex-1 flex items-center justify-center p-6 lg:p-12">
         <div class="hidden lg:block w-full max-w-md space-y-8">
-            <div class="flex items-center gap-3">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-9 w-9 rounded-lg object-contain">
-                <span class="font-bold text-lg tracking-tight">Ordora</span>
-            </div>
-
             <div class="space-y-1">
                 <h1 class="text-2xl font-bold tracking-tight">Welcome back</h1>
                 <p class="text-sm text-muted-foreground">Enter your credentials to access your account</p>
@@ -78,7 +73,7 @@
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
                         <label for="password" class="text-sm font-medium">Password</label>
-                        <a href="#" class="text-xs font-medium text-primary hover:underline">
+                        <a href="{{ route('password.request') }}" class="text-xs font-medium text-primary hover:underline">
                             Forgot password?
                         </a>
                     </div>
@@ -169,7 +164,7 @@
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
                         <label for="password-mobile" class="text-sm font-medium">Password</label>
-                        <a href="#" class="text-xs font-medium text-primary hover:underline">
+                        <a href="{{ route('password.request') }}" class="text-xs font-medium text-primary hover:underline">
                             Forgot password?
                         </a>
                     </div>
