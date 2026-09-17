@@ -162,17 +162,8 @@
                             d="M6 18L18 6M6 6l12 12" />
                     </svg></button>
                 <h3 class="text-lg font-semibold mb-4 text-center">Scan QRIS</h3>
-                <div class="size-48 bg-white mx-auto flex items-center justify-center">
-                    <svg viewBox="0 0 100 100" class="size-48" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="100" height="100" fill="white" />
-                        <rect x="10" y="10" width="30" height="30" rx="3" fill="black" />
-                        <rect x="60" y="10" width="30" height="30" rx="3" fill="black" />
-                        <rect x="10" y="60" width="30" height="30" rx="3" fill="black" />
-                        <rect x="20" y="20" width="10" height="10" fill="white" />
-                        <rect x="70" y="20" width="10" height="10" fill="white" />
-                        <rect x="20" y="70" width="10" height="10" fill="white" />
-                        <rect x="50" y="50" width="20" height="20" fill="black" />
-                    </svg>
+                <div class="size-48 bg-white mx-auto flex items-center justify-center rounded-lg overflow-hidden">
+                    <img :src="`/table/order/${orderToken}/qris-qr`" alt="QRIS" class="size-48">
                 </div>
                 <p class="text-sm text-center mt-4 text-muted-foreground">Scan the code above with your payment app</p>
                 <button @click="if (qrisOpen) { qrisOpen = false; successOpen = true; }"

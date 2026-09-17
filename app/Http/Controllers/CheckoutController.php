@@ -11,6 +11,7 @@ use App\Models\Table;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class CheckoutController extends Controller
 {
@@ -163,6 +164,43 @@ class CheckoutController extends Controller
         $pdf = Pdf::loadView('customer.order-receipt', compact('order'));
 
         return $pdf->download('Receipt-Order-#' . $order->id . '.pdf');
+    }
+
+    public function qrisQr(string $order_token)
+    {
+        $order = Order::where('order_token', $order_token)->firstOrFail();
+
+        // Dummy QRIS EMVCo structure
+        // 00: Payload Format Indicator
+        // 01: Point of Initiation Method (11: Static, 12: Dynamic)
+        // 26: Merchant Account Information
+        // 52: Merchant Category Code
+        // 53: Transaction Currency (360: IDR)
+        // 54: Transaction Amount
+        // 58: Country Code (ID)
+        // 59: Merchant Name
+        // 60: Merchant City
+        // 63: CRC
+        $data = '000201010212265000012ID.CO.ORDORA.WWW0118936000000000000002520458415303360';
+        $amount = number_format($order->total_price, 2, '.', '');
+        $data .= '54' . sprintf('%02d', strlen($amount)) . $amount;
+        $data .= '5802ID5906ORDORA6005ADMIN6304';
+        $data .= $this->crc16($data);
+
+        return response(QrCode::format('png')->size(300)->generate($data))
+            ->header('Content-Type', 'image/png');
+    }
+
+    private function crc16(string $data): string
+    {
+        $crc = 0xFFFF;
+        for ($i = 0; $i < strlen($data); $i++) {
+            $x = (($crc >> 8) ^ ord($data[$i])) & 0xFF;
+            $x ^= $x >> 4;
+            $crc = (($crc << 8) ^ ($x << 12) ^ ($x << 5) ^ $x) & 0xFFFF;
+        }
+
+        return strtoupper(sprintf('%04x', $crc));
     }
 
     public function history()
