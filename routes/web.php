@@ -35,6 +35,7 @@ Route::prefix('table')->name('table.')->group(function () {
     Route::get('/{qr_token}', [CheckoutController::class, 'showMenu'])->name('menu');
     Route::post('/{qr_token}/cart', [CheckoutController::class, 'addToCart'])->name('cart.add');
     Route::delete('/{qr_token}/cart/{product_id}', [CheckoutController::class, 'removeFromCart'])->name('cart.remove');
+    Route::post('/{qr_token}/place-order', [CheckoutController::class, 'placeOrder'])->name('placeOrder');
 });
 
 // Admin

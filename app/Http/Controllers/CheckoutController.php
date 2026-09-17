@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
@@ -108,6 +109,30 @@ class CheckoutController extends Controller
         session()->forget('cart');
 
         return redirect()->route('table.tracking.show', $order->order_token)->with('order_id', $order->id);
+    }
+
+    public function placeOrder(Request $request, string $qr_token, CreateOrderAction $action): JsonResponse
+    {
+        $table = Table::where('qr_token', $qr_token)->firstOrFail();
+        $validated = $request->validate([
+            'customer_name' => ['required', 'string', 'max:100'],
+            'payment_method' => ['required', 'in:cash,qris'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $cart = array_map(fn ($item) => [
+            'product_id' => $item['product_id'],
+            'quantity' => $item['quantity'],
+        ], $validated['items']);
+
+        $order = $action->execute($cart, $validated['customer_name'], $table->id, PaymentMethod::from($validated['payment_method']));
+
+        return response()->json([
+            'order_id' => $order->id,
+            'order_token' => $order->order_token,
+        ]);
     }
 
     public function showTracking(string $order_token)
