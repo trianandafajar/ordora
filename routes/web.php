@@ -31,6 +31,7 @@ Route::prefix('table')->name('table.')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'showCheckout'])->name('checkout');
     Route::post('/checkout', [CheckoutController::class, 'storeCheckout'])->name('checkout.store');
     Route::get('/tracking/{order_token}', [CheckoutController::class, 'showTracking'])->name('tracking.show');
+    Route::post('/order/{order_token}/confirm', [CheckoutController::class, 'confirmOrder'])->name('order.confirm');
     Route::get('/order/{order_token}', [CheckoutController::class, 'showOrderDetail'])->name('order.detail');
     Route::get('/order/{order_token}/download', [CheckoutController::class, 'downloadReceipt'])->name('order.download');
     Route::get('/order/{order_token}/qris-qr', [CheckoutController::class, 'qrisQr'])->name('order.qrisQr');

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Actions\CreateOrderAction;
+use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Table;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -20,7 +22,7 @@ class CheckoutController extends Controller
         $table = Table::where('qr_token', $qr_token)->firstOrFail();
         session(['table_id' => $table->id, 'table_qr' => $table->qr_token]);
 
-        $categories = Category::with(['products' => fn($q) => $q->where('is_available', true)])->get();
+        $categories = Category::with(['products' => fn ($q) => $q->where('is_available', true)])->get();
 
         return view('customer.menu', compact('table', 'categories'));
     }
@@ -58,13 +60,13 @@ class CheckoutController extends Controller
 
         session(['cart' => $cart]);
 
-        return back()->with('success', $product->name . ' added to cart.');
+        return back()->with('success', $product->name.' added to cart.');
     }
 
     public function removeFromCart(Request $request, string $qr_token)
     {
         $productId = $request->route('product_id');
-        $cart = collect(session('cart', []))->reject(fn($i) => $i['product_id'] == $productId)->values()->all();
+        $cart = collect(session('cart', []))->reject(fn ($i) => $i['product_id'] == $productId)->values()->all();
         session(['cart' => $cart]);
 
         return back()->with('success', 'Item removed from cart.');
@@ -124,7 +126,7 @@ class CheckoutController extends Controller
             'items.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
 
-        $cart = array_map(fn($item) => [
+        $cart = array_map(fn ($item) => [
             'product_id' => $item['product_id'],
             'quantity' => $item['quantity'],
         ], $validated['items']);
@@ -146,6 +148,22 @@ class CheckoutController extends Controller
         return view('customer.tracking', compact('order'));
     }
 
+    public function confirmOrder(string $order_token)
+    {
+        $order = Order::where('order_token', $order_token)->firstOrFail();
+        abort_unless($order->status === OrderStatus::Served, 403);
+
+        $order->update(['status' => OrderStatus::Confirmed]);
+
+        OrderStatusHistory::create([
+            'order_id' => $order->id,
+            'status' => OrderStatus::Confirmed->value,
+            'changed_by' => null,
+        ]);
+
+        return response()->json(['status' => OrderStatus::Confirmed->value]);
+    }
+
     public function showOrderDetail(string $order_token)
     {
         $order = Order::with(['orderItems.product', 'table'])
@@ -163,7 +181,7 @@ class CheckoutController extends Controller
 
         $pdf = Pdf::loadView('customer.order-receipt', compact('order'));
 
-        return $pdf->download('Receipt-Order-#' . $order->id . '.pdf');
+        return $pdf->download('Receipt-Order-#'.$order->id.'.pdf');
     }
 
     public function qrisQr(string $order_token)
@@ -183,7 +201,7 @@ class CheckoutController extends Controller
         // 63: CRC
         $data = '000201010212265000012ID.CO.ORDORA.WWW0118936000000000000002520458415303360';
         $amount = number_format($order->total_price, 2, '.', '');
-        $data .= '54' . sprintf('%02d', strlen($amount)) . $amount;
+        $data .= '54'.sprintf('%02d', strlen($amount)).$amount;
         $data .= '5802ID5906ORDORA6005ADMIN6304';
         $data .= $this->crc16($data);
 

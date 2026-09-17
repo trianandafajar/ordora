@@ -41,7 +41,7 @@
             <div class="rounded-2xl border bg-card shadow-sm p-6">
                 <p id="liveStatus" class="text-sm font-medium text-primary mb-6">Status: {{ $order->status->value }}</p>
                 <ol class="flex items-center justify-between" id="statusList">
-                    @foreach(['pending', 'preparing', 'ready', 'served'] as $i => $state)
+                    @foreach(['pending', 'preparing', 'ready', 'served', 'confirmed'] as $i => $state)
                     <li class="flex flex-1 items-center">
                         <div class="flex flex-col items-center gap-2" data-status="{{ $state }}">
                             <div
@@ -83,8 +83,17 @@
                 @endif
             </div>
 
-            <div id="reorderSection" class="pt-2 space-y-3"
+            <div id="confirmSection" class="pt-2"
                 style="{{ $order->status->value === 'served' ? '' : 'display: none;' }}">
+                <button onclick="confirmReceipt()" id="confirmBtn"
+                    class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 text-white font-semibold h-12 hover:opacity-90 transition-all cursor-pointer">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    I've Received My Order
+                </button>
+            </div>
+
+            <div id="reorderSection" class="pt-2 space-y-3"
+                style="{{ $order->status->value === 'confirmed' ? '' : 'display: none;' }}">
                 <a href="{{ route('table.order.detail', $order->order_token) }}"
                     class="w-full inline-flex items-center justify-center gap-2 rounded-xl border bg-background font-semibold h-12 hover:bg-muted transition-all cursor-pointer">
                     <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,7 +113,7 @@
 
     <script>
         const orderToken = {{ Js::from($order->order_token) }};
-        const orderStatuses = ['pending', 'preparing', 'ready', 'served'];
+        const orderStatuses = ['pending', 'preparing', 'ready', 'served', 'confirmed'];
 
         function renderStatus(status) {
             const currentIndex = orderStatuses.indexOf(status);
@@ -127,9 +136,39 @@
 
             document.getElementById('liveStatus').textContent = `Status: ${status}`;
 
+            const confirmSection = document.getElementById('confirmSection');
+            if (confirmSection) {
+                confirmSection.style.display = status === 'served' ? 'block' : 'none';
+            }
+
             const reorderSection = document.getElementById('reorderSection');
             if (reorderSection) {
-                reorderSection.style.display = status === 'served' ? 'block' : 'none';
+                reorderSection.style.display = status === 'confirmed' ? 'block' : 'none';
+            }
+        }
+
+        async function confirmReceipt() {
+            const btn = document.getElementById('confirmBtn');
+            if (!btn || btn.disabled) return;
+            btn.disabled = true;
+            btn.innerHTML = 'Confirming...';
+
+            try {
+                const res = await fetch(`/table/order/${orderToken}/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Failed');
+                renderStatus(data.status);
+            } catch (e) {
+                console.error(e);
+                btn.disabled = false;
+                btn.innerHTML = `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> I've Received My Order`;
             }
         }
 

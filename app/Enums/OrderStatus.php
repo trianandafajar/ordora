@@ -9,4 +9,5 @@ enum OrderStatus: string
     case Ready = 'ready';
     case Served = 'served';
     case Paid = 'paid';
+    case Confirmed = 'confirmed';
 }
