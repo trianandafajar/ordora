@@ -159,14 +159,17 @@
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json',
+                        'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
                     }
                 });
+                
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Failed');
                 renderStatus(data.status);
             } catch (e) {
                 console.error(e);
+                alert('Error: ' + e.message);
                 btn.disabled = false;
                 btn.innerHTML = `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> I've Received My Order`;
             }
