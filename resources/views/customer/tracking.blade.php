@@ -19,7 +19,8 @@
             <div class="flex h-14 items-center justify-between px-4">
                 <p class="font-bold">Ordora</p>
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('table.history') }}" class="text-xs text-primary font-medium hover:underline">Order History</a>
+                    <a href="{{ route('table.history') }}"
+                        class="text-xs text-primary font-medium hover:underline">Order History</a>
                     <p class="text-xs text-muted-foreground">Order #{{ $order->id }}</p>
                 </div>
             </div>
@@ -45,8 +46,8 @@
                         <div class="flex flex-col items-center gap-2" data-status="{{ $state }}">
                             <div
                                 class="status-dot size-6 rounded-full bg-muted border-2 border-background shadow-sm flex items-center justify-center">
-                                <svg class="size-3 text-primary-foreground hidden" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="size-3 text-primary-foreground hidden" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
                                         d="M5 13l4 4L19 7" />
                                 </svg>
@@ -82,8 +83,16 @@
                 @endif
             </div>
 
-            <div id="reorderSection" class="pt-2"
+            <div id="reorderSection" class="pt-2 space-y-3"
                 style="{{ $order->status->value === 'served' ? '' : 'display: none;' }}">
+                <a href="{{ route('table.order.detail', $order->order_token) }}"
+                    class="w-full inline-flex items-center justify-center gap-2 rounded-xl border bg-background font-semibold h-12 hover:bg-muted transition-all cursor-pointer">
+                    <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    View Details
+                </a>
                 <a href="{{ route('table.menu', $order->table->qr_token) }}"
                     class="w-full inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground font-semibold h-12 hover:opacity-90 transition-all cursor-pointer">
                     Order Again

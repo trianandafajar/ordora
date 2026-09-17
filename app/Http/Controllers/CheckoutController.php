@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,7 +19,7 @@ class CheckoutController extends Controller
         $table = Table::where('qr_token', $qr_token)->firstOrFail();
         session(['table_id' => $table->id, 'table_qr' => $table->qr_token]);
 
-        $categories = Category::with(['products' => fn ($q) => $q->where('is_available', true)])->get();
+        $categories = Category::with(['products' => fn($q) => $q->where('is_available', true)])->get();
 
         return view('customer.menu', compact('table', 'categories'));
     }
@@ -56,13 +57,13 @@ class CheckoutController extends Controller
 
         session(['cart' => $cart]);
 
-        return back()->with('success', $product->name.' added to cart.');
+        return back()->with('success', $product->name . ' added to cart.');
     }
 
     public function removeFromCart(Request $request, string $qr_token)
     {
         $productId = $request->route('product_id');
-        $cart = collect(session('cart', []))->reject(fn ($i) => $i['product_id'] == $productId)->values()->all();
+        $cart = collect(session('cart', []))->reject(fn($i) => $i['product_id'] == $productId)->values()->all();
         session(['cart' => $cart]);
 
         return back()->with('success', 'Item removed from cart.');
@@ -122,7 +123,7 @@ class CheckoutController extends Controller
             'items.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
 
-        $cart = array_map(fn ($item) => [
+        $cart = array_map(fn($item) => [
             'product_id' => $item['product_id'],
             'quantity' => $item['quantity'],
         ], $validated['items']);
@@ -142,6 +143,26 @@ class CheckoutController extends Controller
             ->firstOrFail();
 
         return view('customer.tracking', compact('order'));
+    }
+
+    public function showOrderDetail(string $order_token)
+    {
+        $order = Order::with(['orderItems.product', 'table'])
+            ->where('order_token', $order_token)
+            ->firstOrFail();
+
+        return view('customer.order-detail', compact('order'));
+    }
+
+    public function downloadReceipt(string $order_token)
+    {
+        $order = Order::with(['orderItems.product', 'table'])
+            ->where('order_token', $order_token)
+            ->firstOrFail();
+
+        $pdf = Pdf::loadView('customer.order-receipt', compact('order'));
+
+        return $pdf->download('Receipt-Order-#' . $order->id . '.pdf');
     }
 
     public function history()
