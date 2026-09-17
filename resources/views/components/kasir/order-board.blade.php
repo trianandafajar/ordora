@@ -47,10 +47,10 @@ new class extends Component
     public function statusMeta(): array
     {
         return [
-            'pending' => ['label' => 'Pending', 'description' => 'New orders', 'dot' => 'bg-amber-500', 'surface' => 'bg-amber-500/10', 'line' => 'border-amber-500/30'],
-            'preparing' => ['label' => 'Preparing', 'description' => 'In progress', 'dot' => 'bg-blue-500', 'surface' => 'bg-blue-500/10', 'line' => 'border-blue-500/30'],
-            'ready' => ['label' => 'Ready', 'description' => 'Ready to serve', 'dot' => 'bg-emerald-500', 'surface' => 'bg-emerald-500/10', 'line' => 'border-emerald-500/30'],
-            'served' => ['label' => 'Served', 'description' => 'Completed', 'dot' => 'bg-violet-500', 'surface' => 'bg-violet-500/10', 'line' => 'border-violet-500/30'],
+            'pending' => ['label' => 'Pending', 'description' => 'New orders', 'dot' => 'bg-amber-500', 'surface' => 'bg-amber-500/10', 'text' => 'text-amber-700 dark:text-amber-400', 'line' => 'border-amber-500/20', 'topBar' => 'bg-gradient-to-r from-amber-500 to-amber-500/20'],
+            'preparing' => ['label' => 'Preparing', 'description' => 'In progress', 'dot' => 'bg-blue-500', 'surface' => 'bg-blue-500/10', 'text' => 'text-blue-700 dark:text-blue-400', 'line' => 'border-blue-500/20', 'topBar' => 'bg-gradient-to-r from-blue-500 to-blue-500/20'],
+            'ready' => ['label' => 'Ready', 'description' => 'Ready to serve', 'dot' => 'bg-emerald-500', 'surface' => 'bg-emerald-500/10', 'text' => 'text-emerald-700 dark:text-emerald-400', 'line' => 'border-emerald-500/20', 'topBar' => 'bg-gradient-to-r from-emerald-500 to-emerald-500/20'],
+            'served' => ['label' => 'Served', 'description' => 'Completed', 'dot' => 'bg-violet-500', 'surface' => 'bg-violet-500/10', 'text' => 'text-violet-700 dark:text-violet-400', 'line' => 'border-violet-500/20', 'topBar' => 'bg-gradient-to-r from-violet-500 to-violet-500/20'],
         ];
     }
 
@@ -356,8 +356,13 @@ new class extends Component
 
 <div data-order-board x-data="orderBoardRealtimeState" class="space-y-6">
     <div x-show="toastMessage" x-cloak x-transition
-        class="fixed right-4 top-4 z-50 rounded-xl border bg-card px-4 py-3 text-sm shadow-lg" role="status"><span
-            x-text="toastMessage"></span></div>
+        class="fixed right-4 top-4 z-50 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-card py-3 pe-4 ps-3 text-sm shadow-lg"
+        role="status"><span
+            class="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600"><svg
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="size-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+            </svg></span><span class="font-medium" x-text="toastMessage"></span></div>
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
@@ -414,20 +419,24 @@ new class extends Component
     @if($activeTab === 'orders')
     @php
     $kpiCards = [
-    ['label' => 'Active orders', 'value' => $this->kpis['active_orders'], 'icon' => 'shopping-bag'],
-    ['label' => 'Occupied tables', 'value' => $this->kpis['occupied_tables'], 'icon' => 'table'],
-    ['label' => 'Pending orders', 'value' => $this->kpis['pending_orders'], 'icon' => 'clock'],
+    ['label' => 'Active orders', 'value' => $this->kpis['active_orders'], 'icon' => 'shopping-bag', 'accent' =>
+    'bg-primary/10 text-primary'],
+    ['label' => 'Occupied tables', 'value' => $this->kpis['occupied_tables'], 'icon' => 'table', 'accent' =>
+    'bg-blue-500/10 text-blue-600 dark:text-blue-400'],
+    ['label' => 'Pending orders', 'value' => $this->kpis['pending_orders'], 'icon' => 'clock', 'accent' =>
+    'bg-amber-500/10 text-amber-600 dark:text-amber-400'],
     ['label' => "Today's revenue", 'value' => '$ ' . number_format($this->kpis['today_revenue'], 0, '.', ','), 'icon'
-    => 'banknotes'],
+    => 'banknotes', 'accent' => 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'],
     ];
     @endphp
 
     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         @foreach($kpiCards as $card)
-        <div class="rounded-2xl border bg-card p-4 shadow-sm">
+        <div class="group rounded-2xl border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <div class="flex items-center justify-between text-sm text-muted-foreground">
                 <span>{{ $card['label'] }}</span>
-                <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
+                <div
+                    class="flex size-11 items-center justify-center rounded-xl transition-transform group-hover:scale-105 {{ $card['accent'] }}">
                     @switch($card['icon'])
                     @case('table')
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -465,7 +474,7 @@ new class extends Component
                     @endswitch
                 </div>
             </div>
-            <p class="mt-3 text-2xl font-semibold tracking-tight">{{ $card['value'] }}</p>
+            <p class="mt-4 text-3xl font-bold tracking-tight">{{ $card['value'] }}</p>
         </div>
         @endforeach
     </div>
@@ -474,55 +483,86 @@ new class extends Component
         @foreach($this->activeStatuses() as $status)
         @php($meta = $this->statusMeta()[$status->value]) @php($columnOrders = $this->orderColumns[$status->value] ??
         collect())
-        <section class="min-h-[26rem] rounded-2xl border {{ $meta['line'] }} bg-muted/30 p-3">
+        <section
+            class="relative min-h-[30rem] overflow-hidden rounded-2xl border {{ $meta['line'] }} bg-muted/30 p-3 shadow-sm transition-shadow">
+            <div class="absolute inset-x-0 top-0 h-1 {{ $meta['topBar'] }}"></div>
             <div class="mb-3 flex items-start justify-between">
                 <div>
                     <div class="flex items-center gap-2"><span class="size-2.5 rounded-full {{ $meta['dot'] }}"></span>
-                        <h2 class="font-semibold">{{ $meta['label'] }}</h2>
+                        <h2 class="font-semibold tracking-tight">{{ $meta['label'] }}</h2>
                     </div>
                     <p class="mt-1 text-xs text-muted-foreground">{{ $meta['description'] }}</p>
-                </div><span class="rounded-full {{ $meta['surface'] }} px-2.5 py-1 text-xs font-semibold">{{
+                </div><span
+                    class="rounded-full {{ $meta['surface'] }} {{ $meta['text'] }} px-2.5 py-1 text-xs font-semibold">{{
                     $columnOrders->count() }}</span>
             </div>
             <div class="space-y-3" data-order-column="{{ $status->value }}">
                 @forelse($columnOrders as $order)
                 <article data-order-id="{{ $order->id }}"
-                    class="cursor-grab rounded-xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing"
+                    class="group cursor-grab rounded-xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md active:cursor-grabbing"
                     wire:key="order-{{ $order->id }}">
                     <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <p class="font-semibold">#{{ $order->id }}</p>
-                            <p class="mt-1 text-xs text-muted-foreground">{{ $order->customer_name }}</p>
-                        </div><span class="rounded-md bg-muted px-2 py-1 text-xs font-medium">Table {{
+                        <div class="flex min-w-0 items-center gap-2">
+                            <span
+                                class="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs font-semibold text-muted-foreground">#{{
+                                $order->id }}</span>
+                            <span class="truncate font-semibold">{{ $order->customer_name }}</span>
+                        </div>
+                        <span class="shrink-0 rounded-md border bg-muted/50 px-2 py-1 text-xs font-medium">Table {{
                             $order->table?->number ?? '-' }}</span>
                     </div>
-                    <p class="mt-3 text-xs text-muted-foreground">{{ $order->created_at?->format('d M Y, H:i') }}</p>
-                    <div class="mt-3 space-y-1 border-y py-3 text-sm">@foreach($order->orderItems as $item)<div
-                            class="flex justify-between gap-3"><span class="truncate">{{ $item->quantity }}&times; {{
-                                $item->product->name }}</span><span class="shrink-0 text-muted-foreground">$ {{
+                    <p class="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-3.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                        </svg><span>{{ $order->created_at?->format('d M Y, H:i') }}</span></p>
+                    <div class="mt-3 divide-y divide-border/60 border-y py-1.5 text-sm">@foreach($order->orderItems as
+                        $item)<div class="flex items-center justify-between gap-3 py-1.5"><span
+                                class="flex min-w-0 items-center gap-2"><span
+                                    class="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground">{{
+                                    $item->quantity }}&times;</span><span class="truncate">{{ $item->product->name
+                                    }}</span></span><span class="shrink-0 text-muted-foreground">$ {{
                                 number_format($item->subtotal, 0, '.', ',') }}</span></div>@endforeach</div>
                     <div class="mt-3 flex flex-wrap items-center justify-between gap-2"><span
-                            class="text-sm font-semibold">$ {{ number_format($order->total_price, 0, '.', ',')
+                            class="text-base font-bold">$ {{ number_format($order->total_price, 0, '.', ',')
                             }}</span>
+                        <div class="flex flex-wrap items-center gap-1.5">
                             @if($order->paid_at === null)
                             <button type="button" wire:click="openPaymentDialog({{ $order->id }})"
                                 wire:loading.attr="disabled"
-                                class="rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+                                class="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-600 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-3.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                                </svg>
                                 Confirm Payment
                             </button>
                             @endif
                             @if($next = $this->nextStatus($status))
-                            <button type="button"
-                                wire:click="moveOrder({{ $order->id }}, '{{ $next->value }}')"
+                            <button type="button" wire:click="moveOrder({{ $order->id }}, '{{ $next->value }}')"
                                 wire:loading.attr="disabled"
-                                class="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">{{
+                                class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">{{
                                 $this->statusMeta()[$next->value]['label']
-                                }}</button>
-                            @endif</div>
+                                }}<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="2" stroke="currentColor" class="size-3.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg></button>
+                            @endif
+                        </div>
+                    </div>
                 </article>
                 @empty
-                <div class="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No orders
-                    yet.
+                <div
+                    class="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-7 text-muted-foreground/40">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
+                    </svg>
+                    <p class="text-xs font-medium text-muted-foreground/60">No orders yet.</p>
                 </div>
                 @endforelse
             </div>
