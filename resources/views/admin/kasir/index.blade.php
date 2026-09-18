@@ -23,64 +23,64 @@
             </thead>
             <tbody>
                 @forelse($kasirs as $index => $kasir)
-                <tr class="border-t last:border-0 hover:bg-accent/30">
+                <tr class="border-t last:border-0 hover:bg-accent/30" x-data="{
+                    isActive: @js($kasir->is_active),
+                    toggling: false,
+                    async toggle() {
+                        this.toggling = true;
+
+                        try {
+                            const res = await fetch('{{ route('admin.cashiers.toggle', $kasir) }}', {
+                                method: 'PATCH',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                            });
+
+                            const data = await res.json();
+
+                            if (!res.ok) {
+                                throw new Error(data.message || 'Failed');
+                            }
+
+                            this.isActive = data.is_active;
+
+                            window.dispatchEvent(new CustomEvent('toast', {
+                                detail: {
+                                    message: data.message,
+                                    type: 'success'
+                                }
+                            }));
+                        } catch (e) {
+                            window.dispatchEvent(new CustomEvent('toast', {
+                                detail: {
+                                    message: e.message,
+                                    type: 'error'
+                                }
+                            }));
+                        } finally {
+                            this.toggling = false;
+                        }
+                    }
+                }">
                     <td class="p-4 text-muted-foreground">{{ $index + 1 }}</td>
                     <td class="p-4 font-medium">{{ $kasir->name }}</td>
                     <td class="p-4 text-muted-foreground">{{ $kasir->email }}</td>
                     <td class="p-4 text-center">
-                        <span class="rounded-full px-2.5 py-0.5 text-xs capitalize font-medium
-                            {{ $kasir->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            {{ $kasir->is_active ? 'Active' : 'Inactive' }}
+                        <span class="rounded-full px-2.5 py-0.5 text-xs capitalize font-medium"
+                            :class="isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                            x-text="isActive ? 'Active' : 'Inactive'">
                         </span>
                     </td>
                     <td class="p-4 text-right">
-                        <div class="flex items-center justify-end gap-2" x-data="{
-            isActive: @js($kasir->is_active),
-            toggling: false,
-            async toggle() {
-                this.toggling = true;
-
-                try {
-                    const res = await fetch('{{ route('admin.cashiers.toggle', $kasir) }}', {
-                        method: 'PATCH',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        }
-                    });
-
-                    const data = await res.json();
-
-                    if (!res.ok) {
-                        throw new Error(data.message || 'Failed');
-                    }
-
-                    this.isActive = data.is_active;
-
-                    window.dispatchEvent(new CustomEvent('toast', {
-                        detail: {
-                            message: data.message,
-                            type: 'success'
-                        }
-                    }));
-                } catch (e) {
-                    window.dispatchEvent(new CustomEvent('toast', {
-                        detail: {
-                            message: e.message,
-                            type: 'error'
-                        }
-                    }));
-                } finally {
-                    this.toggling = false;
-                }
-            }
-        }">
+                        <div class="flex items-center justify-end gap-2">
                             <button @click="toggle()" :disabled="toggling" :title="isActive ? 'Deactivate' : 'Activate'"
                                 class="p-1.5 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                 :class="isActive
-                ? 'text-green-600 hover:bg-green-50 hover:text-green-700'
-                : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'">
+                                    ? 'text-green-600 hover:bg-green-50 hover:text-green-700'
+                                    : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'">
                                 <template x-if="isActive">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-4">
