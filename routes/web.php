@@ -4,9 +4,9 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\KasirController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\TableController;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KasirOrderController;
@@ -42,6 +42,7 @@ Route::prefix('table')->name('table.')->group(function () {
     Route::get('/order/{order_token}', [CheckoutController::class, 'showOrderDetail'])->name('order.detail');
     Route::get('/order/{order_token}/download', [CheckoutController::class, 'downloadReceipt'])->name('order.download');
     Route::get('/order/{order_token}/qris-qr', [CheckoutController::class, 'qrisQr'])->name('order.qrisQr');
+    Route::get('/order/{order_token}/cash-qr', [CheckoutController::class, 'cashQr'])->name('order.cashQr');
     Route::get('/history', [CheckoutController::class, 'history'])->name('history');
     Route::get('/{qr_token}', [CheckoutController::class, 'showMenu'])->name('menu');
     Route::post('/{qr_token}/cart', [CheckoutController::class, 'addToCart'])->name('cart.add');

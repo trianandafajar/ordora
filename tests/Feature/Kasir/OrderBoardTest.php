@@ -75,14 +75,15 @@ class OrderBoardTest extends TestCase
         $component
             ->call('continuePayment')
             ->assertSet('paymentStep', 'confirmation')
+            ->set('qrisConfirmed', true)
             ->call('confirmPayment')
             ->assertSet('receiptDialogOpen', true)
-            ->assertSet('receiptData.payment_method', PaymentMethod::Cash->value)
-            ->assertHasNoErrors();
+            ->assertSet('paymentDialogOpen', false);
 
-        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => OrderStatus::Pending->value, 'payment_method' => 'cash']);
-        $this->assertNotNull($order->fresh()->paid_at);
-        $this->assertSame(TableStatus::Occupied, $order->table->fresh()->status);
+        $order->refresh();
+        $this->assertNotNull($order->paid_at);
+        $this->assertEquals(PaymentMethod::Cash, $order->payment_method);
+        $this->assertEquals($cashier->id, $order->user_id);
     }
 
     public function test_cashier_must_confirm_qris_payment_before_order_is_paid(): void

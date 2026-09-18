@@ -236,8 +236,8 @@ new class extends Component
             return;
         }
 
-        if ($method === PaymentMethod::Qris && ! $this->qrisConfirmed) {
-            $this->addError('qrisConfirmed', 'Confirm the QRIS payment first.');
+        if (($method === PaymentMethod::Qris || $method === PaymentMethod::Cash) && ! $this->qrisConfirmed) {
+            $this->addError('qrisConfirmed', 'Confirm the payment first.');
 
             return;
         }
@@ -665,11 +665,11 @@ new class extends Component
             @else
             <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
                 <p>This order will be marked as <strong>paid</strong> using <strong>{{ strtoupper($paymentMethod)
-                        }}</strong>.</p>@if($paymentMethod === 'qris')<label class="mt-4 flex items-start gap-3"><input
+                        }}</strong>.</p>
+                <label class="mt-4 flex items-start gap-3"><input
                         wire:model.live="qrisConfirmed" type="checkbox"
                         class="mt-0.5 rounded border-amber-500 text-primary focus:ring-primary"><span>I have received
-                        and
-                        manually verified the QRIS payment.</span></label>@endif
+                        and verified the payment.</span></label>
             </div>
             @error('qrisConfirmed')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror
             @if($paymentError !== '')<p class="mt-2 text-sm text-destructive">{{ $paymentError }}</p>@endif
@@ -679,7 +679,7 @@ new class extends Component
                 <div class="flex gap-3"><button type="button" wire:click="cancelPayment"
                         class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Cancel</button><button
                         type="button" wire:click="confirmPayment" wire:loading.attr="disabled"
-                        wire:target="confirmPayment" @disabled($paymentMethod==='qris' && ! $qrisConfirmed)
+                        wire:target="confirmPayment" @disabled((($paymentMethod === 'qris' || $paymentMethod === 'cash') && ! $qrisConfirmed))
                         class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"><span
                             wire:loading.remove wire:target="confirmPayment">Confirm Payment</span><span wire:loading
                             wire:target="confirmPayment">Processing...</span></button></div>

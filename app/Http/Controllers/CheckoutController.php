@@ -184,26 +184,12 @@ class CheckoutController extends Controller
         return $pdf->download('Receipt-Order-#'.$order->id.'.pdf');
     }
 
-    public function qrisQr(string $order_token)
+    public function cashQr(string $order_token)
     {
         $order = Order::where('order_token', $order_token)->firstOrFail();
 
-        // Dummy QRIS EMVCo structure
-        // 00: Payload Format Indicator
-        // 01: Point of Initiation Method (11: Static, 12: Dynamic)
-        // 26: Merchant Account Information
-        // 52: Merchant Category Code
-        // 53: Transaction Currency (360: IDR)
-        // 54: Transaction Amount
-        // 58: Country Code (ID)
-        // 59: Merchant Name
-        // 60: Merchant City
-        // 63: CRC
-        $data = '000201010212265000012ID.CO.ORDORA.WWW0118936000000000000002520458415303360';
-        $amount = number_format($order->total_price, 2, '.', '');
-        $data .= '54'.sprintf('%02d', strlen($amount)).$amount;
-        $data .= '5802ID5906ORDORA6005ADMIN6304';
-        $data .= $this->crc16($data);
+        // QR content: just the order token for kasir scanner
+        $data = $order->order_token;
 
         return response(QrCode::format('png')->size(300)->generate($data))
             ->header('Content-Type', 'image/png');

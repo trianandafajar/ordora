@@ -13,10 +13,11 @@
     selected: {},
     checkoutOpen: false,
     qrisOpen: false,
+    cashOpen: false,
     successOpen: false,
     orderToken: null,
     customerName: '',
-    paymentMethod: 'cash',
+    paymentMethod: '',
     loading: false,
 
     get total() {
@@ -142,9 +143,9 @@
                     </label>
                 </div>
                 <button
-                    @click="if (loading) return; loading = true; fetch('{{ route('table.placeOrder', $table->qr_token) }}', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, body: JSON.stringify({customer_name: customerName, payment_method: paymentMethod, items: Object.entries(selected).filter(([id, qty]) => qty > 0).map(([id, qty]) => ({product_id: id, quantity: qty}))})}).then(r => r.json()).then(d => { orderToken = d.order_token; checkoutOpen = false; if(paymentMethod === 'qris') qrisOpen = true; else successOpen = true; }).catch(e => { console.error(e); }).finally(() => { loading = false; })"
+                    @click="if (loading || !paymentMethod || !customerName) return; loading = true; fetch('{{ route('table.placeOrder', $table->qr_token) }}', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, body: JSON.stringify({customer_name: customerName, payment_method: paymentMethod, items: Object.entries(selected).filter(([id, qty]) => qty > 0).map(([id, qty]) => ({product_id: id, quantity: qty}))})}).then(r => r.json()).then(d => { orderToken = d.order_token; checkoutOpen = false; if(paymentMethod === 'qris') qrisOpen = true; else cashOpen = true; }).catch(e => { console.error(e); }).finally(() => { loading = false; })"
                     class="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform disabled:cursor-not-allowed disabled:opacity-60"
-                    :disabled="loading || !customerName">
+                    :disabled="loading || !paymentMethod || !customerName">
                     <span x-show="!loading">Submit</span>
                     <span x-show="loading">Processing...</span>
                 </button>
@@ -169,6 +170,27 @@
                 <button @click="if (qrisOpen) { qrisOpen = false; successOpen = true; }"
                     class="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform cursor-pointer">I've
                     Paid</button>
+            </div>
+        </div>
+
+        {{-- Cash dialog --}}
+        <div x-show="cashOpen" x-cloak @click.outside="cashOpen = false"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" style="display:none">
+            <div class="relative w-full max-w-sm rounded-xl bg-card p-6 shadow-lg text-center" @click.stop>
+                <button @click="cashOpen = false"
+                    class="absolute top-3 right-3 size-8 flex items-center justify-center rounded-full hover:bg-muted cursor-pointer"><svg
+                        class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg></button>
+                <h3 class="text-lg font-semibold mb-2">Cashier Confirmation (Cash)</h3>
+                <div class="size-48 bg-white mx-auto flex items-center justify-center rounded-lg overflow-hidden my-4">
+                    <img :src="`/table/order/${orderToken}/cash-qr`" alt="Cash QR" class="size-48">
+                </div>
+                <p class="text-sm text-muted-foreground mb-4">Show this QR code to the cashier to confirm the cash
+                    payment.</p>
+                <button @click="cashOpen = false; successOpen = true;"
+                    class="w-full h-12 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform cursor-pointer">Confirmed</button>
             </div>
         </div>
 
