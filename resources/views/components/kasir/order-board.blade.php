@@ -47,10 +47,10 @@ new class extends Component
     public function statusMeta(): array
     {
         return [
-            'pending' => ['label' => 'Pending', 'description' => 'New orders', 'dot' => 'bg-amber-500', 'surface' => 'bg-amber-500/10', 'text' => 'text-amber-700 dark:text-amber-400', 'line' => 'border-amber-500/20', 'topBar' => 'bg-gradient-to-r from-amber-500 to-amber-500/20'],
-            'preparing' => ['label' => 'Preparing', 'description' => 'In progress', 'dot' => 'bg-blue-500', 'surface' => 'bg-blue-500/10', 'text' => 'text-blue-700 dark:text-blue-400', 'line' => 'border-blue-500/20', 'topBar' => 'bg-gradient-to-r from-blue-500 to-blue-500/20'],
-            'ready' => ['label' => 'Ready', 'description' => 'Ready to serve', 'dot' => 'bg-emerald-500', 'surface' => 'bg-emerald-500/10', 'text' => 'text-emerald-700 dark:text-emerald-400', 'line' => 'border-emerald-500/20', 'topBar' => 'bg-gradient-to-r from-emerald-500 to-emerald-500/20'],
-            'served' => ['label' => 'Served', 'description' => 'Completed', 'dot' => 'bg-violet-500', 'surface' => 'bg-violet-500/10', 'text' => 'text-violet-700 dark:text-violet-400', 'line' => 'border-violet-500/20', 'topBar' => 'bg-gradient-to-r from-violet-500 to-violet-500/20'],
+            'pending' => ['label' => 'Pending', 'description' => 'New orders', 'dot' => 'bg-amber-500', 'surface' => 'bg-amber-500/10', 'text' => 'text-amber-700 dark:text-amber-400', 'line' => 'border-amber-500/20', 'topBar' => 'bg-amber-500'],
+            'preparing' => ['label' => 'Preparing', 'description' => 'In progress', 'dot' => 'bg-blue-500', 'surface' => 'bg-blue-500/10', 'text' => 'text-blue-700 dark:text-blue-400', 'line' => 'border-blue-500/20', 'topBar' => 'bg-blue-500'],
+            'ready' => ['label' => 'Ready', 'description' => 'Ready to serve', 'dot' => 'bg-emerald-500', 'surface' => 'bg-emerald-500/10', 'text' => 'text-emerald-700 dark:text-emerald-400', 'line' => 'border-emerald-500/20', 'topBar' => 'bg-emerald-500'],
+            'served' => ['label' => 'Served', 'description' => 'Completed', 'dot' => 'bg-violet-500', 'surface' => 'bg-violet-500/10', 'text' => 'text-violet-700 dark:text-violet-400', 'line' => 'border-violet-500/20', 'topBar' => 'bg-violet-500'],
         ];
     }
 
@@ -486,7 +486,7 @@ new class extends Component
         @php($meta = $this->statusMeta()[$status->value]) @php($columnOrders = $this->orderColumns[$status->value] ??
         collect())
         <section
-            class="relative min-h-[30rem] overflow-hidden rounded-2xl border {{ $meta['line'] }} bg-muted/30 p-3 shadow-sm transition-shadow">
+            class="relative min-h-[30rem] overflow-hidden rounded-2xl border {{ $meta['line'] }} bg-card p-3 shadow-sm transition-shadow">
             <div class="absolute inset-x-0 top-0 h-1 {{ $meta['topBar'] }}"></div>
             <div class="mb-3 flex items-start justify-between">
                 <div>
@@ -630,7 +630,7 @@ new class extends Component
                     aria-label="Close">&times;</button>
             </div>
             @if($paymentData !== [])
-            <div class="mt-5 rounded-xl border bg-muted/30 p-4">
+            <div class="mt-5 rounded-xl border bg-card p-4">
                 <div class="flex justify-between gap-3 text-sm"><span>{{ $paymentData['customer_name']
                         }}</span><span>Table
                         {{ $paymentData['table_number'] ?? '-' }}</span></div>
@@ -703,7 +703,7 @@ new class extends Component
                     class="rounded-lg p-2 text-muted-foreground hover:bg-muted cursor-pointer"
                     aria-label="Close">&times;</button>
             </div>
-            <div class="mt-5 space-y-3 rounded-xl border bg-muted/30 p-4 text-sm">
+            <div class="mt-5 space-y-3 rounded-xl border bg-card p-4 text-sm">
                 <div class="flex justify-between gap-3"><span>Customer</span><span class="font-medium">{{
                         $receiptData['customer_name'] ?? '-' }}</span></div>
                 <div class="flex justify-between gap-3"><span>Table</span><span class="font-medium">{{
