@@ -142,7 +142,6 @@ new class extends Component
             (new UpdateOrderStatusAction())->execute($order, $target, $user->id);
         });
 
-        $this->refreshBoard();
         $this->dispatch('order-board-toast', message: 'Order status updated successfully.');
     }
 
