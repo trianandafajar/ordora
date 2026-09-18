@@ -7,15 +7,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (DB::getDriverName() !== 'sqlite') {
-            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'preparing', 'ready', 'served', 'paid', 'confirmed') DEFAULT 'pending'");
-        }
+        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'preparing', 'ready', 'served', 'paid', 'confirmed') DEFAULT 'pending'");
     }
 
     public function down(): void
     {
-        if (DB::getDriverName() !== 'sqlite') {
-            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'preparing', 'ready', 'served', 'paid') DEFAULT 'pending'");
-        }
+        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'preparing', 'ready', 'served', 'paid') DEFAULT 'pending'");
     }
 };
