@@ -219,6 +219,11 @@
             window.__ordoraTrackingChannel = channel;
             channel.listen('.order.status.updated', (payload) => {
                 if (payload?.order?.status) {
+                    if (payload.order.status === 'paid') {
+                        window.location.reload();
+                        return;
+                    }
+
                     renderStatus(payload.order.status);
 
                     // update status in localStorage history

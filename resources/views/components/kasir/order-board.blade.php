@@ -86,9 +86,10 @@
             ];
         }
 
-        public function updatedPaymentStep($step)
+        private function setPaymentStep(string $step): void
         {
-            $this->dispatch('paymentStepChanged', $step);
+            $this->paymentStep = $step;
+            $this->dispatch('paymentStepChanged', step: $step);
         }
 
         #[Computed]
@@ -212,9 +213,7 @@
             $this->qrisConfirmed = false;
             $this->paymentData = $this->serializeOrder($order);
 
-            $this->resetErrorBag();
-            $this->paymentError = '';
-            $this->paymentStep = $selectedMethod->value === PaymentMethod::Cash->value ? 'scan' : 'confirmation';
+            $this->setPaymentStep($selectedMethod->value === PaymentMethod::Cash->value ? 'scan' : 'confirmation');
         }
 
         public function selectPaymentMethod(string $method): void
@@ -249,6 +248,7 @@
             if (! $order || $order->paid_at !== null) {
                 $this->paymentError = 'This order has changed and cannot be paid from this dialog.';
                 $this->paymentDialogOpen = false;
+                $this->resetPaymentState();
                 $this->refreshBoard();
 
                 return;
@@ -256,7 +256,23 @@
 
             $this->resetErrorBag();
             $this->paymentError = '';
-            $this->paymentStep = $this->paymentMethod === 'cash' ? 'scan' : 'confirmation';
+            $this->setPaymentStep($this->paymentMethod === PaymentMethod::Cash->value ? 'scan' : 'confirmation');
+        }
+
+        public function handleScan(string $decodedText): void
+        {
+            abort_unless(auth()->user()?->role === UserRole::Kasir, 403);
+
+            if (! $this->paymentDialogOpen || $this->paymentStep !== 'scan' || $this->paymentOrderId === null) {
+                return;
+            }
+
+            $this->qrisConfirmed = true;
+            $this->confirmPayment();
+
+            if ($this->paymentDialogOpen) {
+                $this->dispatch('paymentStepChanged', step: 'scan');
+            }
         }
 
         public function confirmPayment(): void
@@ -291,11 +307,13 @@
                 );
             } catch (ValidationException $exception) {
                 $this->paymentError = $exception->validator->errors()->first() ?? 'The payment could not be processed.';
+                $this->qrisConfirmed = false;
                 $this->refreshBoard();
 
                 return;
             } catch (ModelNotFoundException) {
                 $this->paymentError = 'The order could not be found.';
+                $this->qrisConfirmed = false;
                 $this->refreshBoard();
 
                 return;
@@ -377,13 +395,15 @@
 
         private function resetPaymentState(): void
         {
-            $this->paymentStep = 'method';
             $this->paymentOrderId = null;
             $this->paymentMethod = PaymentMethod::Cash->value;
             $this->qrisConfirmed = false;
             $this->paymentData = [];
             $this->paymentError = '';
             $this->resetErrorBag();
+
+            // Step 'method' => JS mematikan kamera.
+            $this->setPaymentStep('method');
         }
     };
     ?>
@@ -451,7 +471,7 @@
         </div>
     </div>
 
-    <div wire:loading wire:target="moveOrder,confirmPayment"
+    <div wire:loading wire:target="moveOrder,confirmPayment,handleScan"
         class="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">Updating order...</div>
     @error('status')<div
         class="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{{ $message
@@ -719,17 +739,30 @@
                         number_format((float) $paymentData['total_price'], 0, ',', '.') }}</span></div>
             </div>
             @endif
-            @if($paymentStep === 'method')
-            {{-- Method selection dihilangkan, langsung ke scanner untuk cash --}}
-            @elseif($paymentStep === 'scan')
-            <div class="mt-5 rounded-xl border bg-black p-4">
-                <video id="qr-camera" class="w-full h-64" autoplay playsinline></video>
+
+            @if($paymentStep === 'scan')
+            <div class="mt-5 min-h-64 overflow-hidden rounded-xl border bg-black" wire:ignore>
+                <div id="qr-camera" class="w-full"></div>
             </div>
             <p class="mt-2 text-sm text-muted-foreground">Scan the user's QR code to confirm the payment automatically.
             </p>
+            @error('qrisConfirmed')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror
             <div class="mt-6 flex justify-end gap-3">
                 <button type="button" wire:click="cancelPayment"
                     class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Cancel</button>
+            </div>
+            @elseif($paymentStep === 'confirmation')
+            <label class="mt-5 flex items-center gap-2 text-sm">
+                <input type="checkbox" wire:model.live="qrisConfirmed" class="size-4 rounded border">
+                Payment has been received
+            </label>
+            @error('qrisConfirmed')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" wire:click="cancelPayment"
+                    class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Cancel</button>
+                <button type="button" wire:click="confirmPayment" wire:loading.attr="disabled"
+                    class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">Confirm
+                    Payment</button>
             </div>
             @endif
         </div>
@@ -781,56 +814,87 @@
     @endif
 </div>
 
+@assets
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+@endassets
+
 @script
-<script src="https://unpkg.com/html5-qrcode"></script>
 <script>
     const subscribeToKasirOrders = () => {
-            if (window.__ordoraKasirOrdersChannel || !window.Echo) return;
+        if (window.__ordoraKasirOrdersChannel || !window.Echo) return;
 
-            const channel = window.Echo.private('kasir-orders');
-            window.__ordoraKasirOrdersChannel = channel;
+        const channel = window.Echo.private('kasir-orders');
+        window.__ordoraKasirOrdersChannel = channel;
 
-            channel.listen('.order.status.updated', (payload) => {
-                $wire.$dispatch('order-board-refresh');
-                window.dispatchEvent(new CustomEvent('order-realtime', { detail: payload }));
-            });
+        channel.listen('.order.status.updated', (payload) => {
+            $wire.$dispatch('order-board-refresh');
+            window.dispatchEvent(new CustomEvent('order-realtime', { detail: payload }));
+        });
+    };
+
+    subscribeToKasirOrders();
+    window.addEventListener('ordora-echo-ready', subscribeToKasirOrders);
+
+    const waitForEl = (id, tries = 20) => new Promise((resolve) => {
+        const tick = (n) => {
+            const el = document.getElementById(id);
+            if (el || n <= 0) return resolve(el);
+            setTimeout(() => tick(n - 1), 50);
+        };
+        tick(tries);
+    });
+
+    const stopScanner = async () => {
+        const scanner = window.html5QrCode;
+        window.html5QrCode = null;
+        if (!scanner) return;
+        try {
+            if (scanner.isScanning) await scanner.stop();
+            scanner.clear();
+        } catch (_) {}
+    };
+
+    const startScanner = async () => {
+        await stopScanner();
+
+        const el = await waitForEl('qr-camera');
+        if (!el) return;
+
+        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+            alert('Kamera hanya bisa diakses lewat HTTPS atau localhost.');
+            return;
+        }
+
+        const scanner = new Html5Qrcode('qr-camera', {
+            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        });
+        window.html5QrCode = scanner;
+
+        let handled = false;
+        const onScan = async (decodedText) => {
+            if (handled) return;
+            handled = true;
+            await stopScanner();
+            $wire.handleScan(decodedText);
         };
 
-        subscribeToKasirOrders();
-        window.addEventListener('ordora-echo-ready', subscribeToKasirOrders);
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
-        document.addEventListener('livewire:navigated', () => {
-            let html5QrCode;
-            Livewire.on('paymentStepChanged', (data) => {
-                const step = Array.isArray(data) ? data[0] : data;
-                if (step === 'scan') {
-                    setTimeout(() => {
-                        if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-camera");
-                        html5QrCode.start(
-                            { facingMode: "environment" },
-                            { fps: 10, qrbox: { width: 250, height: 250 } },
-                            (decodedText) => {
-                                html5QrCode.stop().then(() => {
-                                    $wire.confirmPayment();
-                                }).catch(() => {});
-                            }
-                        ).catch(err => {
-                            console.error('Camera error', err);
-                            html5QrCode.start(
-                                { facingMode: "user" },
-                                { fps: 10, qrbox: { width: 250, height: 250 } },
-                                (decodedText) => {
-                                    html5QrCode.stop().then(() => {
-                                        $wire.confirmPayment();
-                                    }).catch(() => {});
-                                }
-                            ).catch(err2 => console.error('Both cameras failed', err2));
-                        });
-                    }, 500);
-                } else if (html5QrCode && html5QrCode.isScanning) {
-                    html5QrCode.stop().catch(() => {});
-                }
-            });
-        });
+        try {
+            await scanner.start({ facingMode: 'environment' }, config, onScan);
+        } catch (_) {
+            try {
+                await scanner.start({ facingMode: 'user' }, config, onScan);
+            } catch (err) {
+                console.error('Camera access denied or not found:', err);
+                alert('Kamera tidak bisa diakses. Pastikan izin kamera aktif.');
+            }
+        }
+    };
+
+    $wire.on('paymentStepChanged', (payload) => {
+        const step = Array.isArray(payload) ? payload[0] : (payload?.step ?? payload);
+        step === 'scan' ? startScanner() : stopScanner();
+    });
 </script>
 @endscript
