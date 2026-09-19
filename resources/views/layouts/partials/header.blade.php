@@ -18,9 +18,6 @@
                     d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM9 4v16" />
             </svg>
         </button>
-        <div class="hidden sm:block">
-            <span class="text-xs text-muted-foreground">Ordora Coffee Shop</span>
-        </div>
     </div>
 
     <div class="flex items-center gap-3">
