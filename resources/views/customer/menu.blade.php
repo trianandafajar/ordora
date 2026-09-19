@@ -147,7 +147,7 @@
                     </label> --}}
                 </div>
                 <button
-                    @click="if (loading || !paymentMethod || !customerName) return; loading = true; fetch('{{ route('table.placeOrder', $table->qr_token) }}', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, body: JSON.stringify({customer_name: customerName, payment_method: paymentMethod, items: Object.entries(selected).filter(([id, qty]) => qty > 0).map(([id, qty]) => ({product_id: id, quantity: qty}))})}).then(r => r.json()).then(d => { orderToken = d.order_token; checkoutOpen = false; if(paymentMethod === 'qris') qrisOpen = true; else cashOpen = true; }).catch(e => { console.error(e); }).finally(() => { loading = false; })"
+                    @click="if (loading || !paymentMethod || !customerName) return; loading = true; fetch('{{ route('table.placeOrder', $table->qr_token) }}', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, body: JSON.stringify({customer_name: customerName, payment_method: paymentMethod, items: Object.entries(selected).filter(([id, qty]) => qty > 0).map(([id, qty]) => ({product_id: id, quantity: qty}))})}).then(r => r.json()).then(d => { orderToken = d.order_token; checkoutOpen = false; if(paymentMethod === 'qris') { qrisOpen = true; subscribeToOrderChannelMenu(); } else { cashOpen = true; subscribeToOrderChannelMenu(); } }).catch(e => { console.error(e); }).finally(() => { loading = false; })"
                     class="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform disabled:cursor-not-allowed disabled:opacity-60"
                     :disabled="loading || !paymentMethod || !customerName">
                     <span x-show="!loading">Submit</span>
@@ -155,6 +155,21 @@
                 </button>
             </div>
         </div>
+
+        <script>
+            function subscribeToOrderChannelMenu() {
+                if (window.__ordoraMenuChannel || !window.Echo || !orderToken) return;
+
+                const channel = window.Echo.channel(`order.${orderToken}`);
+                window.__ordoraMenuChannel = channel;
+                channel.listen('.order.status.updated', (payload) => {
+                    if (payload?.order?.status === 'paid') {
+                        window.location = '/table/tracking/' + orderToken;
+                    }
+                });
+            }
+            window.addEventListener('ordora-echo-ready', subscribeToOrderChannelMenu);
+        </script>
 
         {{-- QRIS dialog --}}
         <div x-show="qrisOpen" x-cloak @click.outside="qrisOpen = false"
