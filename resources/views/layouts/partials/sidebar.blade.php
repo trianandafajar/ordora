@@ -1,15 +1,19 @@
 <div class="flex flex-col h-full w-full bg-sidebar text-sidebar-foreground">
     <div class="flex items-center gap-2 h-16 border-b border-sidebar-border {{ $mobile ? 'px-6' : 'px-4' }}"
         @unless($mobile) :class="(sidebarOpen || hoverOpen) ? 'px-6' : 'px-4 justify-center'" @endunless>
-        <div class="rounded-lg flex items-center justify-center shrink-0">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-10">
-        </div>
-        <div class="flex flex-col flex-1" @unless($mobile) x-show="sidebarOpen || hoverOpen" x-cloak
-            x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100" @endunless>
-            <span class="font-bold text-sm tracking-tight whitespace-nowrap">Ordora</span>
-            <span class="text-xs text-sidebar-foreground/60 whitespace-nowrap">Coffee Shop OS</span>
-        </div>
+        <a href="{{ auth()->user()->role->value === 'admin' ? route('admin.dashboard') : route('cashier.dashboard') }}"
+            @if($mobile) @click="mobileOpen = false" @endif
+            class="group flex min-w-0 flex-1 items-center gap-2 rounded-lg p-1 -ml-1 transition-colors hover:bg-sidebar-accent/50 focus:outline-none focus:ring-2 focus:ring-sidebar-ring"
+            aria-label="Kembali ke dashboard">
+            <div class="rounded-lg flex items-center justify-center shrink-0">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo Ordora" class="h-10 w-10 object-cover">
+            </div>
+            <div class="flex min-w-0 flex-col" @unless($mobile) x-show="sidebarOpen || hoverOpen" x-cloak
+                x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100" @endunless>
+                <span class="font-bold text-lg tracking-tight whitespace-nowrap">Ordora</span>
+            </div>
+        </a>
         @if($mobile)
         <button @click="mobileOpen = false"
             class="p-1.5 rounded hover:bg-sidebar-accent/50 transition-colors cursor-pointer"
