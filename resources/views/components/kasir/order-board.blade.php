@@ -47,10 +47,42 @@
         public function statusMeta(): array
         {
             return [
-                'pending' => ['label' => 'Pending', 'description' => 'New orders', 'dot' => 'bg-amber-500', 'surface' => 'bg-amber-500/10', 'text' => 'text-amber-700 dark:text-amber-400', 'line' => 'border-amber-500/20', 'topBar' => 'bg-amber-500'],
-                'preparing' => ['label' => 'Preparing', 'description' => 'In progress', 'dot' => 'bg-blue-500', 'surface' => 'bg-blue-500/10', 'text' => 'text-blue-700 dark:text-blue-400', 'line' => 'border-blue-500/20', 'topBar' => 'bg-blue-500'],
-                'ready' => ['label' => 'Ready', 'description' => 'Ready to serve', 'dot' => 'bg-emerald-500', 'surface' => 'bg-emerald-500/10', 'text' => 'text-emerald-700 dark:text-emerald-400', 'line' => 'border-emerald-500/20', 'topBar' => 'bg-emerald-500'],
-                'served' => ['label' => 'Served', 'description' => 'Completed', 'dot' => 'bg-violet-500', 'surface' => 'bg-violet-500/10', 'text' => 'text-violet-700 dark:text-violet-400', 'line' => 'border-violet-500/20', 'topBar' => 'bg-violet-500'],
+                'pending' => [
+                    'label' => 'Pending',
+                    'description' => 'New orders',
+                    'icon' => 'clock',
+                    'surface' => 'bg-amber-500/10',
+                    'text' => 'text-amber-700 dark:text-amber-400',
+                    'line' => 'border-amber-500/20',
+                    'topBar' => 'bg-amber-500',
+                ],
+
+                'preparing' => [
+                    'label' => 'Preparing',
+                    'description' => 'In progress',
+                    'icon' => 'arrow-path',
+                    'surface' => 'bg-blue-500/10',
+                    'text' => 'text-blue-700 dark:text-blue-400',
+                    'line' => 'border-blue-500/20',
+                ],
+
+                'ready' => [
+                    'label' => 'Ready',
+                    'description' => 'Ready to serve',
+                    'icon' => 'check-circle',
+                    'surface' => 'bg-emerald-500/10',
+                    'text' => 'text-emerald-700 dark:text-emerald-400',
+                    'line' => 'border-emerald-500/20',
+                ],
+
+                'served' => [
+                    'label' => 'Served',
+                    'description' => 'Completed',
+                    'icon' => 'check-badge',
+                    'surface' => 'bg-violet-500/10',
+                    'text' => 'text-violet-700 dark:text-violet-400',
+                    'line' => 'border-violet-500/20',
+                ],
             ];
         }
 
@@ -502,7 +534,39 @@
             class="relative min-h-[30rem] overflow-hidden rounded-2xl border {{ $meta['line'] }} bg-card p-3 shadow-sm transition-shadow">
             <div class="mb-3 flex items-start justify-between">
                 <div>
-                    <div class="flex items-center gap-2"><span class="size-2.5 rounded-full {{ $meta['dot'] }}"></span>
+                    <div class="flex items-center gap-2">
+                        <svg class="size-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                            stroke="currentColor">
+                            @switch($meta['icon'])
+
+                            {{-- Pending --}}
+                            @case('clock')
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            @break
+
+                            {{-- Preparing --}}
+                            @case('arrow-path')
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M16.023 9.348h4.992V4.356m-1.59 3.24a9 9 0 1 0 1.27 8.126" />
+                            @break
+
+                            {{-- Ready --}}
+                            @case('check-circle')
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m9 12.75 2.25 2.25 4.5-4.5" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            @break
+
+                            {{-- Served --}}
+                            @case('check-badge')
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m9 12.75 2.25 2.25 4.5-4.5" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.746 3.746 0 0 1 1.043-3.296 3.745 3.745 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                            @break
+
+                            @endswitch
+                        </svg>
                         <h2 class="font-semibold tracking-tight">{{ $meta['label'] }}</h2>
                     </div>
                     <p class="mt-1 text-xs text-muted-foreground">{{ $meta['description'] }}</p>
