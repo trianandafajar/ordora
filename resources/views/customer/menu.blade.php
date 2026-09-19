@@ -194,8 +194,7 @@
                 </div>
                 <p class="text-sm text-muted-foreground mb-4">Show this QR code to the cashier to confirm the cash
                     payment.</p>
-                <button @click="cashOpen = false; successOpen = true;"
-                    class="w-full h-12 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform cursor-pointer">Confirmed</button>
+                {{-- Button removed: cashier will scan QR to confirm automatically --}}
             </div>
         </div>
 

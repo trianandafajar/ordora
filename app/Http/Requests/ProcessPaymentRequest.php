@@ -21,7 +21,7 @@ class ProcessPaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'payment_method' => ['required', 'in:cash,qris'],
+            'payment_method' => ['required', 'in:cash'],
         ];
     }
 }

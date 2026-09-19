@@ -14,6 +14,7 @@ class OrderHistory extends Component
     public string $search = '';
 
     public string $historyFrom = '';
+
     public string $historyTo = '';
 
     #[Computed]
@@ -47,7 +48,7 @@ class OrderHistory extends Component
         $query->where(function (Builder $builder) use ($search): void {
             $builder->where('customer_name', 'like', "%{$search}%")
                 ->orWhere('id', 'like', "%{$search}%")
-                ->orWhereHas('table', fn(Builder $table): Builder => $table->where('number', 'like', "%{$search}%"));
+                ->orWhereHas('table', fn (Builder $table): Builder => $table->where('number', 'like', "%{$search}%"));
         });
     }
 

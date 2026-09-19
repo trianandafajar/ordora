@@ -54,6 +54,11 @@ new class extends Component
         ];
     }
 
+    public function updatedPaymentStep($step)
+    {
+        $this->dispatch('paymentStepChanged', $step);
+    }
+
     #[Computed]
     public function orderColumns(): array
     {
@@ -175,11 +180,9 @@ new class extends Component
         $this->qrisConfirmed = false;
         $this->paymentData = $this->serializeOrder($order);
 
-        if ($order->payment_method !== null) {
-            $this->paymentStep = 'confirmation';
-        } else {
-            $this->paymentStep = 'method';
-        }
+        $this->resetErrorBag();
+        $this->paymentError = '';
+        $this->paymentStep = $selectedMethod->value === PaymentMethod::Cash->value ? 'scan' : 'confirmation';
     }
 
     public function selectPaymentMethod(string $method): void
@@ -221,7 +224,7 @@ new class extends Component
 
         $this->resetErrorBag();
         $this->paymentError = '';
-        $this->paymentStep = 'confirmation';
+        $this->paymentStep = $this->paymentMethod === 'cash' ? 'scan' : 'confirmation';
     }
 
     public function confirmPayment(): void
@@ -656,43 +659,14 @@ new class extends Component
             </div>
             @endif
             @if($paymentStep === 'method')
-            <p class="mt-5 text-sm text-muted-foreground">Select the payment method received from the customer.</p>
-            <div class="mt-3 grid grid-cols-2 gap-3"><button type="button" wire:click="selectPaymentMethod('cash')"
-                    class="rounded-xl border p-4 text-left cursor-pointer {{ $paymentMethod === 'cash' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span
-                        class="block font-semibold">Cash</span><span
-                        class="mt-1 block text-xs text-muted-foreground">Cash
-                        payment</span></button><button type="button" wire:click="selectPaymentMethod('qris')"
-                    class="rounded-xl border p-4 text-left cursor-pointer {{ $paymentMethod === 'qris' ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'hover:bg-muted' }}"><span
-                        class="block font-semibold">QRIS</span><span
-                        class="mt-1 block text-xs text-muted-foreground">Manual
-                        confirmation</span></button></div>
-            @error('paymentMethod')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror
-            <div class="mt-6 flex justify-end gap-3"><button type="button" wire:click="cancelPayment"
-                    class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Cancel</button><button
-                    type="button" wire:click="continuePayment"
-                    class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer">Continue</button>
+            {{-- Method selection dihilangkan, langsung ke scanner untuk cash --}}
+            @elseif($paymentStep === 'scan')
+            <div class="mt-5 rounded-xl border bg-black p-4">
+                <video id="qr-camera" class="w-full h-64" autoplay playsinline></video>
             </div>
-            @else
-            <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-                <p>This order will be marked as <strong>paid</strong> using <strong>{{ strtoupper($paymentMethod)
-                        }}</strong>.</p>
-                <label class="mt-4 flex items-start gap-3"><input wire:model.live="qrisConfirmed" type="checkbox"
-                        class="mt-0.5 rounded border-amber-500 text-primary focus:ring-primary"><span>I have received
-                        and verified the payment.</span></label>
-            </div>
-            @error('qrisConfirmed')<p class="mt-2 text-sm text-destructive">{{ $message }}</p>@enderror
-            @if($paymentError !== '')<p class="mt-2 text-sm text-destructive">{{ $paymentError }}</p>@endif
-            <div class="mt-6 flex justify-between gap-3"><button type="button"
-                    wire:click="$set('paymentStep', 'method')"
-                    class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Back</button>
-                <div class="flex gap-3"><button type="button" wire:click="cancelPayment"
-                        class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Cancel</button><button
-                        type="button" wire:click="confirmPayment" wire:loading.attr="disabled"
-                        wire:target="confirmPayment" @disabled((($paymentMethod==='qris' || $paymentMethod==='cash' ) &&
-                        ! $qrisConfirmed))
-                        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"><span
-                            wire:loading.remove wire:target="confirmPayment">Confirm Payment</span><span wire:loading
-                            wire:target="confirmPayment">Processing...</span></button></div>
+            <p class="mt-2 text-sm text-muted-foreground">Scan the user's QR code to confirm the payment automatically.</p>
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" wire:click="cancelPayment" class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Cancel</button>
             </div>
             @endif
         </div>
@@ -745,6 +719,7 @@ new class extends Component
 </div>
 
 @script
+<script src="https://unpkg.com/html5-qrcode"></script>
 <script>
     const subscribeToKasirOrders = () => {
         if (window.__ordoraKasirOrdersChannel || !window.Echo) return;
@@ -760,5 +735,39 @@ new class extends Component
 
     subscribeToKasirOrders();
     window.addEventListener('ordora-echo-ready', subscribeToKasirOrders);
+
+    document.addEventListener('livewire:navigated', () => {
+        let html5QrCode;
+        Livewire.on('paymentStepChanged', (data) => {
+            const step = Array.isArray(data) ? data[0] : data;
+            if (step === 'scan') {
+                setTimeout(() => {
+                    if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-camera");
+                    html5QrCode.start(
+                        { facingMode: "environment" },
+                        { fps: 10, qrbox: { width: 250, height: 250 } },
+                        (decodedText) => {
+                            html5QrCode.stop().then(() => {
+                                $wire.confirmPayment();
+                            }).catch(() => {});
+                        }
+                    ).catch(err => {
+                        console.error('Camera error', err);
+                        html5QrCode.start(
+                            { facingMode: "user" },
+                            { fps: 10, qrbox: { width: 250, height: 250 } },
+                            (decodedText) => {
+                                html5QrCode.stop().then(() => {
+                                    $wire.confirmPayment();
+                                }).catch(() => {});
+                            }
+                        ).catch(err2 => console.error('Both cameras failed', err2));
+                    });
+                }, 500);
+            } else if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(() => {});
+            }
+        });
+    });
 </script>
 @endscript
