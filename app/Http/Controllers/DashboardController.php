@@ -138,4 +138,9 @@ class DashboardController extends Controller
     {
         return view('kasir.dashboard');
     }
+
+    public function history(): View
+    {
+        return view('kasir.history');
+    }
 }

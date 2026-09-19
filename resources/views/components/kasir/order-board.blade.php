@@ -363,50 +363,61 @@ new class extends Component
                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
             </svg></span><span class="font-medium" x-text="toastMessage"></span></div>
 
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-            <h1 class="mt-1 text-3xl font-semibold tracking-tight">Live order board</h1>
-            <p class="mt-2 text-sm text-muted-foreground">Monitor and process customer orders in real time.</p>
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-semibold tracking-tight text-foreground"> Live order board </h1>
+            <p class="max-w-xl text-sm leading-6 text-muted-foreground">
+                Monitor and process customer orders in realtime.
+            </p>
         </div>
-        <div class="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-sm">
-            <span class="size-2 rounded-full bg-emerald-500"></span>
-            <span class="font-medium" x-text="formattedNow()"></span>
-            <button type="button"
-                class="ml-2 inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted"
-                @click="toggleSound()">
-                <svg x-show="soundEnabled" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke-width="1.5" stroke="currentColor" class="size-5">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center">
+            <label class="relative min-w-0 md:w-72"> <span class="sr-only">Search orders</span> <svg
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                    stroke="currentColor"
+                    class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground">
                     <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
+                        d="m21 21-4.35-4.35m1.35-5.4a6.75 6.75 0 1 1-13.5 0 6.75 6.75 0 0 1 13.5 0Z" />
+                </svg> <input wire:model.live.debounce.300ms="search" type="search" placeholder="Search orders..."
+                    class="h-11 w-full rounded-xl border bg-card pl-10 pr-4 text-sm outline-none transition placeholder:text-muted-foreground/70 focus:border-primary/40 focus:ring-4 focus:ring-primary/10">
+            </label>
+            <div class="relative"> <select wire:model.live="statusFilter"
+                    class="h-11 w-full appearance-none rounded-xl border bg-card px-4 pr-10 text-sm font-medium outline-none transition focus:border-primary/40 focus:ring-4 focus:ring-primary/10 md:w-40">
+                    <option value="all">All statuses</option> @foreach($this->activeStatuses() as $status) <option
+                        value="{{ $status->value }}"> {{ $this->statusMeta()[$status->value]['label'] }} </option>
+                    @endforeach
+                </select> <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                    stroke="currentColor"
+                    class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                 </svg>
-                <svg x-show="!soundEnabled" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke-width="1.5" stroke="currentColor" class="size-5">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9.143 17.082a24.248 24.248 0 0 0 3.844.148m-3.844-.148a23.856 23.856 0 0 1-5.455-1.31 8.964 8.964 0 0 0 2.3-5.542m3.155 6.852a3 3 0 0 0 5.667 1.97m1.965-2.277L21 21m-4.225-4.225a23.81 23.81 0 0 0 3.536-1.003A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6.53 6.53m10.245 10.245L6.53 6.53M3 3l3.53 3.53" />
-                </svg>
+            </div>
+            <div class="flex h-11 items-center justify-between gap-3 rounded-xl border bg-card px-3.5">
+                <div class="flex items-center gap-2.5"> <span class="relative flex size-2.5"> <span
+                            class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60"></span>
+                        <span class="relative inline-flex size-2.5 rounded-full bg-emerald-500"></span> </span> <span
+                        class="whitespace-nowrap text-sm font-medium tabular-nums" x-text="formattedNow()"></span>
+                </div>
+                <div class="h-5 w-px bg-border">
 
-                <span x-text="soundEnabled ? 'Sound On' : 'Sound Off'"></span>
-            </button>
+                </div>
+                <button type="button" @click="toggleSound()"
+                    :aria-label="soundEnabled ? 'Turn sound off' : 'Turn sound on'"
+                    :title="soundEnabled ? 'Sound on' : 'Sound off'"
+                    class="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground">
+                    <svg x-show="soundEnabled" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke-width="1.8" stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
+                    </svg> {{-- Sound Off --}} <svg x-show="!soundEnabled" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="m9.143 17.082a24.248 24.248 0 0 0 3.844.148m-3.844-.148a23.856 23.856 0 0 1-5.455-1.31 8.964 8.964 0 0 0 2.3-5.542m3.155 6.852a3 3 0 0 0 5.667 1.97m1.965-2.277L21 21m-4.225-4.225a23.81 23.81 0 0 0 3.536-1.003A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6.53 6.53m10.245 10.245L6.53 6.53M3 3l3.53 3.53" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="flex gap-1 border-b"><button type="button" wire:click="setTab('orders')"
-            class="border-b-2 px-4 py-3 text-sm font-medium cursor-pointer {{ $activeTab === 'orders' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground' }}">Orders</button><button
-            type="button" wire:click="setTab('history')"
-            class="border-b-2 px-4 py-3 text-sm font-medium cursor-pointer {{ $activeTab === 'history' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground' }}">History</button>
-    </div>
-
-    <div class="flex flex-col gap-3 md:flex-row"><label class="relative flex-1"><span class="sr-only">Search
-                orders</span><input wire:model.live.debounce.300ms="search" type="search"
-                placeholder="Search orders, customers, or tables..."
-                class="w-full rounded-xl border bg-card px-4 py-3 text-sm outline-none ring-primary/30 focus:ring-4"></label><select
-            wire:model.live="statusFilter"
-            class="rounded-xl border bg-card px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-primary/30">
-            <option value="all">All statuses</option>
-            @foreach($this->activeStatuses() as $status)
-            <option value="{{ $status->value }}">{{ $this->statusMeta()[$status->value]['label'] }}</option>
-            @endforeach
-        </select></div>
     <div wire:loading wire:target="moveOrder,confirmPayment"
         class="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">Updating order...</div>
     @error('status')<div
@@ -485,7 +496,6 @@ new class extends Component
         collect())
         <section
             class="relative min-h-[30rem] overflow-hidden rounded-2xl border {{ $meta['line'] }} bg-card p-3 shadow-sm transition-shadow">
-            <div class="absolute inset-x-0 top-0 h-1 {{ $meta['topBar'] }}"></div>
             <div class="mb-3 flex items-start justify-between">
                 <div>
                     <div class="flex items-center gap-2"><span class="size-2.5 rounded-full {{ $meta['dot'] }}"></span>
