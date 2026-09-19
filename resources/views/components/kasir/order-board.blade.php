@@ -401,9 +401,6 @@
     <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div class="space-y-1">
             <h1 class="text-3xl font-semibold tracking-tight text-foreground"> Live order board </h1>
-            <p class="max-w-xl text-sm leading-6 text-muted-foreground">
-                Monitor and process customer orders in realtime.
-            </p>
         </div>
         <div class="flex flex-col gap-3 md:flex-row md:items-center">
             <label class="relative min-w-0 md:w-72"> <span class="sr-only">Search orders</span> <svg
