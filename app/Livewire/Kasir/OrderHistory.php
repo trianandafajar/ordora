@@ -8,7 +8,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new class extends Component
+class OrderHistory extends Component
 {
     #[Url]
     public string $search = '';
@@ -47,7 +47,12 @@ new class extends Component
         $query->where(function (Builder $builder) use ($search): void {
             $builder->where('customer_name', 'like', "%{$search}%")
                 ->orWhere('id', 'like', "%{$search}%")
-                ->orWhereHas('table', fn (Builder $table): Builder => $table->where('number', 'like', "%{$search}%"));
+                ->orWhereHas('table', fn(Builder $table): Builder => $table->where('number', 'like', "%{$search}%"));
         });
     }
-};
+
+    public function render()
+    {
+        return view('livewire.kasir.order-history');
+    }
+}
