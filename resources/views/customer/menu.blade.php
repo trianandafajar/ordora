@@ -31,11 +31,14 @@
     }
 }">
     <div class="mx-auto max-w-md min-h-screen bg-background shadow-xl border-x relative pb-24">
-        <header
-            class="sticky top-0 z-40 border-b bg-background/95 backdrop-blur px-4 h-14 flex items-center justify-between">
-            <p class="font-bold">Ordora</p>
-            <p class="text-xs text-muted-foreground">Table {{ $table->number }}</p>
-        </header>
+        <x-header title="Table {{ $table->number }}">
+            <x-slot:right>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('table.history') }}"
+                        class="text-xs text-primary font-medium hover:underline">History</a>
+                </div>
+            </x-slot:right>
+        </x-header>
 
         <main class="px-4 py-4 space-y-8">
             @foreach($categories as $category)
@@ -55,7 +58,8 @@
                         </div>
                         <div class="flex flex-col flex-1 min-w-0">
                             <h3 class="font-semibold text-sm truncate">{{ $product->name }}</h3>
-                            <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">{{ $product->description }}</p>
+                            <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">{{ $product->description }}
+                            </p>
                             <div class="flex items-center justify-between mt-auto pt-3">
                                 <span class="font-bold text-sm">$ {{ number_format($product->price, 0, '.', ',')
                                     }}</span>
@@ -166,7 +170,8 @@
                 <div class="size-48 bg-white mx-auto flex items-center justify-center rounded-lg overflow-hidden">
                     <img :src="`/table/order/${orderToken}/qris-qr`" alt="QRIS" class="size-48">
                 </div>
-                <p class="text-sm text-center mt-4 text-muted-foreground">Scan the code above with your payment app</p>
+                <p class="text-sm text-center mt-4 text-muted-foreground">Scan the code above with your payment app
+                </p>
                 <button @click="if (qrisOpen) { qrisOpen = false; successOpen = true; }"
                     class="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform cursor-pointer">I've
                     Paid</button>
@@ -202,7 +207,8 @@
                     class="size-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600 font-bold text-2xl">
                     ✓</div>
                 <h3 class="text-lg font-semibold mb-2">Order Successful</h3>
-                <p class="text-sm text-muted-foreground mb-4">Your order has been received. Track its status below.</p>
+                <p class="text-sm text-muted-foreground mb-4">Your order has been received. Track its status below.
+                </p>
                 <button @click="successOpen = false; window.location = '/table/tracking/' + orderToken"
                     class="w-full h-12 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform">View
                     Status</button>

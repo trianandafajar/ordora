@@ -365,7 +365,6 @@ new class extends Component
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-            <p class="text-sm font-medium text-primary">Cashier workspace</p>
             <h1 class="mt-1 text-3xl font-semibold tracking-tight">Live order board</h1>
             <p class="mt-2 text-sm text-muted-foreground">Monitor and process customer orders in real time.</p>
         </div>
@@ -666,8 +665,7 @@ new class extends Component
             <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
                 <p>This order will be marked as <strong>paid</strong> using <strong>{{ strtoupper($paymentMethod)
                         }}</strong>.</p>
-                <label class="mt-4 flex items-start gap-3"><input
-                        wire:model.live="qrisConfirmed" type="checkbox"
+                <label class="mt-4 flex items-start gap-3"><input wire:model.live="qrisConfirmed" type="checkbox"
                         class="mt-0.5 rounded border-amber-500 text-primary focus:ring-primary"><span>I have received
                         and verified the payment.</span></label>
             </div>
@@ -679,7 +677,8 @@ new class extends Component
                 <div class="flex gap-3"><button type="button" wire:click="cancelPayment"
                         class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">Cancel</button><button
                         type="button" wire:click="confirmPayment" wire:loading.attr="disabled"
-                        wire:target="confirmPayment" @disabled((($paymentMethod === 'qris' || $paymentMethod === 'cash') && ! $qrisConfirmed))
+                        wire:target="confirmPayment" @disabled((($paymentMethod==='qris' || $paymentMethod==='cash' ) &&
+                        ! $qrisConfirmed))
                         class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"><span
                             wire:loading.remove wire:target="confirmPayment">Confirm Payment</span><span wire:loading
                             wire:target="confirmPayment">Processing...</span></button></div>

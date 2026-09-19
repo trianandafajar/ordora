@@ -15,16 +15,15 @@
 
 <body class="min-h-screen bg-muted text-foreground">
     <div class="mx-auto max-w-md min-h-screen bg-background shadow-xl border-x relative">
-        <header class="border-b">
-            <div class="flex h-14 items-center justify-between px-4">
-                <p class="font-bold">Ordora</p>
+        <x-header :menuUrl="route('table.menu', $order->table->qr_token)">
+            <x-slot:right>
                 <div class="flex items-center gap-3">
                     <a href="{{ route('table.history') }}"
-                        class="text-xs text-primary font-medium hover:underline">Order History</a>
+                        class="text-xs text-primary font-medium hover:underline">History</a>
                     <p class="text-xs text-muted-foreground">Order #{{ $order->id }}</p>
                 </div>
-            </div>
-        </header>
+            </x-slot:right>
+        </x-header>
 
         <main class="px-4 py-8 space-y-8 text-center pb-8">
             <div class="mx-auto size-16 rounded-full bg-primary/10 flex items-center justify-center">
@@ -87,7 +86,9 @@
                 style="{{ $order->status->value === 'served' ? '' : 'display: none;' }}">
                 <button onclick="confirmReceipt()" id="confirmBtn"
                     class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 text-white font-semibold h-12 hover:opacity-90 transition-all cursor-pointer">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
                     I've Received My Order
                 </button>
             </div>

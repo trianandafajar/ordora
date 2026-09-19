@@ -10,13 +10,7 @@
 
 <body class="min-h-screen bg-muted text-foreground">
     <div class="mx-auto max-w-md min-h-screen bg-background shadow-xl border-x relative">
-        <header class="border-b">
-            <div class="flex h-14 items-center justify-between px-4">
-                <a href="{{ url()->previous() }}" class="text-xs text-primary font-medium hover:underline">&larr; Back</a>
-                <p class="font-bold">Ordora History</p>
-                <p class="text-xs text-muted-foreground">History</p>
-            </div>
-        </header>
+        <x-header title="Ordora History" backUrl="{{ url()->previous() }}" />
 
         <main class="px-4 py-8 space-y-4">
             <h1 class="text-lg font-bold">Your Orders</h1>

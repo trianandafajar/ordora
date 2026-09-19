@@ -10,18 +10,7 @@
 
 <body class="min-h-screen bg-muted text-foreground">
     <div class="mx-auto max-w-md min-h-screen bg-background shadow-xl border-x relative pb-12">
-        <header class="border-b sticky top-0 bg-background/95 backdrop-blur z-20">
-            <div class="flex h-14 items-center justify-between px-4">
-                <a href="{{ route('table.tracking.show', $order->order_token) }}"
-                    class="text-sm text-primary font-medium hover:underline flex items-center gap-1">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back to Tracking
-                </a>
-                <p class="text-xs text-muted-foreground">Order #{{ $order->id }}</p>
-            </div>
-        </header>
+        <x-header :backUrl="route('table.tracking.show', $order->order_token)" title="Order #{{ $order->id }}" />
 
         <main class="px-4 py-6 space-y-6">
             <div class="flex items-center justify-between">
