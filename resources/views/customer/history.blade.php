@@ -12,7 +12,7 @@
     <div class="mx-auto max-w-md min-h-screen bg-background shadow-xl border-x relative">
         <x-header title="Ordora History" backUrl="{{ url()->previous() }}" />
 
-        <main class="px-4 pt-6 space-y-4">
+        <main class="px-4 py-4 space-y-4">
             <h1 class="text-lg font-bold">Your Orders</h1>
             <div id="historyList" class="space-y-4">
                 <p class="text-sm text-muted-foreground">Loading orders...</p>
