@@ -52,6 +52,7 @@ class OrderStatusUpdated implements ShouldBroadcast, ShouldDispatchAfterCommit
                 'customer_name' => $order->customer_name,
                 'table_number' => $order->table?->number,
                 'status' => $order->status->value,
+                'paid_at' => $order->paid_at?->toIso8601String(),
                 'payment_method' => $order->payment_method?->value,
                 'total_price' => $order->total_price,
                 'created_at' => $order->created_at?->toIso8601String(),

@@ -147,7 +147,7 @@
                     </label> --}}
                 </div>
                 <button
-                    @click="if (loading || !paymentMethod || !customerName) return; loading = true; fetch('{{ route('table.placeOrder', $table->qr_token) }}', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, body: JSON.stringify({customer_name: customerName, payment_method: paymentMethod, items: Object.entries(selected).filter(([id, qty]) => qty > 0).map(([id, qty]) => ({product_id: id, quantity: qty}))})}).then(r => r.json()).then(d => { orderToken = d.order_token; checkoutOpen = false; if(paymentMethod === 'qris') { qrisOpen = true; subscribeToOrderChannelMenu(); } else { cashOpen = true; subscribeToOrderChannelMenu(); } }).catch(e => { console.error(e); }).finally(() => { loading = false; })"
+                    @click="if (loading || !paymentMethod || !customerName) return; loading = true; fetch('{{ route('table.placeOrder', $table->qr_token) }}', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, body: JSON.stringify({customer_name: customerName, payment_method: paymentMethod, items: Object.entries(selected).filter(([id, qty]) => qty > 0).map(([id, qty]) => ({product_id: id, quantity: qty}))})}).then(r => r.json()).then(d => { orderToken = d.order_token; checkoutOpen = false; if (paymentMethod === 'qris') qrisOpen = true; else cashOpen = true; subscribeToOrderChannelMenu(d.order_token); }).catch(e => { console.error(e); }).finally(() => { loading = false; })"
                     class="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform disabled:cursor-not-allowed disabled:opacity-60"
                     :disabled="loading || !paymentMethod || !customerName">
                     <span x-show="!loading">Submit</span>
@@ -157,18 +157,19 @@
         </div>
 
         <script>
-            function subscribeToOrderChannelMenu() {
-                if (window.__ordoraMenuChannel || !window.Echo || !orderToken) return;
+            function subscribeToOrderChannelMenu(token) {
+                if (!token || window.__ordoraMenuChannel || !window.Echo) return;
 
-                const channel = window.Echo.channel(`order.${orderToken}`);
+                console.log('Subscribing to order.' + token);
+                const channel = window.Echo.channel(`order.${token}`);
                 window.__ordoraMenuChannel = channel;
                 channel.listen('.order.status.updated', (payload) => {
-                    if (payload?.order?.status === 'paid') {
-                        window.location = '/table/tracking/' + orderToken;
+                    console.log('Received order update:', payload);
+                    if (payload?.order?.status === 'paid' || payload?.change_type === 'paid') {
+                        window.location = '/table/tracking/' + token;
                     }
                 });
             }
-            window.addEventListener('ordora-echo-ready', subscribeToOrderChannelMenu);
         </script>
 
         {{-- QRIS dialog --}}
@@ -229,6 +230,26 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function subscribeToOrderChannelMenu(token) {
+        if (token) window.__ordoraMenuToken = token;
+        const t = window.__ordoraMenuToken;
+        if (!t || window.__ordoraMenuChannel) return;
+        if (!window.Echo) return console.warn('Echo belum siap, menunggu ordora-echo-ready');
+
+        console.log('Subscribing to order.' + t);
+        window.__ordoraMenuChannel = window.Echo.channel(`order.${t}`)
+            .listen('.order.status.updated', (payload) => {
+                console.log('Received order update:', payload);
+                if (payload?.order?.paid_at || payload?.change_type === 'paid') {
+                    window.location = '/table/tracking/' + t;
+                }
+            });
+    }
+
+    window.addEventListener('ordora-echo-ready', () => subscribeToOrderChannelMenu());
+    </script>
 </body>
 
 </html>
