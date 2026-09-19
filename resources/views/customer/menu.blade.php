@@ -136,15 +136,15 @@
                 </div>
                 <input x-model="customerName" required placeholder="Your name"
                     class="mt-3 w-full h-11 rounded-xl border px-4 text-sm">
-                <div class="grid grid-cols-2 gap-3 mt-3">
-                    <label class="border p-3 rounded-xl cursor-pointer text-sm text-center"
+                <div class="flex mt-3">
+                    <label class="border p-3 rounded-xl cursor-pointer text-sm text-center w-full"
                         :class="paymentMethod === 'cash' ? 'bg-primary/10 border-primary' : ''">
                         <input type="radio" value="cash" x-model="paymentMethod" class="sr-only"> Cash
                     </label>
-                    <label class="border p-3 rounded-xl cursor-pointer text-sm text-center"
+                    {{-- <label class="border p-3 rounded-xl cursor-pointer text-sm text-center"
                         :class="paymentMethod === 'qris' ? 'bg-primary/10 border-primary' : ''">
                         <input type="radio" value="qris" x-model="paymentMethod" class="sr-only"> QRIS
-                    </label>
+                    </label> --}}
                 </div>
                 <button
                     @click="if (loading || !paymentMethod || !customerName) return; loading = true; fetch('{{ route('table.placeOrder', $table->qr_token) }}', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, body: JSON.stringify({customer_name: customerName, payment_method: paymentMethod, items: Object.entries(selected).filter(([id, qty]) => qty > 0).map(([id, qty]) => ({product_id: id, quantity: qty}))})}).then(r => r.json()).then(d => { orderToken = d.order_token; checkoutOpen = false; if(paymentMethod === 'qris') qrisOpen = true; else cashOpen = true; }).catch(e => { console.error(e); }).finally(() => { loading = false; })"
