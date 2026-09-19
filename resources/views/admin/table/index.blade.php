@@ -208,7 +208,7 @@
             {{-- active Orders --}}
             <div>
                 <h4 class="text-sm font-medium text-muted-foreground mb-2">Active Orders</h4>
-                @forelse($tbl->orders as $order)
+                @forelse($tbl->orders->where('status', '!=', \App\Enums\OrderStatus::Confirmed) as $order)
                 <div class="rounded-lg border p-3 text-sm space-y-1">
                     <div class="flex justify-between">
                         <span class="font-medium">#{{ $order->id }}</span>
