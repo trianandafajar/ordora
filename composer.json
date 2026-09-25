@@ -17,6 +17,7 @@
         "simplesoftwareio/simple-qrcode": "*"
     },
     "require-dev": {
+        "dedoc/scramble": "*",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^2.8",
         "laravel/pail": "^1.2.5",
