@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Resources\ProductResource;
 
 class ProductApiController extends Controller
 {
@@ -71,7 +71,7 @@ class ProductApiController extends Controller
     public function destroy(Product $product)
     {
         if ($product->orderItems()->exists()) {
-            return response()->json(['error' => "Product has active orders and cannot be deleted."], 422);
+            return response()->json(['error' => 'Product has active orders and cannot be deleted.'], 422);
         }
 
         if ($product->image) {
@@ -79,6 +79,7 @@ class ProductApiController extends Controller
         }
 
         $product->delete();
-        return response()->json(['message' => "Product deleted."]);
+
+        return response()->json(['message' => 'Product deleted.']);
     }
 }

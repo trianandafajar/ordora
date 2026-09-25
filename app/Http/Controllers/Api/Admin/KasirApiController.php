@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Resources\UserResource;
 
 class KasirApiController extends Controller
 {
@@ -42,7 +42,7 @@ class KasirApiController extends Controller
         $user->update(['is_active' => ! $user->is_active]);
 
         return response()->json([
-            'message' => "Account " . ($user->is_active ? 'activated' : 'deactivated') . ".",
+            'message' => 'Account '.($user->is_active ? 'activated' : 'deactivated').'.',
             'is_active' => $user->is_active,
         ]);
     }
@@ -50,6 +50,7 @@ class KasirApiController extends Controller
     public function show($kasir)
     {
         $user = User::findOrFail($kasir);
+
         return new UserResource($user);
     }
 

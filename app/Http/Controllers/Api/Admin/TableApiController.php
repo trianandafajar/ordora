@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\TableResource;
 use App\Models\Table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Http\Resources\TableResource;
 
 class TableApiController extends Controller
 {
@@ -57,16 +57,16 @@ class TableApiController extends Controller
 
         $table->delete();
 
-        return response()->json(['message' => "Table deleted."]);
+        return response()->json(['message' => 'Table deleted.']);
     }
 
     public function regenQr(Table $table)
     {
         $table->update(['qr_token' => Str::random(32)]);
-        
+
         return response()->json([
             'message' => 'QR regenerated.',
-            'qr_url' => $table->qr_url, 
+            'qr_url' => $table->qr_url,
         ]);
     }
 }

@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Api\Kasir;
 
-use App\Http\Controllers\Controller;
 use App\Actions\PayOrderAction;
 use App\Actions\UpdateOrderStatusAction;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
-use App\Http\Requests\ProcessPaymentRequest;
-use App\Models\Order;
-use App\Http\Resources\OrderResource;
-use Illuminate\Http\Request;
 use App\Events\OrderStatusUpdated;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ProcessPaymentRequest;
+use App\Http\Resources\OrderResource;
+use App\Models\Order;
+use Illuminate\Http\Request;
 
 class OrderApiController extends Controller
 {
@@ -23,7 +23,7 @@ class OrderApiController extends Controller
     public function updateStatus(Request $request, Order $order, UpdateOrderStatusAction $action)
     {
         $request->validate(['status' => ['required', 'in:preparing,ready,served']]);
-        
+
         $oldStatus = $order->status->value;
         $status = OrderStatus::from($request->status);
         $action->execute($order, $status, auth()->id());
@@ -40,7 +40,7 @@ class OrderApiController extends Controller
 
         return response()->json([
             'message' => 'Payment processed.',
-            'data' => new OrderResource($paidOrder)
+            'data' => new OrderResource($paidOrder),
         ]);
     }
 }
