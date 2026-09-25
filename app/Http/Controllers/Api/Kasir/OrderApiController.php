@@ -11,12 +11,14 @@ use App\Http\Requests\ProcessPaymentRequest;
 use App\Models\Order;
 use App\Http\Resources\OrderResource;
 use Illuminate\Http\Request;
-
 use App\Events\OrderStatusUpdated;
 
 class OrderApiController extends Controller
 {
-    // ...
+    public function show(Order $order)
+    {
+        return new OrderResource($order->load(['orderItems.product', 'table', 'orderStatusHistories.changedBy']));
+    }
 
     public function updateStatus(Request $request, Order $order, UpdateOrderStatusAction $action)
     {
@@ -30,9 +32,6 @@ class OrderApiController extends Controller
 
         return response()->json(['message' => "Order status updated to {$status->value}."]);
     }
-
-    // ...
-}
 
     public function pay(ProcessPaymentRequest $request, Order $order, PayOrderAction $action)
     {
