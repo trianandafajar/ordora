@@ -40,7 +40,7 @@ class KasirApiController extends Controller
         }
 
         $user->update(['is_active' => ! $user->is_active]);
-        
+
         return response()->json([
             'message' => "Account " . ($user->is_active ? 'activated' : 'deactivated') . ".",
             'is_active' => $user->is_active,
@@ -69,8 +69,10 @@ class KasirApiController extends Controller
         return response()->json(['message' => 'Kasir updated.', 'data' => new UserResource($user)]);
     }
 
-    public function destroy(User $user)
+    public function destroy($kasir)
     {
+        $user = User::findOrFail($kasir);
+
         if ($user->id === auth()->id()) {
             return response()->json(['error' => 'Cannot delete yourself.'], 422);
         }
