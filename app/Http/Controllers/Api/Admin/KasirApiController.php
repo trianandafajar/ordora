@@ -47,8 +47,9 @@ class KasirApiController extends Controller
         ]);
     }
 
-    public function show(User $user)
+    public function show($kasir)
     {
+        $user = User::findOrFail($kasir);
         return new UserResource($user);
     }
 
