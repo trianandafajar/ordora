@@ -15,8 +15,11 @@ class TableSeeder extends Seeder
         Table::query()->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
+        $restaurantId = \App\Models\Restaurant::value('id');
+
         for ($i = 1; $i <= 10; $i++) {
             Table::create([
+                'restaurant_id' => $restaurantId,
                 'number' => (string) $i,
                 'qr_token' => Str::random(32),
                 'status' => 'available',

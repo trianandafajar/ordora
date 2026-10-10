@@ -19,6 +19,7 @@ class ProductSeeder extends Seeder
         Product::query()->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
+        $restaurantId = \App\Models\Restaurant::value('id');
         $categories = Category::pluck('id', 'name');
 
         $products = [
@@ -37,6 +38,7 @@ class ProductSeeder extends Seeder
 
         foreach ($products as $index => $product) {
             Product::create([
+                'restaurant_id' => $restaurantId,
                 'category_id' => $categories[$product['category']],
                 'name' => $product['name'],
                 'description' => $product['description'],

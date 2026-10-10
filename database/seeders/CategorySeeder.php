@@ -9,8 +9,12 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
+        $restaurantId = \App\Models\Restaurant::value('id');
         foreach (['Coffee', 'Non-Coffee', 'Snack'] as $name) {
-            Category::updateOrCreate(['name' => $name]);
+            \App\Models\Category::updateOrCreate([
+                'name' => $name,
+                'restaurant_id' => $restaurantId,
+            ]);
         }
     }
 }

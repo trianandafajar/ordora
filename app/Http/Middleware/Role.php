@@ -10,7 +10,15 @@ class Role
 {
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        if (! auth()->check() || ! in_array(auth()->user()->role->value, $roles)) {
+        if (! auth()->check()) {
+            abort(403);
+        }
+
+        if (auth()->user()->role === \App\Enums\UserRole::SuperAdmin) {
+            return $next($request);
+        }
+
+        if (! in_array(auth()->user()->role->value, $roles)) {
             abort(403);
         }
 
