@@ -8,7 +8,7 @@
     </div>
 
     <div class="rounded-xl border bg-card shadow-sm p-6">
-        <form method="POST" action="{{ route('admin.restaurants.store') }}" class="space-y-4">
+        <form method="POST" action="{{ route('superadmin.restaurants.store') }}" class="space-y-4">
             @csrf
             <div>
                 <label class="block text-sm font-medium mb-1">Restaurant Name</label>

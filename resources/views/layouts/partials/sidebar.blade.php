@@ -47,7 +47,7 @@
         <div class="space-y-1">
             <div class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap"
                 x-show="sidebarOpen || hoverOpen" x-cloak>
-                Super Admin
+                System Management
             </div>
             <a href="{{ route('superadmin.restaurants.index') }}" @click="mobileOpen = false"
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'"

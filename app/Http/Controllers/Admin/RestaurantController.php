@@ -6,19 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class RestaurantController extends Controller
 {
     public function index()
     {
         $restaurants = Restaurant::with('owner')->latest()->get();
-        return view('superadmin.restaurants.index', compact('restaurants'));
-    }
-
-    public function create()
-    {
         $owners = User::where('role', 'admin')->whereNull('restaurant_id')->get();
-        return view('superadmin.restaurants.create', compact('owners'));
+        return view('admin.restaurants.index', compact('restaurants', 'owners'));
     }
 
     public function store(Request $request)
@@ -26,15 +22,13 @@ class RestaurantController extends Controller
         $request->validate(['name' => 'required', 'owner_id' => 'required|exists:users,id']);
         $restaurant = Restaurant::create($request->only('name', 'owner_id'));
         User::find($request->owner_id)->update(['restaurant_id' => $restaurant->id]);
-        return redirect()->route('superadmin.restaurants.index');
-    }
 
-    public function edit(Restaurant $restaurant)
-    {
-        $owners = User::where('role', 'admin')->where(function ($query) use ($restaurant) {
-            $query->whereNull('restaurant_id')->orWhere('id', $restaurant->owner_id);
-        })->get();
-        return view('superadmin.restaurants.edit', compact('restaurant', 'owners'));
+        $restaurant->load('owner');
+        return response()->json([
+            'success' => true,
+            'restaurant' => $restaurant,
+            'message' => 'Restaurant created successfully.'
+        ]);
     }
 
     public function update(Request $request, Restaurant $restaurant)
@@ -49,7 +43,12 @@ class RestaurantController extends Controller
             User::find($request->owner_id)->update(['restaurant_id' => $restaurant->id]);
         }
 
-        return redirect()->route('superadmin.restaurants.index');
+        $restaurant->load('owner');
+        return response()->json([
+            'success' => true,
+            'restaurant' => $restaurant,
+            'message' => 'Restaurant updated successfully.'
+        ]);
     }
 
     public function toggle(Restaurant $restaurant)
@@ -58,6 +57,37 @@ class RestaurantController extends Controller
         return response()->json([
             'is_active' => $restaurant->is_active,
             'message' => 'Restaurant status updated successfully.'
+        ]);
+    }
+
+    public function destroy(Restaurant $restaurant)
+    {
+        $restaurant->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'Restaurant deleted successfully.'
+        ]);
+    }
+
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|max:255',
+            'email' => 'required|email|unique:users,email',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->email),
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'user' => $user,
+            'message' => 'User created successfully.'
         ]);
     }
 }

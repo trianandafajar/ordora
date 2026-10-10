@@ -43,7 +43,7 @@ class AuthController extends Controller
 
         return redirect()->intended(
             match (auth()->user()->role->value) {
-                'superadmin' => '/superadmin/dashboard',
+                'superadmin' => route('superadmin.dashboard'),
                 'admin' => '/admin/dashboard',
                 default => '/cashier/dashboard',
             }
