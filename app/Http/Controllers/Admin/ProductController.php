@@ -31,6 +31,7 @@ class ProductController extends Controller
 
         $data['is_available'] = $request->boolean('is_available');
 
+        $data['restaurant_id'] = auth()->user()->restaurant_id;
         $product = Product::create($data);
 
         if ($request->hasFile('image')) {

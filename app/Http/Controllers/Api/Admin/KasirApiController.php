@@ -28,6 +28,7 @@ class KasirApiController extends Controller
         $data['is_active'] = true;
         $data['password'] = Hash::make($data['password']);
 
+        $data['restaurant_id'] = auth()->user()->restaurant_id;
         $user = User::create($data);
 
         return response()->json(['message' => 'Kasir account created.', 'data' => new UserResource($user)], 201);

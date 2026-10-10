@@ -12,7 +12,10 @@ class KasirController extends Controller
 {
     public function index()
     {
-        $kasirs = User::where('role', 'kasir')->latest()->get();
+        $kasirs = User::where('role', 'kasir')
+            ->where('restaurant_id', auth()->user()->restaurant_id)
+            ->latest()
+            ->get();
 
         return view('admin.kasir.index', compact('kasirs'));
     }
@@ -29,6 +32,7 @@ class KasirController extends Controller
         $data['is_active'] = true;
         $data['password'] = Hash::make($data['password']);
 
+        $data['restaurant_id'] = auth()->user()->restaurant_id;
         User::create($data);
 
         return back()->with('success', 'Kasir account created.');

@@ -29,6 +29,7 @@ class TableController extends Controller
         $data['qr_token'] = Str::random(32);
         $data['status'] = 'available';
 
+        $data['restaurant_id'] = auth()->user()->restaurant_id;
         Table::create($data);
 
         return back()->with('success', 'Table created.');

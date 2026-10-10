@@ -27,6 +27,7 @@ class TableApiController extends Controller
         $data['qr_token'] = Str::random(32);
         $data['status'] = 'available';
 
+        $data['restaurant_id'] = auth()->user()->restaurant_id;
         $table = Table::create($data);
 
         return response()->json(['message' => 'Table created.', 'data' => new TableResource($table)], 201);

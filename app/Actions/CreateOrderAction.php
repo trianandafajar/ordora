@@ -28,6 +28,7 @@ class CreateOrderAction
                 'total_price' => 0,
                 'status' => OrderStatus::Pending,
                 'payment_method' => $paymentMethod,
+                'restaurant_id' => $table->restaurant_id,
             ]);
 
             $subtotal = 0;

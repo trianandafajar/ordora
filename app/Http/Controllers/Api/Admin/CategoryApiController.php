@@ -17,6 +17,7 @@ class CategoryApiController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate(['name' => ['required', 'string', 'max:100', 'unique:categories,name']]);
+        $data['restaurant_id'] = auth()->user()->restaurant_id;
         $category = Category::create($data);
 
         return response()->json(['message' => 'Category created.', 'data' => new CategoryResource($category)], 201);

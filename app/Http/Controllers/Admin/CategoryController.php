@@ -18,6 +18,7 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate(['name' => ['required', 'string', 'max:100', 'unique:categories,name']]);
+        $data['restaurant_id'] = auth()->user()->restaurant_id;
 
         Category::create($data);
 
