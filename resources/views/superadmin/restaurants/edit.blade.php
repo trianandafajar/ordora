@@ -8,7 +8,7 @@
     </div>
 
     <div class="rounded-xl border bg-card shadow-sm p-6">
-        <form method="POST" action="{{ route('admin.restaurants.update', $restaurant) }}" class="space-y-4">
+        <form method="POST" action="{{ route('superadmin.restaurants.update', $restaurant) }}" class="space-y-4">
             @csrf
             @method('PUT')
             <div>
@@ -35,7 +35,7 @@
                 @enderror
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <a href="{{ route('admin.restaurants.index') }}"
+                <a href="{{ route('superadmin.restaurants.index') }}"
                     class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer inline-flex items-center">Cancel</a>
                 <button type="submit"
                     class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Update Restaurant</button>
