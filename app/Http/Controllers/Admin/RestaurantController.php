@@ -19,7 +19,11 @@ class RestaurantController extends Controller
     public function store(Request $request)
     {
         $request->validate(['name' => 'required', 'owner_id' => 'required|exists:users,id']);
-        $restaurant = Restaurant::create(['name' => $request->name, 'owner_id' => $request->owner_id]);
+        $restaurant = Restaurant::create([
+            'name' => $request->name,
+            'owner_id' => $request->owner_id,
+            'is_active' => true,
+        ]);
         User::find($request->owner_id)->update(['restaurant_id' => $restaurant->id]);
 
         $restaurant->load('owner');
