@@ -42,7 +42,11 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         return redirect()->intended(
-            auth()->user()->role->value === 'admin' ? '/admin/dashboard' : '/cashier/dashboard'
+            match (auth()->user()->role->value) {
+                'superadmin' => '/superadmin/restaurants',
+                'admin' => '/admin/dashboard',
+                default => '/cashier/dashboard',
+            }
         );
     }
 

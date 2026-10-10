@@ -27,7 +27,9 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 Route::get('/', function () {
     if (auth()->check()) {
-        return redirect(auth()->user()->role->value === 'admin' ? '/admin/dashboard' : '/cashier/dashboard');
+        $user = auth()->user();
+        if ($user->role->value === 'superadmin') return redirect('/superadmin/restaurants');
+        return redirect($user->role->value === 'admin' ? '/admin/dashboard' : '/cashier/dashboard');
     }
 
     return redirect()->route('login');
@@ -64,7 +66,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports/pdf', [DashboardController::class, 'pdf'])->name('reports.pdf');
 });
 
-Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('admin.')->group(function () {
     Route::resource('restaurants', App\Http\Controllers\Admin\RestaurantController::class);
     Route::patch('restaurants/{restaurant}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggle'])->name('restaurants.toggle');
 });
