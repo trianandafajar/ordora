@@ -71,6 +71,8 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::resource('restaurants', App\Http\Controllers\Admin\RestaurantController::class);
     Route::post('restaurants/user', [App\Http\Controllers\Admin\RestaurantController::class, 'storeUser'])->name('restaurants.storeUser');
     Route::patch('restaurants/{restaurant}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggle'])->name('restaurants.toggle');
+    Route::resource('users', App\Http\Controllers\SuperAdmin\UserController::class);
+    Route::patch('users/{user}/toggle', [App\Http\Controllers\SuperAdmin\UserController::class, 'toggle'])->name('users.toggle');
 });
 
 // Cashier
