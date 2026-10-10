@@ -219,4 +219,42 @@ class RestaurantController extends Controller
         return response()->json(['success' => true]);
     }
 
+    // Tables Management
+    public function storeTable(Request $request, Restaurant $restaurant)
+    {
+        $request->validate([
+            'table_number' => 'required|string|max:20',
+            'capacity' => 'required|integer|min:1|max:50',
+        ]);
+
+        $table = $restaurant->tables()->create([
+            'table_number' => $request->table_number,
+            'capacity' => $request->capacity,
+            'qr_token' => \Illuminate\Support\Str::random(32),
+            'is_active' => true,
+        ]);
+
+        return response()->json(['success' => true, 'table' => $table]);
+    }
+
+    public function updateTable(Request $request, Restaurant $restaurant, Table $table)
+    {
+        if ($table->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+
+        $request->validate([
+            'table_number' => 'required|string|max:20',
+            'capacity' => 'required|integer|min:1|max:50',
+        ]);
+
+        $table->update($request->only('table_number', 'capacity'));
+        return response()->json(['success' => true, 'table' => $table]);
+    }
+
+    public function destroyTable(Restaurant $restaurant, Table $table)
+    {
+        if ($table->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+        $table->delete();
+        return response()->json(['success' => true]);
+    }
+
 }

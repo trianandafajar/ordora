@@ -15,6 +15,9 @@
     prodErrors: {},
     tab: 'staff',
     modal: '',
+    tables: @js($restaurant->tables),
+    table: { id: '', table_number: '', capacity: 4 },
+    tableErrors: {},
 
     firstErrors(errors) {
         return Object.fromEntries(Object.entries(errors || {}).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
@@ -213,6 +216,50 @@
         if (res.ok) {
             window.location.reload();
         }
+    },
+
+    // Tables
+    openCreateTable() {
+        this.tableErrors = {};
+        this.table = { id: '', table_number: '', capacity: 4 };
+        $dispatch('open-modal', { id: 'table-modal' });
+    },
+    openEditTable(t) {
+        this.tableErrors = {};
+        this.table = { ...t };
+        $dispatch('open-modal', { id: 'table-modal' });
+    },
+    async saveTable() {
+        if (this.loading.table) return;
+        this.loading.table = true;
+        this.tableErrors = {};
+        try {
+            const method = this.table.id ? 'PUT' : 'POST';
+            const url = this.table.id
+                ? `{{ route('superadmin.restaurants.tables.update', [$restaurant->id, 'ID']) }}`.replace('ID', this.table.id)
+                : `{{ route('superadmin.restaurants.tables.store', $restaurant->id) }}`;
+            const { res, data } = await this.send(url, method, this.table);
+            if (res.status === 422) { this.tableErrors = this.firstErrors(data.errors); return; }
+            if (!res.ok) throw new Error(data.message || 'Error');
+
+            if (this.table.id) {
+                this.tables = this.tables.map(t => t.id === data.table.id ? data.table : t);
+            } else {
+                this.tables.unshift(data.table);
+            }
+            $dispatch('close-modal', { id: 'table-modal' });
+        } catch (e) {
+            this.tableErrors.general = e.message;
+        } finally {
+            this.loading.table = false;
+        }
+    },
+    async deleteTable(id) {
+        if (!confirm('Are you sure?')) return;
+        const { res } = await this.send(`{{ route('superadmin.restaurants.tables.destroy', [$restaurant->id, 'ID']) }}`.replace('ID', id), 'DELETE');
+        if (res.ok) {
+            this.tables = this.tables.filter(t => t.id !== id);
+        }
     }
 }" class="space-y-6">
     <div class="flex items-center justify-between">
@@ -250,6 +297,11 @@
                     class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 cursor-pointer">
                     Add Product
                 </button>
+            </div>
+            <div class="flex justify-end *:gap-2 mb-2" x-show="tab === 'tables'">
+                <button @click="openCreateTable()"
+                    class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 cursor-pointer">Add
+                    Table</button>
             </div>
         </div>
 
@@ -373,41 +425,45 @@
             @endforeach
         </div>
 
-        <div x-show="tab === 'tables'" class="rounded-xl border bg-card shadow-sm overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-muted">
-                    <tr>
-                        <th class="p-4 text-left">Table Number</th>
-                        <th class="p-4 text-left">QR Token</th>
-                        <th class="p-4 text-center">Status</th>
-                        <th class="p-4 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($restaurant->tables as $t)
-                    <tr class="border-t">
-                        <td class="p-4 font-medium">Meja {{ $t->table_number }}</td>
-                        <td class="p-4 font-mono text-xs text-muted-foreground">{{ $t->qr_token }}</td>
-                        <td class="p-4 text-center"><span
-                                class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $t->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">{{
-                                $t->is_active ? 'Active' : 'Inactive' }}</span></td>
-                        <td class="p-4 text-right">
-                            <a href="{{ route('superadmin.restaurants.tables.show', [$restaurant->id, $t->id]) }}"
-                                class="text-primary hover:underline cursor-pointer flex items-center justify-end gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="size-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                </svg>
-                                Detail
-                            </a>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div x-show="tab === 'tables'" class="space-y-4">
+            <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-muted">
+                        <tr>
+                            <th class="p-4 text-left">Table Number</th>
+                            <th class="p-4 text-center">Status</th>
+                            <th class="p-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="t in tables" :key="t.id">
+                            <tr class="border-t hover:bg-accent/30">
+                                <td class="p-4 font-medium" x-text="'Meja ' + t.number"></td>
+                                <td class="p-4 text-center"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                        :class="t.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                        x-text="t.is_active ? 'Active' : 'Inactive'"></span></td>
+                                <td class="p-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a :href="`{{ route('superadmin.restaurants.tables.show', [$restaurant->id, 'ID']) }}`.replace('ID', t.id)"
+                                            class="p-1 text-slate-600 hover:text-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                            </svg></a>
+                                        <button @click="openEditTable(t)"
+                                            class="p-1 text-blue-600 hover:text-blue-800">Edit</button>
+                                        <button @click="deleteTable(t.id)"
+                                            class="p-1 text-red-600 hover:text-red-800">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -564,6 +620,34 @@
                 <button type="submit" :disabled="loading.prod"
                     class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4"
                     x-text="loading.prod ? 'Saving...' : 'Save'"></button>
+            </div>
+        </form>
+    </x-modal>
+    <x-modal id="table-modal" title="Table">
+        <form @submit.prevent="saveTable()" class="space-y-4">
+            <p x-show="tableErrors.general" x-text="tableErrors.general" x-cloak
+                class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
+            <div>
+                <label class="block text-sm font-medium mb-1">Table Number</label>
+                <input x-model="table.table_number" required class="w-full h-9 rounded-md border px-3 text-sm"
+                    :class="tableErrors.table_number ? 'border-red-500' : 'border-input'">
+                <p x-show="tableErrors.table_number" x-text="tableErrors.table_number" x-cloak
+                    class="mt-1 text-xs text-red-600"></p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Capacity</label>
+                <input x-model="table.capacity" type="number" min="1" required
+                    class="w-full h-9 rounded-md border px-3 text-sm"
+                    :class="tableErrors.capacity ? 'border-red-500' : 'border-input'">
+                <p x-show="tableErrors.capacity" x-text="tableErrors.capacity" x-cloak
+                    class="mt-1 text-xs text-red-600"></p>
+            </div>
+            <div class="flex justify-end gap-2 pt-4">
+                <button type="button" @click="$dispatch('close-modal', { id: 'table-modal' })"
+                    class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
+                <button type="submit" :disabled="loading.table"
+                    class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4"
+                    x-text="loading.table ? 'Saving...' : 'Save'"></button>
             </div>
         </form>
     </x-modal>
