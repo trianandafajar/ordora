@@ -12,13 +12,13 @@ class RestaurantController extends Controller
     public function index()
     {
         $restaurants = Restaurant::with('owner')->latest()->get();
-        return view('admin.restaurants.index', compact('restaurants'));
+        return view('superadmin.restaurants.index', compact('restaurants'));
     }
 
     public function create()
     {
         $owners = User::where('role', 'admin')->whereNull('restaurant_id')->get();
-        return view('admin.restaurants.create', compact('owners'));
+        return view('superadmin.restaurants.create', compact('owners'));
     }
 
     public function store(Request $request)
@@ -26,30 +26,30 @@ class RestaurantController extends Controller
         $request->validate(['name' => 'required', 'owner_id' => 'required|exists:users,id']);
         $restaurant = Restaurant::create($request->only('name', 'owner_id'));
         User::find($request->owner_id)->update(['restaurant_id' => $restaurant->id]);
-        return redirect()->route('admin.restaurants.index');
+        return redirect()->route('superadmin.restaurants.index');
     }
 
     public function edit(Restaurant $restaurant)
     {
-        $owners = User::where('role', 'admin')->where(function($query) use ($restaurant) {
+        $owners = User::where('role', 'admin')->where(function ($query) use ($restaurant) {
             $query->whereNull('restaurant_id')->orWhere('id', $restaurant->owner_id);
         })->get();
-        return view('admin.restaurants.edit', compact('restaurant', 'owners'));
+        return view('superadmin.restaurants.edit', compact('restaurant', 'owners'));
     }
 
     public function update(Request $request, Restaurant $restaurant)
     {
         $request->validate(['name' => 'required', 'owner_id' => 'required|exists:users,id']);
-        
+
         $oldOwnerId = $restaurant->owner_id;
         $restaurant->update($request->only('name', 'owner_id'));
-        
+
         if ($oldOwnerId != $request->owner_id) {
             User::find($oldOwnerId)->update(['restaurant_id' => null]);
             User::find($request->owner_id)->update(['restaurant_id' => $restaurant->id]);
         }
-        
-        return redirect()->route('admin.restaurants.index');
+
+        return redirect()->route('superadmin.restaurants.index');
     }
 
     public function toggle(Restaurant $restaurant)

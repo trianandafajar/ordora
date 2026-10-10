@@ -1,7 +1,7 @@
 <div class="flex flex-col h-full w-full bg-sidebar text-sidebar-foreground">
     <div class="flex items-center gap-2 h-16 border-b border-sidebar-border {{ $mobile ? 'px-6' : 'px-4' }}"
         @unless($mobile) :class="(sidebarOpen || hoverOpen) ? 'px-6' : 'px-4 justify-center'" @endunless>
-        <a href="{{ auth()->user()->role->value === 'superadmin' ? route('admin.restaurants.index') : (auth()->user()->role->value === 'admin' ? route('admin.dashboard') : route('cashier.dashboard')) }}"
+        <a href="{{ auth()->user()->role->value === 'superadmin' ? route('superadmin.restaurants.index') : (auth()->user()->role->value === 'admin' ? route('admin.dashboard') : route('cashier.dashboard')) }}"
             @if($mobile) @click="mobileOpen = false" @endif
             class="group flex min-w-0 flex-1 items-center gap-2 rounded-lg p-1 -ml-1 transition-colors hover:bg-sidebar-accent/50 focus:outline-none focus:ring-2 focus:ring-sidebar-ring"
             aria-label="Back to dashboard">
@@ -31,14 +31,31 @@
         <div class="space-y-1">
             <div class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap"
                 x-show="sidebarOpen || hoverOpen" x-cloak>
+                Dashboard
+            </div>
+            <a href="{{ route('superadmin.dashboard') }}" @click="mobileOpen = false"
+                :class="!(sidebarOpen || hoverOpen) && 'justify-center'"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('superadmin.dashboard') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="size-4 shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                </svg>
+                <span x-show="sidebarOpen || hoverOpen" x-cloak class="whitespace-nowrap">Dashboard</span>
+            </a>
+        </div>
+        <div class="space-y-1">
+            <div class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap"
+                x-show="sidebarOpen || hoverOpen" x-cloak>
                 Super Admin
             </div>
-            <a href="{{ route('admin.restaurants.index') }}" @click="mobileOpen = false"
+            <a href="{{ route('superadmin.restaurants.index') }}" @click="mobileOpen = false"
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('admin.restaurants.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
-                <svg class="size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('superadmin.restaurants.index') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="size-4 shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.２５ ０ ０１３．７５１８ｖ－２．２５ＺＭ１３．５６ａ２．２５２．２５００１２．２５－２．２５Ｈ１８Ａ２．ＹＯＵＲ ＭＥＳＳＡＧＥ ＨＥＲＥ
                 <span x-show="sidebarOpen || hoverOpen" x-cloak class="whitespace-nowrap">Restaurants</span>
             </a>
         </div>

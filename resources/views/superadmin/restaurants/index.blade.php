@@ -4,7 +4,7 @@
 <div class="space-y-6">
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold tracking-tight">Manage Restaurants</h1>
-        <a href="{{ route('admin.restaurants.create') }}"
+        <a href="{{ route('superadmin.restaurants.create') }}"
             class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center">
             Add Restaurant
         </a>
@@ -29,7 +29,7 @@
                     async toggle() {
                         this.toggling = true;
                         try {
-                            const res = await fetch('{{ route('admin.restaurants.toggle', $restaurant) }}', {
+                            const res = await fetch('{{ route('superadmin.restaurants.toggle', $restaurant) }}', {
                                 method: 'PATCH',
                                 headers: {
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -83,8 +83,7 @@
                                     </svg>
                                 </template>
                             </button>
-                            <a href="{{ route('admin.restaurants.edit', $restaurant) }}"
-                                title="Edit"
+                            <a href="{{ route('superadmin.restaurants.edit', $restaurant) }}" title="Edit"
                                 class="p-1.5 rounded-md text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-4">

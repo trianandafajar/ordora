@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Restaurant;
 use App\Models\Table;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -12,6 +13,21 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    public function superAdmin()
+    {
+        $stats = [
+            'total_restaurants' => Restaurant::count(),
+            'active_restaurants' => Restaurant::where('is_active', true)->count(),
+            'suspended_restaurants' => Restaurant::where('is_active', false)->count(),
+            'total_admins' => User::where('role', 'admin')->count(),
+            'total_cashiers' => User::where('role', 'kasir')->count(),
+        ];
+
+        $recentRestaurants = Restaurant::with('owner')->latest()->take(10)->get();
+
+        return view('superadmin.dashboard', compact('stats', 'recentRestaurants'));
+    }
+
     public function admin()
     {
         $stats = [
