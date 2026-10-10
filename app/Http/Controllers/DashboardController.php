@@ -25,7 +25,25 @@ class DashboardController extends Controller
 
         $recentRestaurants = Restaurant::with('owner')->latest()->take(10)->get();
 
-        return view('superadmin.dashboard', compact('stats', 'recentRestaurants'));
+        $growthData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $growthData[] = [
+                'label' => $month->format('M'),
+                'count' => Restaurant::whereMonth('created_at', $month->month)
+                    ->whereYear('created_at', $month->year)
+                    ->count(),
+            ];
+        }
+
+        $topRevenue = Restaurant::withSum(['orders' => function ($query) {
+            $query->whereNotNull('paid_at');
+        }], 'total_price')
+            ->orderByDesc('orders_sum_total_price')
+            ->limit(5)
+            ->get();
+
+        return view('superadmin.dashboard', compact('stats', 'recentRestaurants', 'growthData', 'topRevenue'));
     }
 
     public function admin()
