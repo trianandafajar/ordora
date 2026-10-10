@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Restaurant;
 use App\Models\Table;
 use App\Models\User;
+use App\Models\Category;
+use App\Models\Product;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 
 class RestaurantController extends Controller
@@ -135,6 +138,85 @@ class RestaurantController extends Controller
         }
         $user->update(['is_active' => !$user->is_active]);
         return response()->json(['is_active' => $user->is_active]);
+    }
+
+    public function storeCategory(Request $request, Restaurant $restaurant)
+    {
+        $request->validate(['name' => 'required|string|max:255']);
+        $category = $restaurant->categories()->create(['name' => $request->name]);
+        return response()->json(['success' => true, 'category' => $category]);
+    }
+
+    public function updateCategory(Request $request, Restaurant $restaurant, Category $category)
+    {
+        if ($category->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+        $request->validate(['name' => 'required|string|max:255']);
+        $category->update(['name' => $request->name]);
+        return response()->json(['success' => true, 'category' => $category]);
+    }
+
+    public function destroyCategory(Restaurant $restaurant, Category $category)
+    {
+        if ($category->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+        $category->delete();
+        return response()->json(['success' => true]);
+    }
+
+    public function storeProduct(Request $request, Restaurant $restaurant)
+    {
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->only('category_id', 'name', 'price', 'description');
+        $data['restaurant_id'] = $restaurant->id;
+        $data['is_available'] = true;
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('products', 'public');
+        }
+
+        $product = Product::create($data);
+        return response()->json(['success' => true, 'product' => $product]);
+    }
+
+    public function updateProduct(Request $request, Restaurant $restaurant, Product $product)
+    {
+        if ($product->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+            'is_available' => 'nullable|boolean',
+        ]);
+
+        $data = $request->only('category_id', 'name', 'price', 'description');
+        if ($request->has('is_available')) {
+            $data['is_available'] = $request->boolean('is_available');
+        }
+
+        if ($request->hasFile('image')) {
+            if ($product->image) \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image);
+            $data['image'] = $request->file('image')->store('products', 'public');
+        }
+
+        $product->update($data);
+        return response()->json(['success' => true, 'product' => $product]);
+    }
+
+    public function destroyProduct(Restaurant $restaurant, Product $product)
+    {
+        if ($product->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+        if ($product->image) \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image);
+        $product->delete();
+        return response()->json(['success' => true]);
     }
 
 }

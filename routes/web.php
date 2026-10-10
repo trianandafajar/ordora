@@ -75,6 +75,14 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::patch('restaurants/{restaurant}/staff/{user}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggleStaff'])->name('restaurants.staff.toggle');
     Route::patch('restaurants/{restaurant}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggle'])->name('restaurants.toggle');
     Route::get('restaurants/{restaurant}/tables/{table}', [App\Http\Controllers\Admin\RestaurantController::class, 'showTable'])->name('restaurants.tables.show');
+    
+    Route::post('restaurants/{restaurant}/categories', [App\Http\Controllers\Admin\RestaurantController::class, 'storeCategory'])->name('restaurants.categories.store');
+    Route::put('restaurants/{restaurant}/categories/{category}', [App\Http\Controllers\Admin\RestaurantController::class, 'updateCategory'])->name('restaurants.categories.update');
+    Route::delete('restaurants/{restaurant}/categories/{category}', [App\Http\Controllers\Admin\RestaurantController::class, 'destroyCategory'])->name('restaurants.categories.destroy');
+    
+    Route::post('restaurants/{restaurant}/products', [App\Http\Controllers\Admin\RestaurantController::class, 'storeProduct'])->name('restaurants.products.store');
+    Route::put('restaurants/{restaurant}/products/{product}', [App\Http\Controllers\Admin\RestaurantController::class, 'updateProduct'])->name('restaurants.products.update');
+    Route::delete('restaurants/{restaurant}/products/{product}', [App\Http\Controllers\Admin\RestaurantController::class, 'destroyProduct'])->name('restaurants.products.destroy');
     Route::resource('users', App\Http\Controllers\SuperAdmin\UserController::class);
     Route::patch('users/{user}/toggle', [App\Http\Controllers\SuperAdmin\UserController::class, 'toggle'])->name('users.toggle');
 });
