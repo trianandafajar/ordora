@@ -48,29 +48,31 @@ class DashboardController extends Controller
 
     public function admin()
     {
+        $restaurantId = auth()->user()->restaurant_id;
+
         $stats = [
-            'today_revenue' => Order::whereNotNull('paid_at')->whereDate('paid_at', today())->sum('total_price'),
-            'pending_orders' => Order::where('status', 'pending')->count(),
-            'active_kasir' => User::where('role', 'kasir')->where('is_active', true)->count(),
-            'total_tables' => Table::count(),
+            'today_revenue' => Order::where('restaurant_id', $restaurantId)->whereNotNull('paid_at')->whereDate('paid_at', today())->sum('total_price'),
+            'pending_orders' => Order::where('restaurant_id', $restaurantId)->where('status', 'pending')->count(),
+            'active_kasir' => User::where('restaurant_id', $restaurantId)->where('role', 'kasir')->where('is_active', true)->count(),
+            'total_tables' => Table::where('restaurant_id', $restaurantId)->count(),
         ];
 
-        $recentOrders = Order::latest()->take(5)->get();
-        $total = Order::count();
-        $total7d = Order::whereNotNull('paid_at')->whereDate('paid_at', '>=', now()->subDays(7))->sum('total_price');
+        $recentOrders = Order::where('restaurant_id', $restaurantId)->latest()->take(5)->get();
+        $total = Order::where('restaurant_id', $restaurantId)->count();
+        $total7d = Order::where('restaurant_id', $restaurantId)->whereNotNull('paid_at')->whereDate('paid_at', '>=', now()->subDays(7))->sum('total_price');
 
         $statusCounts = [
-            'pending' => Order::where('status', 'pending')->count(),
-            'preparing' => Order::where('status', 'preparing')->count(),
-            'ready' => Order::where('status', 'ready')->count(),
-            'served' => Order::where('status', 'served')->count(),
-            'paid' => Order::whereNotNull('paid_at')->count(),
+            'pending' => Order::where('restaurant_id', $restaurantId)->where('status', 'pending')->count(),
+            'preparing' => Order::where('restaurant_id', $restaurantId)->where('status', 'preparing')->count(),
+            'ready' => Order::where('restaurant_id', $restaurantId)->where('status', 'ready')->count(),
+            'served' => Order::where('restaurant_id', $restaurantId)->where('status', 'served')->count(),
+            'paid' => Order::where('restaurant_id', $restaurantId)->whereNotNull('paid_at')->count(),
         ];
 
         $revenueData = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i);
-            $rev = Order::whereNotNull('paid_at')->whereDate('paid_at', $date->toDateString())->sum('total_price') ?? 0;
+            $rev = Order::where('restaurant_id', $restaurantId)->whereNotNull('paid_at')->whereDate('paid_at', $date->toDateString())->sum('total_price') ?? 0;
             $revenueData[] = [
                 'label' => $date->format('d M'),
                 'revenue' => $rev,
