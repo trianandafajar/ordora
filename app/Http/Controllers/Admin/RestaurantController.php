@@ -85,7 +85,7 @@ class RestaurantController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make(Str::random(16)),
+            'password' => 'password',
             'role' => 'admin',
             'restaurant_id' => null,
             'is_active' => true,
