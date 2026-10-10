@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
+use App\Models\Product;
 use App\Models\Restaurant;
 use App\Models\Table;
 use App\Models\User;
-use App\Models\Category;
-use App\Models\Product;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class RestaurantController extends Controller
 {
@@ -23,6 +28,7 @@ class RestaurantController extends Controller
     public function store(Request $request)
     {
         $request->validate(['name' => 'required', 'owner_id' => 'required|exists:users,id']);
+
         $restaurant = Restaurant::create([
             'name' => $request->name,
             'owner_id' => $request->owner_id,
@@ -34,7 +40,7 @@ class RestaurantController extends Controller
         return response()->json([
             'success' => true,
             'restaurant' => $restaurant,
-            'message' => 'Restaurant created successfully.'
+            'message' => 'Restaurant created successfully.',
         ]);
     }
 
@@ -46,7 +52,9 @@ class RestaurantController extends Controller
         $restaurant->update($request->only('name', 'owner_id'));
 
         if ($oldOwnerId != $request->owner_id) {
-            User::find($oldOwnerId)->update(['restaurant_id' => null]);
+            if ($oldOwnerId) {
+                User::where('id', $oldOwnerId)->update(['restaurant_id' => null]);
+            }
             User::find($request->owner_id)->update(['restaurant_id' => $restaurant->id]);
         }
 
@@ -54,7 +62,7 @@ class RestaurantController extends Controller
         return response()->json([
             'success' => true,
             'restaurant' => $restaurant,
-            'message' => 'Restaurant updated successfully.'
+            'message' => 'Restaurant updated successfully.',
         ]);
     }
 
@@ -63,8 +71,27 @@ class RestaurantController extends Controller
         $restaurant->update(['is_active' => !$restaurant->is_active]);
         return response()->json([
             'is_active' => $restaurant->is_active,
-            'message' => 'Restaurant status updated successfully.'
+            'message' => 'Restaurant status updated successfully.',
         ]);
+    }
+
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make(Str::random(16)),
+            'role' => 'admin',
+            'restaurant_id' => null,
+            'is_active' => true,
+        ]);
+
+        return response()->json(['success' => true, 'user' => $user]);
     }
 
     public function show(Restaurant $restaurant)
@@ -73,14 +100,13 @@ class RestaurantController extends Controller
         return view('superadmin.restaurants.show', compact('restaurant'));
     }
 
-    public function showTable(Restaurant $restaurant, $table)
+    public function showTable(Restaurant $restaurant, Table $table)
     {
-        $tableModel = Table::findOrFail($table);
-        $tableModel->load(['orders' => fn ($q) => $q->where('status', '!=', \App\Enums\OrderStatus::Confirmed)->latest()]);
-        return view('superadmin.restaurants.tables.show', ['restaurant' => $restaurant, 'table' => $tableModel]);
+        abort_if($table->restaurant_id !== $restaurant->id, 404);
+
+        $table->load(['orders' => fn($q) => $q->where('status', '!=', OrderStatus::Confirmed)->latest()]);
+        return view('superadmin.restaurants.tables.show', ['restaurant' => $restaurant, 'table' => $table]);
     }
-
-
 
     public function storeStaff(Request $request, Restaurant $restaurant)
     {
@@ -94,7 +120,7 @@ class RestaurantController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => \App\Enums\UserRole::Kasir,
+            'role' => UserRole::Kasir,
             'restaurant_id' => $restaurant->id,
             'is_active' => true,
         ]);
@@ -104,13 +130,14 @@ class RestaurantController extends Controller
 
     public function updateStaff(Request $request, Restaurant $restaurant, User $user)
     {
-        if ($user->role !== \App\Enums\UserRole::Kasir) {
-            return response()->json(['error' => 'Cannot edit admin'], 403);
+        if ($user->restaurant_id !== $restaurant->id || $user->role !== UserRole::Kasir) {
+            return response()->json(['error' => 'Forbidden'], 403);
         }
 
         $request->validate([
             'name' => 'required|max:255',
-            'email' => ['required', 'email', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'password' => 'nullable|min:6',
         ]);
 
         $data = $request->only('name', 'email');
@@ -124,7 +151,7 @@ class RestaurantController extends Controller
 
     public function destroyStaff(Restaurant $restaurant, User $user)
     {
-        if ($user->restaurant_id !== $restaurant->id || $user->role !== \App\Enums\UserRole::Kasir) {
+        if ($user->restaurant_id !== $restaurant->id || $user->role !== UserRole::Kasir) {
             return response()->json(['error' => 'Forbidden'], 403);
         }
         $user->delete();
@@ -133,7 +160,7 @@ class RestaurantController extends Controller
 
     public function toggleStaff(Restaurant $restaurant, User $user)
     {
-        if ($user->restaurant_id !== $restaurant->id || $user->role !== \App\Enums\UserRole::Kasir) {
+        if ($user->restaurant_id !== $restaurant->id || $user->role !== UserRole::Kasir) {
             return response()->json(['error' => 'Forbidden'], 403);
         }
         $user->update(['is_active' => !$user->is_active]);
@@ -149,7 +176,10 @@ class RestaurantController extends Controller
 
     public function updateCategory(Request $request, Restaurant $restaurant, Category $category)
     {
-        if ($category->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+        if ($category->restaurant_id !== $restaurant->id) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
         $request->validate(['name' => 'required|string|max:255']);
         $category->update(['name' => $request->name]);
         return response()->json(['success' => true, 'category' => $category]);
@@ -157,7 +187,9 @@ class RestaurantController extends Controller
 
     public function destroyCategory(Restaurant $restaurant, Category $category)
     {
-        if ($category->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+        if ($category->restaurant_id !== $restaurant->id) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
         $category->delete();
         return response()->json(['success' => true]);
     }
@@ -165,7 +197,7 @@ class RestaurantController extends Controller
     public function storeProduct(Request $request, Restaurant $restaurant)
     {
         $request->validate([
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => ['required', Rule::exists('categories', 'id')->where('restaurant_id', $restaurant->id)],
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
@@ -186,10 +218,12 @@ class RestaurantController extends Controller
 
     public function updateProduct(Request $request, Restaurant $restaurant, Product $product)
     {
-        if ($product->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+        if ($product->restaurant_id !== $restaurant->id) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
 
         $request->validate([
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => ['required', Rule::exists('categories', 'id')->where('restaurant_id', $restaurant->id)],
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
@@ -203,34 +237,40 @@ class RestaurantController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            if ($product->image) \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image);
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
             $data['image'] = $request->file('image')->store('products', 'public');
         }
 
         $product->update($data);
-        return response()->json(['success' => true, 'product' => $product]);
+        return response()->json(['success' => true, 'product' => $product->fresh()]);
     }
 
     public function destroyProduct(Restaurant $restaurant, Product $product)
     {
-        if ($product->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
-        if ($product->image) \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image);
+        if ($product->restaurant_id !== $restaurant->id) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+        if ($product->image) {
+            Storage::disk('public')->delete($product->image);
+        }
         $product->delete();
         return response()->json(['success' => true]);
     }
 
-    // Tables Management
     public function storeTable(Request $request, Restaurant $restaurant)
     {
         $request->validate([
-            'table_number' => 'required|string|max:20',
+            'number' => 'required|string|max:20',
             'capacity' => 'required|integer|min:1|max:50',
         ]);
 
         $table = $restaurant->tables()->create([
-            'table_number' => $request->table_number,
+            'number' => $request->number,
             'capacity' => $request->capacity,
-            'qr_token' => \Illuminate\Support\Str::random(32),
+            'qr_token' => Str::random(32),
+            'status' => 'available',
             'is_active' => true,
         ]);
 
@@ -239,22 +279,25 @@ class RestaurantController extends Controller
 
     public function updateTable(Request $request, Restaurant $restaurant, Table $table)
     {
-        if ($table->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+        if ($table->restaurant_id !== $restaurant->id) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
 
         $request->validate([
-            'table_number' => 'required|string|max:20',
+            'number' => 'required|string|max:20',
             'capacity' => 'required|integer|min:1|max:50',
         ]);
 
-        $table->update($request->only('table_number', 'capacity'));
-        return response()->json(['success' => true, 'table' => $table]);
+        $table->update($request->only('number', 'capacity'));
+        return response()->json(['success' => true, 'table' => $table->fresh()]);
     }
 
     public function destroyTable(Restaurant $restaurant, Table $table)
     {
-        if ($table->restaurant_id !== $restaurant->id) return response()->json(['error' => 'Forbidden'], 403);
+        if ($table->restaurant_id !== $restaurant->id) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
         $table->delete();
         return response()->json(['success' => true]);
     }
-
 }

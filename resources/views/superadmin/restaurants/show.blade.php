@@ -6,21 +6,25 @@
     staffMember: { id: '', name: '', email: '', password: '', role: 'kasir', is_active: true },
     categories: @js($restaurant->categories),
     category: { id: '', name: '' },
-    products: @js($restaurant->products),
     product: { id: '', category_id: '', name: '', price: '', description: '', image: null, is_available: true },
-    
-    loading: { save: false, toggle: false, delete: false, cat: false, prod: false },
+    tables: @js($restaurant->tables),
+    table: { id: '', number: '', capacity: 4 },
+    deleteTarget: { type: '', id: null, name: '' },
+
+    loading: { save: false, toggle: false, delete: false, cat: false, prod: false, table: false },
     errors: {},
     catErrors: {},
     prodErrors: {},
-    tab: 'staff',
-    modal: '',
-    tables: @js($restaurant->tables),
-    table: { id: '', table_number: '', capacity: 4 },
     tableErrors: {},
+    deleteError: '',
+    tab: 'staff',
 
     firstErrors(errors) {
         return Object.fromEntries(Object.entries(errors || {}).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
+    },
+
+    formatPrice(value) {
+        return Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
 
     async send(url, method, body, isFormData = false) {
@@ -70,7 +74,7 @@
                 this.errors = this.firstErrors(data.errors);
                 return;
             }
-            if (!res.ok) throw new Error(data.message || 'Something went wrong.');
+            if (!res.ok) throw new Error(data.error || data.message || 'Something went wrong.');
 
             if (this.staffMember.id) {
                 this.staff = this.staff.map(s => s.id === data.user.id ? data.user : s);
@@ -91,42 +95,25 @@
                 `{{ route('superadmin.restaurants.staff.toggle', [$restaurant->id, 'ID']) }}`.replace('ID', s.id),
                 'PATCH'
             );
-            if (!res.ok) throw new Error('Failed');
+            if (!res.ok) throw new Error('Failed to update status.');
             s.is_active = data.is_active;
         } catch (e) {
-            alert(e.message);
+            this.deleteError = e.message;
         }
     },
 
-    async deleteStaff() {
-        if (this.loading.delete) return;
-        this.loading.delete = true;
-        try {
-            const { res, data } = await this.send(
-                `{{ route('superadmin.restaurants.staff.destroy', [$restaurant->id, 'ID']) }}`.replace('ID', this.staffMember.id),
-                'DELETE'
-            );
-            if (!res.ok) throw new Error('Failed to delete');
-            this.staff = this.staff.filter(s => s.id !== this.staffMember.id);
-            $dispatch('close-modal', { id: 'delete-staff-modal' });
-        } catch (e) {
-            alert(e.message);
-        } finally {
-            this.loading.delete = false;
-        }
-    },
-
-    // Categories
     openCreateCategory() {
         this.catErrors = {};
         this.category = { id: '', name: '' };
         $dispatch('open-modal', { id: 'category-modal' });
     },
+
     openEditCategory(c) {
         this.catErrors = {};
-        this.category = { ...c };
+        this.category = { id: c.id, name: c.name };
         $dispatch('open-modal', { id: 'category-modal' });
     },
+
     async saveCategory() {
         if (this.loading.cat) return;
         this.loading.cat = true;
@@ -138,12 +125,12 @@
                 : `{{ route('superadmin.restaurants.categories.store', $restaurant->id) }}`;
             const { res, data } = await this.send(url, method, this.category);
             if (res.status === 422) { this.catErrors = this.firstErrors(data.errors); return; }
-            if (!res.ok) throw new Error(data.message || 'Error');
-            
+            if (!res.ok) throw new Error(data.error || data.message || 'Error');
+
             if (this.category.id) {
-                this.categories = this.categories.map(c => c.id === data.category.id ? { ...data.category, products: c.products } : c);
+                this.categories = this.categories.map(c => c.id === data.category.id ? { ...c, name: data.category.name } : c);
             } else {
-                this.categories.unshift({ ...data.category, products: [] });
+                this.categories.push({ ...data.category, products: [] });
             }
             $dispatch('close-modal', { id: 'category-modal' });
         } catch (e) {
@@ -152,25 +139,31 @@
             this.loading.cat = false;
         }
     },
-    async deleteCategory(id) {
-        if (!confirm('Are you sure?')) return;
-        const { res } = await this.send(`{{ route('superadmin.restaurants.categories.destroy', [$restaurant->id, 'ID']) }}`.replace('ID', id), 'DELETE');
-        if (res.ok) {
-            this.categories = this.categories.filter(c => c.id !== id);
-        }
-    },
 
-    // Products
     openCreateProduct() {
         this.prodErrors = {};
         this.product = { id: '', category_id: this.categories[0]?.id || '', name: '', price: '', description: '', image: null, is_available: true };
+        const input = document.getElementById('product-image-input');
+        if (input) input.value = '';
         $dispatch('open-modal', { id: 'product-modal' });
     },
+
     openEditProduct(p) {
         this.prodErrors = {};
-        this.product = { ...p, image: null };
+        this.product = {
+            id: p.id,
+            category_id: p.category_id,
+            name: p.name,
+            price: p.price,
+            description: p.description || '',
+            image: null,
+            is_available: !!p.is_available
+        };
+        const input = document.getElementById('product-image-input');
+        if (input) input.value = '';
         $dispatch('open-modal', { id: 'product-modal' });
     },
+
     async saveProduct() {
         if (this.loading.prod) return;
         this.loading.prod = true;
@@ -183,52 +176,48 @@
             formData.append('description', this.product.description || '');
             if (this.product.id) {
                 formData.append('is_available', this.product.is_available ? 1 : 0);
+                formData.append('_method', 'PUT');
             }
             const imgInput = document.getElementById('product-image-input');
             if (imgInput && imgInput.files[0]) {
                 formData.append('image', imgInput.files[0]);
             }
 
-            const method = this.product.id ? 'POST' : 'POST'; // using POST with _method=PUT for multipart/form-data update
-            let url = this.product.id
+            const url = this.product.id
                 ? `{{ route('superadmin.restaurants.products.update', [$restaurant->id, 'ID']) }}`.replace('ID', this.product.id)
                 : `{{ route('superadmin.restaurants.products.store', $restaurant->id) }}`;
-            
-            if (this.product.id) {
-                formData.append('_method', 'PUT');
-            }
 
-            const { res, data } = await this.send(url, method, formData, true);
+            const { res, data } = await this.send(url, 'POST', formData, true);
             if (res.status === 422) { this.prodErrors = this.firstErrors(data.errors); return; }
-            if (!res.ok) throw new Error(data.message || 'Error');
+            if (!res.ok) throw new Error(data.error || data.message || 'Error');
 
-            // Refresh categories & products array locally or reload
-            window.location.reload();
+            const saved = data.product;
+            this.categories = this.categories.map(c => {
+                const rest = (c.products || []).filter(p => p.id !== saved.id);
+                return Number(c.id) === Number(saved.category_id)
+                    ? { ...c, products: [...rest, saved] }
+                    : { ...c, products: rest };
+            });
+            $dispatch('close-modal', { id: 'product-modal' });
         } catch (e) {
             this.prodErrors.general = e.message;
         } finally {
             this.loading.prod = false;
         }
     },
-    async deleteProduct(id) {
-        if (!confirm('Are you sure?')) return;
-        const { res } = await this.send(`{{ route('superadmin.restaurants.products.destroy', [$restaurant->id, 'ID']) }}`.replace('ID', id), 'DELETE');
-        if (res.ok) {
-            window.location.reload();
-        }
-    },
 
-    // Tables
     openCreateTable() {
         this.tableErrors = {};
-        this.table = { id: '', table_number: '', capacity: 4 };
+        this.table = { id: '', number: '', capacity: 4 };
         $dispatch('open-modal', { id: 'table-modal' });
     },
+
     openEditTable(t) {
         this.tableErrors = {};
-        this.table = { ...t };
+        this.table = { id: t.id, number: t.number, capacity: t.capacity };
         $dispatch('open-modal', { id: 'table-modal' });
     },
+
     async saveTable() {
         if (this.loading.table) return;
         this.loading.table = true;
@@ -240,7 +229,7 @@
                 : `{{ route('superadmin.restaurants.tables.store', $restaurant->id) }}`;
             const { res, data } = await this.send(url, method, this.table);
             if (res.status === 422) { this.tableErrors = this.firstErrors(data.errors); return; }
-            if (!res.ok) throw new Error(data.message || 'Error');
+            if (!res.ok) throw new Error(data.error || data.message || 'Error');
 
             if (this.table.id) {
                 this.tables = this.tables.map(t => t.id === data.table.id ? data.table : t);
@@ -254,11 +243,42 @@
             this.loading.table = false;
         }
     },
-    async deleteTable(id) {
-        if (!confirm('Are you sure?')) return;
-        const { res } = await this.send(`{{ route('superadmin.restaurants.tables.destroy', [$restaurant->id, 'ID']) }}`.replace('ID', id), 'DELETE');
-        if (res.ok) {
-            this.tables = this.tables.filter(t => t.id !== id);
+
+    confirmDelete(type, id, name) {
+        this.deleteError = '';
+        this.deleteTarget = { type, id, name };
+        $dispatch('open-modal', { id: 'confirm-delete-modal' });
+    },
+
+    async runDelete() {
+        if (this.loading.delete) return;
+        this.loading.delete = true;
+        this.deleteError = '';
+        const { type, id } = this.deleteTarget;
+        const urls = {
+            staff: `{{ route('superadmin.restaurants.staff.destroy', [$restaurant->id, 'ID']) }}`,
+            category: `{{ route('superadmin.restaurants.categories.destroy', [$restaurant->id, 'ID']) }}`,
+            product: `{{ route('superadmin.restaurants.products.destroy', [$restaurant->id, 'ID']) }}`,
+            table: `{{ route('superadmin.restaurants.tables.destroy', [$restaurant->id, 'ID']) }}`,
+        };
+        try {
+            const { res, data } = await this.send(urls[type].replace('ID', id), 'DELETE');
+            if (!res.ok) throw new Error(data.error || data.message || 'Failed to delete.');
+
+            if (type === 'staff') {
+                this.staff = this.staff.filter(s => s.id !== id);
+            } else if (type === 'category') {
+                this.categories = this.categories.filter(c => c.id !== id);
+            } else if (type === 'product') {
+                this.categories = this.categories.map(c => ({ ...c, products: (c.products || []).filter(p => p.id !== id) }));
+            } else if (type === 'table') {
+                this.tables = this.tables.filter(t => t.id !== id);
+            }
+            $dispatch('close-modal', { id: 'confirm-delete-modal' });
+        } catch (e) {
+            this.deleteError = e.message;
+        } finally {
+            this.loading.delete = false;
         }
     }
 }" class="space-y-6">
@@ -298,10 +318,11 @@
                     Add Product
                 </button>
             </div>
-            <div class="flex justify-end *:gap-2 mb-2" x-show="tab === 'tables'">
+            <div class="flex justify-end gap-2 mb-2" x-show="tab === 'tables'">
                 <button @click="openCreateTable()"
-                    class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 cursor-pointer">Add
-                    Table</button>
+                    class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 cursor-pointer">
+                    Add Table
+                </button>
             </div>
         </div>
 
@@ -321,7 +342,7 @@
                         <tr class="border-t hover:bg-accent/30">
                             <td class="p-4 font-medium" x-text="s.name"></td>
                             <td class="p-4" x-text="s.email"></td>
-                            <td class="p-4 capitalize" x-text="s.role"></td>
+                            <td class="p-4 capitalize" x-text="s.role === 'kasir' ? 'Cashier' : s.role"></td>
                             <td class="p-4 text-center">
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
                                     :class="s.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
@@ -329,7 +350,8 @@
                             </td>
                             <td class="p-4 text-right">
                                 <div class="flex items-center justify-end gap-2" x-show="s.role === 'kasir'">
-                                    <button @click="toggleStaffStatus(s)" class="p-1.5 rounded-md cursor-pointer"
+                                    <button @click="toggleStaffStatus(s)" :title="s.is_active ? 'Suspend' : 'Activate'"
+                                        class="p-1.5 rounded-md cursor-pointer"
                                         :class="s.is_active ? 'text-amber-600 hover:bg-amber-50' : 'text-green-600 hover:bg-green-50'">
                                         <svg x-show="s.is_active" xmlns="http://www.w3.org/2000/svg" fill="none"
                                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
@@ -342,7 +364,7 @@
                                                 d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
                                         </svg>
                                     </button>
-                                    <button @click="openEditStaff(s)"
+                                    <button @click="openEditStaff(s)" title="Edit"
                                         class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-4">
@@ -350,8 +372,7 @@
                                                 d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                                         </svg>
                                     </button>
-                                    <button
-                                        @click="staffMember = s; $dispatch('open-modal', { id: 'delete-staff-modal' })"
+                                    <button @click="confirmDelete('staff', s.id, s.name)" title="Delete"
                                         class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-4">
@@ -368,61 +389,83 @@
         </div>
 
         <div x-show="tab === 'menu'" class="space-y-6">
-            @foreach($restaurant->categories as $cat)
-            <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
-                <div class="p-4 border-b font-medium bg-muted flex justify-between items-center">
-                    <span>{{ $cat->name }}</span>
-                    <div class="flex gap-2">
-                        <button @click="openEditCategory({{ json_encode($cat) }})"
-                            class="text-xs text-blue-600 hover:underline">Edit</button>
-                        <button @click="deleteCategory({{ $cat->id }})"
-                            class="text-xs text-red-600 hover:underline">Delete</button>
+            <p x-show="categories.length === 0" x-cloak class="text-sm text-muted-foreground">No categories yet.</p>
+            <template x-for="cat in categories" :key="cat.id">
+                <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
+                    <div class="p-4 border-b font-medium bg-muted flex justify-between items-center">
+                        <span x-text="cat.name"></span>
+                        <div class="flex gap-2">
+                            <button @click="openEditCategory(cat)" title="Edit"
+                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer"><svg
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                </svg></button>
+                            <button @click="confirmDelete('category', cat.id, cat.name)" title="Delete"
+                                class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer"><svg
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg></button>
+                        </div>
                     </div>
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left w-16">Image</th>
+                                <th class="p-4 text-left">Product</th>
+                                <th class="p-4 text-left">Price</th>
+                                <th class="p-4 text-center">Status</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="prod in (cat.products || [])" :key="prod.id">
+                                <tr class="border-t">
+                                    <td class="p-4">
+                                        <template x-if="prod.image">
+                                            <img :src="'{{ asset('storage') }}/' + prod.image"
+                                                class="size-10 object-cover rounded">
+                                        </template>
+                                        <template x-if="!prod.image">
+                                            <div
+                                                class="size-10 bg-muted rounded flex items-center justify-center text-[10px] text-muted-foreground">
+                                                No image</div>
+                                        </template>
+                                    </td>
+                                    <td class="p-4 font-medium" x-text="prod.name"></td>
+                                    <td class="p-4" x-text="'$' + formatPrice(prod.price)"></td>
+                                    <td class="p-4 text-center">
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                            :class="prod.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                            x-text="prod.is_available ? 'Available' : 'Sold out'"></span>
+                                    </td>
+                                    <td class="p-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button @click="openEditProduct(prod)" title="Edit"
+                                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer"><svg
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                                </svg></button>
+                                            <button @click="confirmDelete('product', prod.id, prod.name)" title="Delete"
+                                                class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer"><svg
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                                </svg></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
                 </div>
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr>
-                            <th class="p-4 text-left w-16">Image</th>
-                            <th class="p-4 text-left">Product</th>
-                            <th class="p-4 text-left">Price</th>
-                            <th class="p-4 text-center">Status</th>
-                            <th class="p-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($cat->products as $prod)
-                        <tr class="border-t">
-                            <td class="p-4">
-                                @if($prod->image)
-                                <img src="{{ asset('storage/' . $prod->image) }}" class="size-10 object-cover rounded">
-                                @else
-                                <div
-                                    class="size-10 bg-muted rounded flex items-center justify-center text-[10px] text-muted-foreground">
-                                    No img</div>
-                                @endif
-                            </td>
-                            <td class="p-4 font-medium">{{ $prod->name }}</td>
-                            <td class="p-4">$ {{ number_format($prod->price, 0, ',', '.') }}</td>
-                            <td class="p-4 text-center">
-                                <span
-                                    class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $prod->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ $prod->is_available ? 'Available' : 'Habis' }}
-                                </span>
-                            </td>
-                            <td class="p-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <button @click="openEditProduct({{ json_encode($prod) }})"
-                                        class="p-1 text-blue-600 hover:bg-blue-50 rounded">Edit</button>
-                                    <button @click="deleteProduct({{ $prod->id }})"
-                                        class="p-1 text-red-600 hover:bg-red-50 rounded">Delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @endforeach
+            </template>
         </div>
 
         <div x-show="tab === 'tables'" class="space-y-4">
@@ -431,6 +474,7 @@
                     <thead class="bg-muted">
                         <tr>
                             <th class="p-4 text-left">Table Number</th>
+                            <th class="p-4 text-left">Capacity</th>
                             <th class="p-4 text-center">Status</th>
                             <th class="p-4 text-right">Actions</th>
                         </tr>
@@ -438,25 +482,41 @@
                     <tbody>
                         <template x-for="t in tables" :key="t.id">
                             <tr class="border-t hover:bg-accent/30">
-                                <td class="p-4 font-medium" x-text="'Meja ' + t.number"></td>
-                                <td class="p-4 text-center"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                        :class="t.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                        x-text="t.is_active ? 'Active' : 'Inactive'"></span></td>
+                                <td class="p-4 font-medium" x-text="'Table ' + t.number"></td>
+                                <td class="p-4" x-text="t.capacity"></td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                        :class="t.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                        x-text="t.status ? 'Available' : 'Unavailable'"></span>
+                                </td>
                                 <td class="p-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <a :href="`{{ route('superadmin.restaurants.tables.show', [$restaurant->id, 'ID']) }}`.replace('ID', t.id)"
-                                            class="p-1 text-slate-600 hover:text-primary">
+                                            title="View"
+                                            class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md cursor-pointer">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 stroke-width="1.5" stroke="currentColor" class="size-4">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                            </svg></a>
-                                        <button @click="openEditTable(t)"
-                                            class="p-1 text-blue-600 hover:text-blue-800">Edit</button>
-                                        <button @click="deleteTable(t.id)"
-                                            class="p-1 text-red-600 hover:text-red-800">Delete</button>
+                                            </svg>
+                                        </a>
+                                        <button @click="openEditTable(t)" title="Edit"
+                                            class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer"><svg
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                            </svg></button>
+                                        <button @click="confirmDelete('table', t.id, 'Table ' + t.number)"
+                                            title="Delete"
+                                            class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer"><svg
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                            </svg></button>
                                     </div>
                                 </td>
                             </tr>
@@ -467,7 +527,6 @@
         </div>
     </div>
 
-    {{-- Modal Add/Edit Staff --}}
     <x-modal id="staff-modal" title="Staff Management">
         <form @submit.prevent="saveStaff()" class="space-y-4" novalidate>
             <p x-show="errors.general" x-text="errors.general" x-cloak
@@ -513,9 +572,8 @@
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Role</label>
-                <input type="text" value="Kasir" disabled
+                <input type="text" value="Cashier" disabled
                     class="w-full h-9 rounded-md border px-3 text-sm bg-muted text-muted-foreground">
-                <input type="hidden" x-model="staffMember.role">
             </div>
             <div class="flex justify-end gap-2 pt-4">
                 <button type="button" @click="$dispatch('close-modal', { id: 'staff-modal' })"
@@ -528,24 +586,8 @@
         </form>
     </x-modal>
 
-    {{-- Delete Modal --}}
-    <x-modal id="delete-staff-modal" title="Delete Staff">
-        <div class="space-y-4">
-            <p class="text-sm text-muted-foreground">Are you sure you want to delete <strong
-                    x-text="staffMember.name"></strong>?</p>
-            <div class="flex justify-end gap-2">
-                <button type="button" @click="$dispatch('close-modal', { id: 'delete-staff-modal' })"
-                    class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
-                <button type="button" @click="deleteStaff()" :disabled="loading.delete"
-                    class="inline-flex items-center gap-2 rounded-md bg-destructive text-white text-sm font-medium h-9 px-4">
-                    <span x-text="loading.delete ? 'Deleting...' : 'Delete'"></span>
-                </button>
-            </div>
-        </div>
-    </x-modal>
-
     <x-modal id="category-modal" title="Category">
-        <form @submit.prevent="saveCategory()" class="space-y-4">
+        <form @submit.prevent="saveCategory()" class="space-y-4" novalidate>
             <p x-show="catErrors.general" x-text="catErrors.general" x-cloak
                 class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
             <div>
@@ -590,7 +632,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium mb-1">Price (Rp)</label>
+                <label class="block text-sm font-medium mb-1">Price ($)</label>
                 <input x-model="product.price" type="number" min="0" required
                     class="w-full h-9 rounded-md border px-3 text-sm"
                     :class="prodErrors.price ? 'border-red-500' : 'border-input'">
@@ -601,12 +643,15 @@
                 <label class="block text-sm font-medium mb-1">Description</label>
                 <textarea x-model="product.description" rows="2" class="w-full rounded-md border px-3 py-2 text-sm"
                     :class="prodErrors.description ? 'border-red-500' : 'border-input'"></textarea>
+                <p x-show="prodErrors.description" x-text="prodErrors.description" x-cloak
+                    class="mt-1 text-xs text-red-600"></p>
             </div>
 
             <div>
                 <label class="block text-sm font-medium mb-1">Image <span x-show="product.id"
                         class="text-xs text-muted-foreground">(Leave blank to keep current)</span></label>
                 <input id="product-image-input" type="file" accept="image/*" class="w-full text-sm">
+                <p x-show="prodErrors.image" x-text="prodErrors.image" x-cloak class="mt-1 text-xs text-red-600"></p>
             </div>
 
             <div x-show="product.id" class="flex items-center gap-2">
@@ -623,16 +668,17 @@
             </div>
         </form>
     </x-modal>
+
     <x-modal id="table-modal" title="Table">
-        <form @submit.prevent="saveTable()" class="space-y-4">
+        <form @submit.prevent="saveTable()" class="space-y-4" novalidate>
             <p x-show="tableErrors.general" x-text="tableErrors.general" x-cloak
                 class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
             <div>
                 <label class="block text-sm font-medium mb-1">Table Number</label>
-                <input x-model="table.table_number" required class="w-full h-9 rounded-md border px-3 text-sm"
-                    :class="tableErrors.table_number ? 'border-red-500' : 'border-input'">
-                <p x-show="tableErrors.table_number" x-text="tableErrors.table_number" x-cloak
-                    class="mt-1 text-xs text-red-600"></p>
+                <input x-model="table.number" required class="w-full h-9 rounded-md border px-3 text-sm"
+                    :class="tableErrors.number ? 'border-red-500' : 'border-input'">
+                <p x-show="tableErrors.number" x-text="tableErrors.number" x-cloak class="mt-1 text-xs text-red-600">
+                </p>
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Capacity</label>
@@ -650,6 +696,24 @@
                     x-text="loading.table ? 'Saving...' : 'Save'"></button>
             </div>
         </form>
+    </x-modal>
+
+    <x-modal id="confirm-delete-modal" title="Confirm Delete">
+        <div class="space-y-4">
+            <p x-show="deleteError" x-text="deleteError" x-cloak
+                class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
+            <p class="text-sm text-muted-foreground">
+                Are you sure you want to delete <strong x-text="deleteTarget.name"></strong>? This action cannot be
+                undone.
+            </p>
+            <div class="flex justify-end gap-2">
+                <button type="button" @click="$dispatch('close-modal', { id: 'confirm-delete-modal' })"
+                    class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
+                <button type="button" @click="runDelete()" :disabled="loading.delete"
+                    class="rounded-md bg-destructive text-white text-sm font-medium h-9 px-4"
+                    x-text="loading.delete ? 'Deleting...' : 'Delete'"></button>
+            </div>
+        </div>
     </x-modal>
 </div>
 @endsection
