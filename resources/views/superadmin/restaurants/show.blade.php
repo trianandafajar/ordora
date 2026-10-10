@@ -281,177 +281,243 @@
             this.loading.delete = false;
         }
     }
-}" class="space-y-6">
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight">{{ $restaurant->name }}</h1>
-            <p class="text-sm text-muted-foreground">Owner: {{ $restaurant->owner->name ?? '-' }}</p>
-        </div>
-        <a href="{{ route('superadmin.restaurants.index') }}"
-            class="rounded-md border h-9 px-4 flex items-center text-sm font-medium hover:bg-accent cursor-pointer">Back</a>
-    </div>
-
-    <div class="space-y-4">
-        <div class="flex border-b gap-4 items-center justify-between">
-            <div class="flex gap-4">
-                <button @click="tab = 'staff'"
-                    :class="tab === 'staff' ? 'border-b-2 border-primary font-bold' : 'text-muted-foreground'"
-                    class="pb-2 text-sm cursor-pointer">Staff</button>
-                <button @click="tab = 'menu'"
-                    :class="tab === 'menu' ? 'border-b-2 border-primary font-bold' : 'text-muted-foreground'"
-                    class="pb-2 text-sm cursor-pointer">Menu & Products</button>
-                <button @click="tab = 'tables'"
-                    :class="tab === 'tables' ? 'border-b-2 border-primary font-bold' : 'text-muted-foreground'"
-                    class="pb-2 text-sm cursor-pointer">Tables QR</button>
+}">
+    <div class="space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">{{ $restaurant->name }}</h1>
+                <p class="text-sm text-muted-foreground">Owner: {{ $restaurant->owner->name ?? '-' }}</p>
             </div>
-            <button x-show="tab === 'staff'" @click="openCreate()"
-                class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 mb-2 cursor-pointer">
-                Add Staff
-            </button>
-            <div x-show="tab === 'menu'" class="flex justify-end gap-2 mb-2">
-                <button @click="openCreateCategory()"
-                    class="rounded-md border text-xs font-medium h-8 px-3 cursor-pointer">
-                    Add Category
-                </button>
-                <button @click="openCreateProduct()"
-                    class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 cursor-pointer">
-                    Add Product
-                </button>
-            </div>
-            <div class="flex justify-end gap-2 mb-2" x-show="tab === 'tables'">
-                <button @click="openCreateTable()"
-                    class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 cursor-pointer">
-                    Add Table
-                </button>
-            </div>
+            <a href="{{ route('superadmin.restaurants.index') }}"
+                class="rounded-md border h-9 px-4 flex items-center text-sm font-medium hover:bg-accent cursor-pointer">Back</a>
         </div>
 
-        <div x-show="tab === 'staff'" class="rounded-xl border bg-card shadow-sm overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-muted">
-                    <tr>
-                        <th class="p-4 text-left">Name</th>
-                        <th class="p-4 text-left">Email</th>
-                        <th class="p-4 text-left">Role</th>
-                        <th class="p-4 text-center">Status</th>
-                        <th class="p-4 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="s in staff" :key="s.id">
-                        <tr class="border-t hover:bg-accent/30">
-                            <td class="p-4 font-medium" x-text="s.name"></td>
-                            <td class="p-4" x-text="s.email"></td>
-                            <td class="p-4 capitalize" x-text="s.role === 'kasir' ? 'Cashier' : s.role"></td>
-                            <td class="p-4 text-center">
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                    :class="s.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                    x-text="s.is_active ? 'Active' : 'Suspended'"></span>
-                            </td>
-                            <td class="p-4 text-right">
-                                <div class="flex items-center justify-end gap-2" x-show="s.role === 'kasir'">
-                                    <button @click="toggleStaffStatus(s)" :title="s.is_active ? 'Suspend' : 'Activate'"
-                                        class="p-1.5 rounded-md cursor-pointer"
-                                        :class="s.is_active ? 'text-amber-600 hover:bg-amber-50' : 'text-green-600 hover:bg-green-50'">
-                                        <svg x-show="s.is_active" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
-                                        </svg>
-                                        <svg x-show="!s.is_active" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-                                        </svg>
-                                    </button>
-                                    <button @click="openEditStaff(s)" title="Edit"
-                                        class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                                        </svg>
-                                    </button>
-                                    <button @click="confirmDelete('staff', s.id, s.name)" title="Delete"
-                                        class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
+        <div class="space-y-4">
+            <div class="flex border-b gap-4 items-center justify-between">
+                <div class="flex gap-4">
+                    <button @click="tab = 'staff'"
+                        :class="tab === 'staff' ? 'border-b-2 border-primary font-bold' : 'text-muted-foreground'"
+                        class="pb-2 text-sm cursor-pointer">Staff</button>
+                    <button @click="tab = 'menu'"
+                        :class="tab === 'menu' ? 'border-b-2 border-primary font-bold' : 'text-muted-foreground'"
+                        class="pb-2 text-sm cursor-pointer">Menu & Products</button>
+                    <button @click="tab = 'tables'"
+                        :class="tab === 'tables' ? 'border-b-2 border-primary font-bold' : 'text-muted-foreground'"
+                        class="pb-2 text-sm cursor-pointer">Tables QR</button>
+                </div>
+                <button x-show="tab === 'staff'" @click="openCreate()"
+                    class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 mb-2 cursor-pointer">
+                    Add Staff
+                </button>
+                <div x-show="tab === 'menu'" class="flex justify-end gap-2 mb-2">
+                    <button @click="openCreateCategory()"
+                        class="rounded-md border text-xs font-medium h-8 px-3 cursor-pointer">
+                        Add Category
+                    </button>
+                    <button @click="openCreateProduct()"
+                        class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 cursor-pointer">
+                        Add Product
+                    </button>
+                </div>
+                <div class="flex justify-end gap-2 mb-2" x-show="tab === 'tables'">
+                    <button @click="openCreateTable()"
+                        class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 cursor-pointer">
+                        Add Table
+                    </button>
+                </div>
+            </div>
+
+            <div x-show="tab === 'staff'" class="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-muted">
+                        <tr>
+                            <th class="p-4 text-left">Name</th>
+                            <th class="p-4 text-left">Email</th>
+                            <th class="p-4 text-left">Role</th>
+                            <th class="p-4 text-center">Status</th>
+                            <th class="p-4 text-right">Actions</th>
                         </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        <template x-for="s in staff" :key="s.id">
+                            <tr class="border-t hover:bg-accent/30">
+                                <td class="p-4 font-medium" x-text="s.name"></td>
+                                <td class="p-4" x-text="s.email"></td>
+                                <td class="p-4 capitalize" x-text="s.role === 'kasir' ? 'Cashier' : s.role"></td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                        :class="s.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                        x-text="s.is_active ? 'Active' : 'Suspended'"></span>
+                                </td>
+                                <td class="p-4 text-right">
+                                    <div class="flex items-center justify-end gap-2" x-show="s.role === 'kasir'">
+                                        <button @click="toggleStaffStatus(s)"
+                                            :title="s.is_active ? 'Suspend' : 'Activate'"
+                                            class="p-1.5 rounded-md cursor-pointer"
+                                            :class="s.is_active ? 'text-amber-600 hover:bg-amber-50' : 'text-green-600 hover:bg-green-50'">
+                                            <svg x-show="s.is_active" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
+                                            </svg>
+                                            <svg x-show="!s.is_active" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                                            </svg>
+                                        </button>
+                                        <button @click="openEditStaff(s)" title="Edit"
+                                            class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                            </svg>
+                                        </button>
+                                        <button @click="confirmDelete('staff', s.id, s.name)" title="Delete"
+                                            class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
 
-        <div x-show="tab === 'menu'" class="space-y-6">
-            <p x-show="categories.length === 0" x-cloak class="text-sm text-muted-foreground">No categories yet.</p>
-            <template x-for="cat in categories" :key="cat.id">
-                <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
-                    <div class="p-4 border-b font-medium bg-muted flex justify-between items-center">
-                        <span x-text="cat.name"></span>
-                        <div class="flex gap-2">
-                            <button @click="openEditCategory(cat)" title="Edit"
-                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer"><svg
-                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="size-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                                </svg></button>
-                            <button @click="confirmDelete('category', cat.id, cat.name)" title="Delete"
-                                class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer"><svg
-                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="size-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                </svg></button>
+            <div x-show="tab === 'menu'" class="space-y-6">
+                <p x-show="categories.length === 0" x-cloak class="text-sm text-muted-foreground">No categories yet.</p>
+                <template x-for="cat in categories" :key="cat.id">
+                    <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
+                        <div class="p-4 border-b font-medium bg-muted flex justify-between items-center">
+                            <span x-text="cat.name"></span>
+                            <div class="flex gap-2">
+                                <button @click="openEditCategory(cat)" title="Edit"
+                                    class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer"><svg
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                    </svg></button>
+                                <button @click="confirmDelete('category', cat.id, cat.name)" title="Delete"
+                                    class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer"><svg
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                    </svg></button>
+                            </div>
                         </div>
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="p-4 text-left w-16">Image</th>
+                                    <th class="p-4 text-left">Product</th>
+                                    <th class="p-4 text-left">Price</th>
+                                    <th class="p-4 text-center">Status</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="prod in (cat.products || [])" :key="prod.id">
+                                    <tr class="border-t">
+                                        <td class="p-4">
+                                            <template x-if="prod.image">
+                                                <img :src="'{{ asset('storage') }}/' + prod.image"
+                                                    class="size-10 object-cover rounded">
+                                            </template>
+                                            <template x-if="!prod.image">
+                                                <div
+                                                    class="size-10 bg-muted rounded flex items-center justify-center text-[10px] text-muted-foreground">
+                                                    No image</div>
+                                            </template>
+                                        </td>
+                                        <td class="p-4 font-medium" x-text="prod.name"></td>
+                                        <td class="p-4" x-text="'$' + formatPrice(prod.price)"></td>
+                                        <td class="p-4 text-center">
+                                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                                :class="prod.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                                x-text="prod.is_available ? 'Available' : 'Sold out'"></span>
+                                        </td>
+                                        <td class="p-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button @click="openEditProduct(prod)" title="Edit"
+                                                    class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer"><svg
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                        class="size-4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                                    </svg></button>
+                                                <button @click="confirmDelete('product', prod.id, prod.name)"
+                                                    title="Delete"
+                                                    class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer"><svg
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                        class="size-4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                                    </svg></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
                     </div>
+                </template>
+            </div>
+
+            <div x-show="tab === 'tables'" class="space-y-4">
+                <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
                     <table class="w-full text-sm">
-                        <thead>
+                        <thead class="bg-muted">
                             <tr>
-                                <th class="p-4 text-left w-16">Image</th>
-                                <th class="p-4 text-left">Product</th>
-                                <th class="p-4 text-left">Price</th>
+                                <th class="p-4 text-left">Table Number</th>
+                                <th class="p-4 text-left">Capacity</th>
                                 <th class="p-4 text-center">Status</th>
                                 <th class="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <template x-for="prod in (cat.products || [])" :key="prod.id">
-                                <tr class="border-t">
-                                    <td class="p-4">
-                                        <template x-if="prod.image">
-                                            <img :src="'{{ asset('storage') }}/' + prod.image"
-                                                class="size-10 object-cover rounded">
-                                        </template>
-                                        <template x-if="!prod.image">
-                                            <div
-                                                class="size-10 bg-muted rounded flex items-center justify-center text-[10px] text-muted-foreground">
-                                                No image</div>
-                                        </template>
-                                    </td>
-                                    <td class="p-4 font-medium" x-text="prod.name"></td>
-                                    <td class="p-4" x-text="'$' + formatPrice(prod.price)"></td>
+                            <template x-for="t in tables" :key="t.id">
+                                <tr class="border-t hover:bg-accent/30">
+                                    <td class="p-4 font-medium" x-text="'Table ' + t.number"></td>
+                                    <td class="p-4" x-text="t.capacity"></td>
                                     <td class="p-4 text-center">
                                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                            :class="prod.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                            x-text="prod.is_available ? 'Available' : 'Sold out'"></span>
+                                            :class="t.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                            x-text="t.status ? 'Available' : 'Unavailable'"></span>
                                     </td>
                                     <td class="p-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            <button @click="openEditProduct(prod)" title="Edit"
+                                            <a :href="`{{ route('superadmin.restaurants.tables.show', [$restaurant->id, 'ID']) }}`.replace('ID', t.id)"
+                                                title="View"
+                                                class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md cursor-pointer">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                </svg>
+                                            </a>
+                                            <button @click="openEditTable(t)" title="Edit"
                                                 class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer"><svg
                                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                     stroke-width="1.5" stroke="currentColor" class="size-4">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                                                 </svg></button>
-                                            <button @click="confirmDelete('product', prod.id, prod.name)" title="Delete"
+                                            <button @click="confirmDelete('table', t.id, 'Table ' + t.number)"
+                                                title="Delete"
                                                 class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer"><svg
                                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                     stroke-width="1.5" stroke="currentColor" class="size-4">
@@ -465,66 +531,9 @@
                         </tbody>
                     </table>
                 </div>
-            </template>
-        </div>
-
-        <div x-show="tab === 'tables'" class="space-y-4">
-            <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
-                <table class="w-full text-sm">
-                    <thead class="bg-muted">
-                        <tr>
-                            <th class="p-4 text-left">Table Number</th>
-                            <th class="p-4 text-left">Capacity</th>
-                            <th class="p-4 text-center">Status</th>
-                            <th class="p-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="t in tables" :key="t.id">
-                            <tr class="border-t hover:bg-accent/30">
-                                <td class="p-4 font-medium" x-text="'Table ' + t.number"></td>
-                                <td class="p-4" x-text="t.capacity"></td>
-                                <td class="p-4 text-center">
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                        :class="t.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                        x-text="t.status ? 'Available' : 'Unavailable'"></span>
-                                </td>
-                                <td class="p-4 text-right">
-                                    <div class="flex items-center justify-end gap-2">
-                                        <a :href="`{{ route('superadmin.restaurants.tables.show', [$restaurant->id, 'ID']) }}`.replace('ID', t.id)"
-                                            title="View"
-                                            class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md cursor-pointer">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="size-4">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                            </svg>
-                                        </a>
-                                        <button @click="openEditTable(t)" title="Edit"
-                                            class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer"><svg
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="size-4">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                                            </svg></button>
-                                        <button @click="confirmDelete('table', t.id, 'Table ' + t.number)"
-                                            title="Delete"
-                                            class="p-1.5 text-red-600 hover:bg-red-50 rounded-md cursor-pointer"><svg
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="size-4">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                            </svg></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
             </div>
         </div>
+
     </div>
 
     <x-modal id="staff-modal" title="Staff Management">
