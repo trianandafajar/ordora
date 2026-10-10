@@ -14,7 +14,7 @@ class RestaurantController extends Controller
     {
         $restaurants = Restaurant::with('owner')->latest()->get();
         $owners = User::where('role', 'admin')->whereNull('restaurant_id')->get();
-        return view('admin.restaurants.index', compact('restaurants', 'owners'));
+        return view('superadmin.restaurants.index', compact('restaurants', 'owners'));
     }
 
     public function store(Request $request)
