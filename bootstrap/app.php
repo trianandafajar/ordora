@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => Role::class,
+            'check.restaurant' => \App\Http\Middleware\CheckRestaurantStatus::class,
+        ]);
+        $middleware->web(append: [
+            \App\Http\Middleware\CheckRestaurantStatus::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
