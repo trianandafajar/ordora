@@ -95,9 +95,11 @@
                     class="flex-1 inline-flex items-center justify-center rounded-lg border bg-background text-foreground font-medium text-sm h-10 px-4 hover:bg-accent transition-colors cursor-pointer">
                     Cancel
                 </button>
-                <button x-on:click="document.getElementById('logout-form').submit()" type="button"
-                    class="flex-1 inline-flex items-center justify-center rounded-lg bg-destructive text-white font-medium text-sm h-10 px-4 hover:bg-destructive/90 transition-colors cursor-pointer">
-                    Sign Out
+                <button x-data="{ loading: false }" x-on:click="loading = true; document.getElementById('logout-form').submit()" type="button"
+                    :disabled="loading"
+                    class="flex-1 inline-flex items-center justify-center rounded-lg bg-destructive text-white font-medium text-sm h-10 px-4 hover:bg-destructive/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg x-show="loading" x-cloak class="size-4 animate-spin mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                    <span x-text="loading ? 'Signing Out...' : 'Sign Out'"></span>
                 </button>
             </div>
         </x-modal>

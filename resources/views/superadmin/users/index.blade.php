@@ -226,8 +226,8 @@
             </div>
 
             <div class="flex justify-end gap-2 pt-4">
-                <button type="button" @click="$dispatch('close-modal', { id: 'user-modal' })" class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
-                <button type="submit" :disabled="loading.save" class="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4">
+                <button type="button" @click="$dispatch('close-modal', { id: 'user-modal' })" :disabled="loading.save" class="rounded-md border text-sm font-medium h-9 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                <button type="submit" :disabled="loading.save" class="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg x-show="loading.save" x-cloak class="size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
                     <span x-text="loading.save ? 'Saving...' : 'Save'"></span>
                 </button>
@@ -239,8 +239,9 @@
         <div class="space-y-4">
             <p class="text-sm text-muted-foreground">Are you sure you want to <strong x-text="user.is_active ? 'suspend' : 'activate'"></strong> user <strong x-text="'&quot;' + user.name + '&quot;'"></strong>?</p>
             <div class="flex justify-end gap-2">
-                <button type="button" @click="$dispatch('close-modal', { id: 'toggle-modal' })" class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
-                <button type="button" @click="toggleStatus()" :disabled="loading.toggle" class="inline-flex items-center gap-2 rounded-md text-sm font-medium h-9 px-4 text-white" :class="user.is_active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'">
+                <button type="button" @click="$dispatch('close-modal', { id: 'toggle-modal' })" :disabled="loading.toggle" class="rounded-md border text-sm font-medium h-9 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                <button type="button" @click="toggleStatus()" :disabled="loading.toggle" class="inline-flex items-center gap-2 rounded-md text-sm font-medium h-9 px-4 text-white disabled:opacity-50 disabled:cursor-not-allowed" :class="user.is_active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'">
+                    <svg x-show="loading.toggle" x-cloak class="size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
                     <span x-text="loading.toggle ? 'Processing...' : (user.is_active ? 'Suspend' : 'Activate')"></span>
                 </button>
             </div>
@@ -251,8 +252,9 @@
         <div class="space-y-4">
             <p class="text-sm text-muted-foreground">Are you sure you want to delete user <strong x-text="'&quot;' + user.name + '&quot;'"></strong>? This action cannot be undone.</p>
             <div class="flex justify-end gap-2">
-                <button type="button" @click="$dispatch('close-modal', { id: 'delete-modal' })" class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
-                <button type="button" @click="deleteUser()" :disabled="loading.delete" class="inline-flex items-center gap-2 rounded-md bg-destructive text-white text-sm font-medium h-9 px-4">
+                <button type="button" @click="$dispatch('close-modal', { id: 'delete-modal' })" :disabled="loading.delete" class="rounded-md border text-sm font-medium h-9 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                <button type="button" @click="deleteUser()" :disabled="loading.delete" class="inline-flex items-center gap-2 rounded-md bg-destructive text-white text-sm font-medium h-9 px-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg x-show="loading.delete" x-cloak class="size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
                     <span x-text="loading.delete ? 'Deleting...' : 'Delete'"></span>
                 </button>
             </div>

@@ -60,8 +60,8 @@
                         class="flex h-11 w-full rounded-lg border border-input bg-background px-4 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
                 </div>
 
-                <button type="submit"
-                    class="w-full inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold text-sm h-11 px-4 hover:opacity-90 transition-all cursor-pointer">
+                <button type="submit" x-data @click="$event.target.disabled = true; $event.target.classList.add('opacity-70', 'cursor-not-allowed'); $event.target.innerHTML = 'Resetting...'; $event.target.form.submit()"
+                    class="w-full inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold text-sm h-11 px-4 hover:opacity-90 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
                     Reset password
                 </button>
             </form>

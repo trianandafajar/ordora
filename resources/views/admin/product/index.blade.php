@@ -5,7 +5,7 @@
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold tracking-tight">Products</h1>
         <button x-data @click="$dispatch('open-modal', { id: 'create-product' })"
-            class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity cursor-pointer">
+            class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
             Add Product
         </button>
     </div>
@@ -135,8 +135,8 @@
         <div class="flex justify-end gap-2 pt-4">
             <button type="button" @click="$dispatch('close-modal', { id: 'create-product' })"
                 class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
-            <button type="submit"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Create
+            <button type="submit" x-data @click="$event.target.disabled = true; $event.target.classList.add('opacity-70', 'cursor-not-allowed'); $event.target.innerHTML = 'Creating...'; $event.target.form.submit()"
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">Create
                 Product</button>
         </div>
     </form>
@@ -196,8 +196,8 @@
         <div class="flex justify-end gap-2 pt-4">
             <button type="button" @click="$dispatch('close-modal', { id: 'edit-product-{{ $prod->id }}' })"
                 class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
-            <button type="submit"
-                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Save
+            <button type="submit" x-data @click="$event.target.disabled = true; $event.target.classList.add('opacity-70', 'cursor-not-allowed'); $event.target.innerHTML = 'Saving...'; $event.target.form.submit()"
+                class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4 hover:opacity-90 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">Save
                 Changes</button>
         </div>
     </form>
@@ -211,10 +211,10 @@
         <div class="flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', { id: 'delete-product-{{ $prod->id }}' })"
                 class="rounded-md border text-sm font-medium h-9 px-4 hover:bg-accent/50 cursor-pointer">Cancel</button>
-            <form method="POST" action="{{ route('admin.products.destroy', $prod) }}">
+            <form method="POST" action="{{ route('admin.products.destroy', $prod) }}" onsubmit="this.querySelector('button[type=submit]').disabled = true; this.querySelector('button[type=submit]').classList.add('opacity-70', 'cursor-not-allowed'); this.querySelector('button[type=submit]').innerHTML = 'Deleting...';">
                 @csrf @method('DELETE')
                 <button type="submit"
-                    class="rounded-md bg-destructive text-destructive-foreground text-sm text-white font-medium h-9 px-4 hover:opacity-90 cursor-pointer">Delete</button>
+                    class="rounded-md bg-destructive text-destructive-foreground text-sm text-white font-medium h-9 px-4 hover:opacity-90 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">Delete</button>
             </form>
         </div>
     </div>
