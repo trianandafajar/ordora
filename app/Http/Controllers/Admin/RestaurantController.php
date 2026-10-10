@@ -10,7 +10,9 @@ use App\Models\Product;
 use App\Models\Restaurant;
 use App\Models\Table;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -72,6 +74,39 @@ class RestaurantController extends Controller
         return response()->json([
             'is_active' => $restaurant->is_active,
             'message' => 'Restaurant status updated successfully.',
+        ]);
+    }
+
+    public function destroy(Restaurant $restaurant)
+    {
+        try {
+            DB::transaction(function () use ($restaurant) {
+                $restaurant->products()
+                    ->whereNotNull('image')
+                    ->pluck('image')
+                    ->each(fn ($image) => Storage::disk('public')->delete($image));
+
+                $restaurant->products()->delete();
+                $restaurant->categories()->delete();
+                $restaurant->tables()->delete();
+
+                User::where('restaurant_id', $restaurant->id)
+                    ->where('role', UserRole::Kasir)
+                    ->delete();
+                User::where('restaurant_id', $restaurant->id)
+                    ->update(['restaurant_id' => null]);
+
+                $restaurant->delete();
+            });
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => 'Cannot delete this restaurant because it still has related data such as orders. Suspend it instead.',
+            ], 409);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Restaurant deleted successfully.',
         ]);
     }
 
