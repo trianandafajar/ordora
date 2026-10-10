@@ -51,7 +51,7 @@
             </div>
             <a href="{{ route('superadmin.restaurants.index') }}" @click="mobileOpen = false"
                 :class="!(sidebarOpen || hoverOpen) && 'justify-center'"
-                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('superadmin.restaurants.index') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('superadmin.restaurants.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round"
