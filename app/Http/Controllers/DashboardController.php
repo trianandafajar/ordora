@@ -105,7 +105,7 @@ class DashboardController extends Controller
         $topProducts = OrderItem::query()
             ->selectRaw('products.name, sum(order_items.quantity) as sold, sum(order_items.subtotal) as revenue')
             ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->whereHas('order', fn ($q) => $q->where('status', 'paid')
+            ->whereHas('order', fn($q) => $q->where('status', 'paid')
                 ->whereDate('created_at', '>=', $startDate)
                 ->whereDate('created_at', '<=', $endDate))
             ->groupBy('products.name')
@@ -147,7 +147,7 @@ class DashboardController extends Controller
         $topProducts = OrderItem::query()
             ->selectRaw('products.name, sum(order_items.quantity) as sold, sum(order_items.subtotal) as revenue')
             ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->whereHas('order', fn ($q) => $q->where('status', 'paid')
+            ->whereHas('order', fn($q) => $q->where('status', 'paid')
                 ->whereDate('created_at', '>=', $startDate)
                 ->whereDate('created_at', '<=', $endDate))
             ->groupBy('products.name')
@@ -165,7 +165,7 @@ class DashboardController extends Controller
         $pdf = Pdf::loadView('admin.reports.pdf', compact('stats', 'topProducts', 'orderHistory', 'startDate', 'endDate'));
         $pdf->setPaper('a4', 'landscape');
 
-        return $pdf->download('laporan-penjualan-'.$startDate.'_to_'.$endDate.'.pdf');
+        return $pdf->download('laporan-penjualan-' . $startDate . '_to_' . $endDate . '.pdf');
     }
 
     public function kasir(): View
