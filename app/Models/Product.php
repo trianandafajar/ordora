@@ -9,13 +9,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['category_id', 'name', 'slug', 'description', 'price', 'image', 'is_available'])]
+#[Fillable(['category_id', 'name', 'slug', 'description', 'price', 'image', 'is_available', 'restaurant_id'])]
 class Product extends Model
 {
     use HasFactory;
+    use \App\Models\Traits\BelongsToRestaurant;
 
     protected static function booted(): void
     {
+        static::bootBelongsToRestaurant();
+
         static::saving(function (Product $product) {
             if ($product->isDirty('name')) {
                 $product->slug = static::uniqueSlug($product->name, $product->id);

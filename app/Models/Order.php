@@ -12,11 +12,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['table_id', 'user_id', 'order_token', 'customer_name', 'total_price', 'status', 'payment_method', 'paid_at'])]
+#[Fillable(['table_id', 'user_id', 'order_token', 'customer_name', 'total_price', 'status', 'payment_method', 'paid_at', 'restaurant_id'])]
 #[ObservedBy([OrderObserver::class])]
 class Order extends Model
 {
     use HasFactory;
+    use \App\Models\Traits\BelongsToRestaurant;
+
+    protected static function booted(): void
+    {
+        static::bootBelongsToRestaurant();
+    }
 
     protected function casts(): array
     {

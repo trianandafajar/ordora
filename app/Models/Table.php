@@ -8,10 +8,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['number', 'qr_token', 'status', 'capacity'])]
+#[Fillable(['number', 'qr_token', 'status', 'capacity', 'restaurant_id'])]
 class Table extends Model
 {
     use HasFactory;
+    use \App\Models\Traits\BelongsToRestaurant;
+
+    protected static function booted(): void
+    {
+        static::bootBelongsToRestaurant();
+    }
 
     protected function casts(): array
     {
