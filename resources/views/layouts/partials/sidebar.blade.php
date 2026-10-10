@@ -1,10 +1,10 @@
 <div class="flex flex-col h-full w-full bg-sidebar text-sidebar-foreground">
     <div class="flex items-center gap-2 h-16 border-b border-sidebar-border {{ $mobile ? 'px-6' : 'px-4' }}"
         @unless($mobile) :class="(sidebarOpen || hoverOpen) ? 'px-6' : 'px-4 justify-center'" @endunless>
-        <a href="{{ auth()->user()->role->value === 'admin' ? route('admin.dashboard') : route('cashier.dashboard') }}"
+        <a href="{{ auth()->user()->role->value === 'superadmin' ? route('admin.restaurants.index') : (auth()->user()->role->value === 'admin' ? route('admin.dashboard') : route('cashier.dashboard')) }}"
             @if($mobile) @click="mobileOpen = false" @endif
             class="group flex min-w-0 flex-1 items-center gap-2 rounded-lg p-1 -ml-1 transition-colors hover:bg-sidebar-accent/50 focus:outline-none focus:ring-2 focus:ring-sidebar-ring"
-            aria-label="Kembali ke dashboard">
+            aria-label="Back to dashboard">
             <div class="rounded-lg flex items-center justify-center shrink-0">
                 <img src="{{ asset('images/logo-white.png') }}" alt="Logo Ordora" class="h-10 w-10 object-cover">
             </div>
@@ -27,7 +27,22 @@
 
     <nav class="flex-1 px-4 py-4 space-y-6 overflow-y-auto overflow-x-hidden">
         @auth
-        @if(auth()->user()->role->value === 'admin')
+        @if(auth()->user()->role->value === 'superadmin')
+        <div class="space-y-1">
+            <div class="px-3 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 whitespace-nowrap"
+                x-show="sidebarOpen || hoverOpen" x-cloak>
+                Super Admin
+            </div>
+            <a href="{{ route('admin.restaurants.index') }}" @click="mobileOpen = false"
+                :class="!(sidebarOpen || hoverOpen) && 'justify-center'"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap transition-colors {{ request()->routeIs('admin.restaurants.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground' }}">
+                <svg class="size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span x-show="sidebarOpen || hoverOpen" x-cloak class="whitespace-nowrap">Restaurants</span>
+            </a>
+        </div>
+        @elseif(auth()->user()->role->value === 'admin')
         <div class="space-y-1">
             @if($mobile)
             <div

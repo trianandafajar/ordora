@@ -12,6 +12,13 @@ class Restaurant extends Model
 
     protected $fillable = ['name', 'owner_id', 'is_active'];
 
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');

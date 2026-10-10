@@ -64,6 +64,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports/pdf', [DashboardController::class, 'pdf'])->name('reports.pdf');
 });
 
+Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('restaurants', App\Http\Controllers\Admin\RestaurantController::class);
+    Route::patch('restaurants/{restaurant}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggle'])->name('restaurants.toggle');
+});
+
 // Cashier
 Route::middleware(['auth', 'role:kasir'])->prefix('cashier')->name('cashier.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
