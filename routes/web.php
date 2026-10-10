@@ -69,8 +69,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'superAdmin'])->name('dashboard');
     Route::resource('restaurants', App\Http\Controllers\Admin\RestaurantController::class);
-    Route::post('restaurants/user', [App\Http\Controllers\Admin\RestaurantController::class, 'storeUser'])->name('restaurants.storeUser');
+    Route::post('restaurants/{restaurant}/staff', [App\Http\Controllers\Admin\RestaurantController::class, 'storeStaff'])->name('restaurants.staff.store');
+    Route::put('restaurants/{restaurant}/staff/{user}', [App\Http\Controllers\Admin\RestaurantController::class, 'updateStaff'])->name('restaurants.staff.update');
+    Route::delete('restaurants/{restaurant}/staff/{user}', [App\Http\Controllers\Admin\RestaurantController::class, 'destroyStaff'])->name('restaurants.staff.destroy');
+    Route::patch('restaurants/{restaurant}/staff/{user}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggleStaff'])->name('restaurants.staff.toggle');
     Route::patch('restaurants/{restaurant}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggle'])->name('restaurants.toggle');
+    Route::get('restaurants/{restaurant}/tables/{table}', [App\Http\Controllers\Admin\RestaurantController::class, 'showTable'])->name('restaurants.tables.show');
     Route::resource('users', App\Http\Controllers\SuperAdmin\UserController::class);
     Route::patch('users/{user}/toggle', [App\Http\Controllers\SuperAdmin\UserController::class, 'toggle'])->name('users.toggle');
 });

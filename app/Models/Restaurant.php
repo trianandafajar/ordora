@@ -25,8 +25,24 @@ class Restaurant extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function orders(): HasMany
+    public function categories(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(Category::class);
     }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function staff(): HasMany
+    {
+        return $this->hasMany(User::class, 'restaurant_id');
+    }
+
+    public function tables(): HasMany
+    {
+        return $this->hasMany(Table::class);
+    }
+
 }
