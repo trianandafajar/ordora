@@ -37,7 +37,7 @@ class DashboardController extends Controller
         }
 
         $topRevenue = Restaurant::withSum(['orders' => function ($query) {
-            $query->whereNotNull('paid_at');
+            $query->withoutGlobalScopes()->whereNotNull('paid_at');
         }], 'total_price')
             ->orderByDesc('orders_sum_total_price')
             ->limit(5)

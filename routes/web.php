@@ -69,6 +69,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'superAdmin'])->name('dashboard');
     Route::resource('restaurants', App\Http\Controllers\Admin\RestaurantController::class);
+    Route::post('restaurants/owners', [App\Http\Controllers\Admin\RestaurantController::class, 'storeUser'])->name('restaurants.storeUser');
     Route::post('restaurants/{restaurant}/staff', [App\Http\Controllers\Admin\RestaurantController::class, 'storeStaff'])->name('restaurants.staff.store');
     Route::put('restaurants/{restaurant}/staff/{user}', [App\Http\Controllers\Admin\RestaurantController::class, 'updateStaff'])->name('restaurants.staff.update');
     Route::delete('restaurants/{restaurant}/staff/{user}', [App\Http\Controllers\Admin\RestaurantController::class, 'destroyStaff'])->name('restaurants.staff.destroy');
