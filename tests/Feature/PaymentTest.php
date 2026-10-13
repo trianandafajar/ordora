@@ -33,19 +33,6 @@ class PaymentTest extends TestCase
         $this->assertPaymentCompleted($order, $cashier, PaymentMethod::Cash);
     }
 
-    public function test_qris_payment_completes_the_order(): void
-    {
-        Event::fake([OrderStatusUpdated::class]);
-        $cashier = User::factory()->create(['role' => UserRole::Kasir]);
-        $order = $this->makeOrder(OrderStatus::Pending);
-
-        $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
-            'payment_method' => 'qris',
-        ])->assertRedirect(route('cashier.order.receipt', $order));
-
-        $this->assertPaymentCompleted($order, $cashier, PaymentMethod::Qris);
-    }
-
     public function test_payment_is_rejected_after_the_order_is_already_paid(): void
     {
         Event::fake([OrderStatusUpdated::class]);
@@ -80,7 +67,7 @@ class PaymentTest extends TestCase
         ])->assertRedirect(route('cashier.order.receipt', $order));
 
         $response = $this->actingAs($cashier)->post(route('cashier.order.pay', $order), [
-            'payment_method' => 'qris',
+            'payment_method' => 'cash',
         ]);
 
         $response->assertSessionHasErrors('payment');

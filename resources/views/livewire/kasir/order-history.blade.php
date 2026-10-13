@@ -62,7 +62,7 @@
                             </span>
                         </td>
                         <td class="px-3 py-3 text-right">
-                            @if($order->status === \App\Enums\OrderStatus::Paid)
+                            @if($order->paid_at)
                             <button wire:click="openReceipt({{ $order->id }})"
                                 class="inline-flex items-center rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90">
                                 Print

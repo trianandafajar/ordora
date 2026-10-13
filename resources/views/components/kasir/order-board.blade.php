@@ -301,7 +301,7 @@ new class extends Component
             return;
         }
 
-        if (($method === PaymentMethod::Qris || $method === PaymentMethod::Cash) && ! $this->qrisConfirmed) {
+        if (($method === PaymentMethod::Cash) && ! $this->qrisConfirmed) {
             $this->addError('qrisConfirmed', 'Confirm the payment first.');
 
             return;
@@ -338,7 +338,7 @@ new class extends Component
             'payment_method' => $paidOrder->payment_method?->value,
             'cashier_name' => $paidOrder->user?->name ?? auth()->user()?->name ?? 'Cashier',
             'paid_at' => $paidOrder->paid_at?->format('d M Y, H:i'),
-            'receipt_url' => route('cashier.order.receipt', $paidOrder),
+            'receipt_url' => route('cashier.orders.receipt', $paidOrder),
         ];
 
         $this->paymentDialogOpen = false;

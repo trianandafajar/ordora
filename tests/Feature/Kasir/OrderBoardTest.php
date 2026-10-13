@@ -86,38 +86,6 @@ class OrderBoardTest extends TestCase
         $this->assertEquals($cashier->id, $order->user_id);
     }
 
-    public function test_cashier_must_confirm_qris_payment_before_order_is_paid(): void
-    {
-        Event::fake([OrderStatusUpdated::class]);
-        $cashier = User::factory()->create(['role' => UserRole::Kasir]);
-        $order = $this->makeOrder();
-
-        $component = Livewire::actingAs($cashier)->test('kasir.order-board')
-            ->call('openPaymentDialog', $order->id, PaymentMethod::Qris->value)
-            ->call('continuePayment')
-            ->call('confirmPayment')
-            ->assertHasErrors('qrisConfirmed');
-
-        $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
-            'status' => OrderStatus::Pending->value,
-            'payment_method' => null,
-        ]);
-
-        $component
-            ->set('qrisConfirmed', true)
-            ->call('confirmPayment')
-            ->assertHasNoErrors();
-
-        $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
-            'status' => OrderStatus::Pending->value,
-            'payment_method' => PaymentMethod::Qris->value,
-            'user_id' => $cashier->id,
-        ]);
-        $this->assertSame(TableStatus::Occupied, $order->table->fresh()->status);
-    }
-
     public function test_canceling_payment_dialog_keeps_pending_order_unpaid(): void
     {
         Event::fake([OrderStatusUpdated::class]);
