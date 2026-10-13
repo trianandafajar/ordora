@@ -93,30 +93,23 @@
         </main>
 
         <div x-show="itemCount > 0" x-cloak
-            class="fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur">
-            <div class="mx-auto max-w-md p-4">
+            class="fixed bottom-0 inset-x-0 z-40 pointer-events-none">
+            <div class="mx-auto max-w-md px-4 pb-5 pt-10 bg-gradient-to-t from-background via-background/90 to-transparent">
                 <button @click="checkoutOpen = true"
-                    class="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold active:scale-[0.98] transition-transform cursor-pointer">
+                    class="pointer-events-auto w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg active:scale-[0.98] transition-transform cursor-pointer">
                     Order Now (<span x-text="itemCount"></span>) — $ <span x-text="total.toLocaleString()"></span>
                 </button>
             </div>
         </div>
 
-        {{-- Checkout dialog --}}
         <div x-show="checkoutOpen" x-cloak @click.outside="checkoutOpen = false"
-            x-transition:enter="transition-opacity ease-linear duration-300"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-linear duration-300"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
+            x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
             class="fixed inset-0 z-50 flex items-end bg-black/50" style="display:none">
-            <div x-show="checkoutOpen"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="translate-y-full"
-                x-transition:enter-end="translate-y-0"
-                x-transition:leave="transition ease-in duration-300"
-                x-transition:leave-start="translate-y-0"
+            <div x-show="checkoutOpen" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+                x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-y-0"
                 x-transition:leave-end="translate-y-full"
                 class="relative w-full max-w-md mx-auto rounded-t-2xl bg-card p-5 pb-8 shadow-[0_-4px_24px_rgba(0,0,0,0.15)] max-h-[85vh] overflow-y-auto"
                 @click.stop>
@@ -185,7 +178,6 @@
             }
         </script>
 
-        {{-- QRIS dialog --}}
         <div x-show="qrisOpen" x-cloak @click.outside="qrisOpen = false"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" style="display:none">
             <div class="relative w-full max-w-sm rounded-xl bg-card p-6 shadow-lg" @click.stop>
@@ -207,7 +199,6 @@
             </div>
         </div>
 
-        {{-- Cash dialog --}}
         <div x-show="cashOpen" x-cloak @click.outside="cashOpen = false"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" style="display:none">
             <div class="relative w-full max-w-sm rounded-xl bg-card p-6 shadow-lg text-center" @click.stop>
@@ -221,13 +212,12 @@
                 <div class="size-48 bg-white mx-auto flex items-center justify-center rounded-lg overflow-hidden my-4">
                     <img :src="`/table/order/${orderToken}/cash-qr`" alt="Cash QR" class="size-48">
                 </div>
-                <p class="text-sm text-muted-foreground mb-4">Show this QR code to the cashier to confirm the cash
-                    payment.</p>
-                {{-- Button removed: cashier will scan QR to confirm automatically --}}
+                <p class="text-sm text-muted-foreground mb-4">
+                    Show this QR code to the cashier to confirm the cash payment.
+                </p>
             </div>
         </div>
 
-        {{-- Success dialog --}}
         <div x-show="successOpen" x-cloak @click.outside="successOpen = false"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" style="display:none">
             <div class="relative w-full max-w-sm rounded-xl bg-card p-6 shadow-lg text-center" @click.stop>
@@ -238,8 +228,9 @@
                 <p class="text-sm text-muted-foreground mb-4">Your order has been received. Track its status below.
                 </p>
                 <button @click="successOpen = false; window.location = '/table/tracking/' + orderToken"
-                    class="w-full h-12 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform">View
-                    Status</button>
+                    class="w-full h-12 bg-primary text-primary-foreground rounded-xl font-bold active:scale-[0.98] transition-transform">
+                    View Status
+                </button>
             </div>
         </div>
     </div>
