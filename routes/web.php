@@ -63,6 +63,7 @@ Route::prefix('table')->name('table.')->group(function () {
 // Admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+    Route::put('/payments', [DashboardController::class, 'updatePayments'])->name('payments.update');
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
     Route::resource('tables', TableController::class);

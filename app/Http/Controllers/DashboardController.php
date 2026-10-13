@@ -48,7 +48,24 @@ class DashboardController extends Controller
 
     public function admin()
     {
-        $restaurantId = auth()->user()->restaurant_id;
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if (!$user->restaurant_id) {
+            auth()->logout();
+            return redirect()->route('login')->with('error', 'User not assigned to restaurant.');
+        }
+
+        $restaurant = $user->restaurant;
+
+        if (!$restaurant) {
+            auth()->logout();
+            return redirect()->route('login')->with('error', 'Restaurant not found.');
+        }
+
+        $restaurantId = $restaurant->id;
 
         $stats = [
             'today_revenue' => Order::where('restaurant_id', $restaurantId)->whereNotNull('paid_at')->whereDate('paid_at', today())->sum('total_price'),
@@ -80,7 +97,20 @@ class DashboardController extends Controller
         }
         $maxRev = max(array_column($revenueData, 'revenue')) ?: 1;
 
-        return view('admin.dashboard', compact('stats', 'recentOrders', 'total', 'total7d', 'statusCounts', 'revenueData', 'maxRev'));
+        return view('admin.dashboard', compact('stats', 'recentOrders', 'total', 'total7d', 'statusCounts', 'revenueData', 'maxRev', 'restaurant'));
+    }
+
+    public function updatePayments(Request $request)
+    {
+        $restaurant = auth()->user()->restaurant;
+        $validated = $request->validate([
+            'payment_methods' => ['required', 'array'],
+            'payment_methods.*' => ['required', 'string', 'in:cash,xendit'],
+        ]);
+
+        $restaurant->update(['payment_methods' => $validated['payment_methods']]);
+
+        return response()->json(['message' => 'Payments updated successfully.']);
     }
 
     public function reports(Request $request): View
@@ -107,7 +137,7 @@ class DashboardController extends Controller
         $topProducts = OrderItem::query()
             ->selectRaw('products.name, sum(order_items.quantity) as sold, sum(order_items.subtotal) as revenue')
             ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->whereHas('order', fn ($q) => $q->where('status', 'paid')
+            ->whereHas('order', fn($q) => $q->where('status', 'paid')
                 ->whereDate('created_at', '>=', $startDate)
                 ->whereDate('created_at', '<=', $endDate))
             ->groupBy('products.name')
@@ -149,7 +179,7 @@ class DashboardController extends Controller
         $topProducts = OrderItem::query()
             ->selectRaw('products.name, sum(order_items.quantity) as sold, sum(order_items.subtotal) as revenue')
             ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->whereHas('order', fn ($q) => $q->where('status', 'paid')
+            ->whereHas('order', fn($q) => $q->where('status', 'paid')
                 ->whereDate('created_at', '>=', $startDate)
                 ->whereDate('created_at', '<=', $endDate))
             ->groupBy('products.name')
@@ -167,7 +197,7 @@ class DashboardController extends Controller
         $pdf = Pdf::loadView('admin.reports.pdf', compact('stats', 'topProducts', 'orderHistory', 'startDate', 'endDate'));
         $pdf->setPaper('a4', 'landscape');
 
-        return $pdf->download('laporan-penjualan-'.$startDate.'_to_'.$endDate.'.pdf');
+        return $pdf->download('laporan-penjualan-' . $startDate . '_to_' . $endDate . '.pdf');
     }
 
     public function kasir(): View

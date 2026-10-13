@@ -536,234 +536,266 @@
                 </div>
             </div>
 
-            <div x-show="tab === 'payments'" class="space-y-4" x-data="{
-                paymentMethods: @js($restaurant->payment_methods ?? ['cash', 'xendit']),
-                async togglePayment(method) {
-                    if (this.paymentMethods.includes(method)) {
-                        this.paymentMethods = this.paymentMethods.filter(m => m !== method);
-                    } else {
-                        this.paymentMethods.push(method);
-                    }
-                    try {
-                        const { res, data } = await send(`{{ route('superadmin.restaurants.payments.update', $restaurant->id) }}`, 'PUT', { payment_methods: this.paymentMethods });
-                        if (!res.ok) throw new Error('Failed to update');
-                    } catch (e) {
-                        alert(e.message);
-                    }
-                }
-            }">
-                <div class="rounded-xl border bg-card shadow-sm p-6 space-y-4">
-                    <h3 class="text-lg font-medium">Active Payment Methods</h3>
-                    <p class="text-sm text-muted-foreground">Toggle which payment methods are available for customers on the menu and checkout.</p>
-                    <div class="space-y-3">
-                        <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/30">
-                            <div>
-                                <span class="font-medium">Cash</span>
-                                <p class="text-xs text-muted-foreground">Pay with physical cash to the cashier.</p>
+            <div x-show="tab === 'payments'" x-cloak class="space-y-4" x-data="{
+                        methods: @js(array_values($restaurant->payment_methods ?? ['cash', 'xendit'])),
+                        saving: false,
+                        has(m) { return this.methods.includes(m); },
+                        async toggle(m) {
+                            if (this.saving) return;
+                            const prev = [...this.methods];
+                            const next = this.has(m) ? this.methods.filter(x => x !== m) : [...this.methods, m];
+                            if (next.length === 0) {
+                                alert('Minimal satu metode pembayaran harus aktif.');
+                                return;
+                            }
+                            this.methods = next;
+                            this.saving = true;
+                            try {
+                                const res = await fetch(`{{ route('superadmin.restaurants.payments.update', $restaurant->id) }}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: JSON.stringify({ payment_methods: next })
+                                });
+                                if (!res.ok) throw new Error('Gagal menyimpan metode pembayaran.');
+                            } catch (e) {
+                                this.methods = prev;
+                                alert(e.message);
+                            } finally {
+                                this.saving = false;
+                            }
+                        }
+                    }">
+                <div class="rounded-xl border bg-card shadow-sm w-full">
+                    <div class="px-6 pt-6 pb-2">
+                        <h3 class="font-semibold">Active Payment Methods</h3>
+                        <p class="text-xs text-muted-foreground mt-0.5">Metode yang tampil di menu dan checkout
+                            pelanggan.</p>
+                    </div>
+                    <div class="p-6 pt-4 grid gap-4 md:grid-cols-2">
+                        @foreach([
+                        'cash' => ['Cash', 'Bayar tunai di kasir dengan QR.'],
+                        'xendit' => ['Xendit', 'Pembayaran online via invoice Xendit.'],
+                        ] as $key => [$label, $desc])
+                        <div class="flex items-center justify-between gap-4 rounded-lg border p-5 transition-colors"
+                            :class="has('{{ $key }}') ? 'border-primary/40 bg-primary/5' : ''">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <p class="text-sm font-semibold">{{ $label }}</p>
+                                    <span class="rounded-full px-2 py-0.5 text-[10px] font-medium"
+                                        :class="has('{{ $key }}') ? 'bg-green-100 text-green-800' : 'bg-muted text-muted-foreground'"
+                                        x-text="has('{{ $key }}') ? 'Active' : 'Off'"></span>
+                                </div>
+                                <p class="text-xs text-muted-foreground mt-1">{{ $desc }}</p>
                             </div>
-                            <input type="checkbox" :checked="paymentMethods.includes('cash')" @change="togglePayment('cash')" class="rounded border-input size-4">
-                        </label>
-                        <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/30">
-                            <div>
-                                <span class="font-medium">Xendit</span>
-                                <p class="text-xs text-muted-foreground">Automated payment gateway via Xendit.</p>
-                            </div>
-                            <input type="checkbox" :checked="paymentMethods.includes('xendit')" @change="togglePayment('xendit')" class="rounded border-input size-4">
-                        </label>
+                            <button type="button" role="switch" :aria-checked="has('{{ $key }}')"
+                                @click="toggle('{{ $key }}')" :disabled="saving"
+                                :class="has('{{ $key }}') ? 'bg-primary' : 'bg-muted-foreground/30'"
+                                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-60">
+                                <span :class="has('{{ $key }}') ? 'translate-x-5' : 'translate-x-0.5'"
+                                    class="pointer-events-none inline-block size-5 rounded-full bg-white shadow transition-transform"></span>
+                            </button>
+                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
 
-    </div>
-
-    <x-modal id="staff-modal" title="Staff Management">
-        <form @submit.prevent="saveStaff()" class="space-y-4" novalidate>
-            <p x-show="errors.general" x-text="errors.general" x-cloak
-                class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
-            <div>
-                <label class="block text-sm font-medium mb-1">Name</label>
-                <input x-model="staffMember.name" required class="w-full h-9 rounded-md border px-3 text-sm"
-                    :class="errors.name ? 'border-red-500' : 'border-input'">
-                <p x-show="errors.name" x-text="errors.name" x-cloak class="mt-1 text-xs text-red-600"></p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Email</label>
-                <input x-model="staffMember.email" type="email" required
-                    class="w-full h-9 rounded-md border px-3 text-sm"
-                    :class="errors.email ? 'border-red-500' : 'border-input'">
-                <p x-show="errors.email" x-text="errors.email" x-cloak class="mt-1 text-xs text-red-600"></p>
-            </div>
-            <div x-data="{ showPass: false }">
-                <label class="block text-sm font-medium mb-1">Password <span x-show="staffMember.id"
-                        class="text-xs text-muted-foreground">(Leave blank to keep current)</span></label>
-                <div class="relative">
-                    <input x-model="staffMember.password" :type="showPass ? 'text' : 'password'"
-                        class="w-full h-9 rounded-md border px-3 text-sm pr-10"
-                        :class="errors.password ? 'border-red-500' : 'border-input'">
-                    <button type="button" @click="showPass = !showPass"
-                        class="absolute inset-y-0 right-0 px-3 text-muted-foreground hover:text-foreground">
-                        <svg x-show="!showPass" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="size-4">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                        <svg x-show="showPass" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="size-4">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.22 6.22A10.472 10.472 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.778M6.22 6.22 3.86 3.86M17.78 17.78 20.14 20.14M12 9a3 3 0 0 1 2.25 5.06" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223 20.14 20.14" />
-                        </svg>
+        <x-modal id="staff-modal" title="Staff Management">
+            <form @submit.prevent="saveStaff()" class="space-y-4" novalidate>
+                <p x-show="errors.general" x-text="errors.general" x-cloak
+                    class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Name</label>
+                    <input x-model="staffMember.name" required class="w-full h-9 rounded-md border px-3 text-sm"
+                        :class="errors.name ? 'border-red-500' : 'border-input'">
+                    <p x-show="errors.name" x-text="errors.name" x-cloak class="mt-1 text-xs text-red-600"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email</label>
+                    <input x-model="staffMember.email" type="email" required
+                        class="w-full h-9 rounded-md border px-3 text-sm"
+                        :class="errors.email ? 'border-red-500' : 'border-input'">
+                    <p x-show="errors.email" x-text="errors.email" x-cloak class="mt-1 text-xs text-red-600"></p>
+                </div>
+                <div x-data="{ showPass: false }">
+                    <label class="block text-sm font-medium mb-1">Password <span x-show="staffMember.id"
+                            class="text-xs text-muted-foreground">(Leave blank to keep current)</span></label>
+                    <div class="relative">
+                        <input x-model="staffMember.password" :type="showPass ? 'text' : 'password'"
+                            class="w-full h-9 rounded-md border px-3 text-sm pr-10"
+                            :class="errors.password ? 'border-red-500' : 'border-input'">
+                        <button type="button" @click="showPass = !showPass"
+                            class="absolute inset-y-0 right-0 px-3 text-muted-foreground hover:text-foreground">
+                            <svg x-show="!showPass" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                            <svg x-show="showPass" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.22 6.22A10.472 10.472 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.778M6.22 6.22 3.86 3.86M17.78 17.78 20.14 20.14M12 9a3 3 0 0 1 2.25 5.06" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223 20.14 20.14" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p x-show="errors.password" x-text="errors.password" x-cloak class="mt-1 text-xs text-red-600"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Role</label>
+                    <input type="text" value="Cashier" disabled
+                        class="w-full h-9 rounded-md border px-3 text-sm bg-muted text-muted-foreground">
+                </div>
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" @click="$dispatch('close-modal', { id: 'staff-modal' })"
+                        class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
+                    <button type="submit" :disabled="loading.save"
+                        class="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4">
+                        <span x-text="loading.save ? 'Saving...' : 'Save'"></span>
                     </button>
                 </div>
-                <p x-show="errors.password" x-text="errors.password" x-cloak class="mt-1 text-xs text-red-600"></p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Role</label>
-                <input type="text" value="Cashier" disabled
-                    class="w-full h-9 rounded-md border px-3 text-sm bg-muted text-muted-foreground">
-            </div>
-            <div class="flex justify-end gap-2 pt-4">
-                <button type="button" @click="$dispatch('close-modal', { id: 'staff-modal' })"
-                    class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
-                <button type="submit" :disabled="loading.save"
-                    class="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4">
-                    <span x-text="loading.save ? 'Saving...' : 'Save'"></span>
-                </button>
-            </div>
-        </form>
-    </x-modal>
+            </form>
+        </x-modal>
 
-    <x-modal id="category-modal" title="Category">
-        <form @submit.prevent="saveCategory()" class="space-y-4" novalidate>
-            <p x-show="catErrors.general" x-text="catErrors.general" x-cloak
-                class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
-            <div>
-                <label class="block text-sm font-medium mb-1">Category Name</label>
-                <input x-model="category.name" required class="w-full h-9 rounded-md border px-3 text-sm"
-                    :class="catErrors.name ? 'border-red-500' : 'border-input'">
-                <p x-show="catErrors.name" x-text="catErrors.name" x-cloak class="mt-1 text-xs text-red-600"></p>
-            </div>
-            <div class="flex justify-end gap-2 pt-4">
-                <button type="button" @click="$dispatch('close-modal', { id: 'category-modal' })"
-                    class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
-                <button type="submit" :disabled="loading.cat"
-                    class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4"
-                    x-text="loading.cat ? 'Saving...' : 'Save'"></button>
-            </div>
-        </form>
-    </x-modal>
+        <x-modal id="category-modal" title="Category">
+            <form @submit.prevent="saveCategory()" class="space-y-4" novalidate>
+                <p x-show="catErrors.general" x-text="catErrors.general" x-cloak
+                    class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Category Name</label>
+                    <input x-model="category.name" required class="w-full h-9 rounded-md border px-3 text-sm"
+                        :class="catErrors.name ? 'border-red-500' : 'border-input'">
+                    <p x-show="catErrors.name" x-text="catErrors.name" x-cloak class="mt-1 text-xs text-red-600"></p>
+                </div>
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" @click="$dispatch('close-modal', { id: 'category-modal' })"
+                        class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
+                    <button type="submit" :disabled="loading.cat"
+                        class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4"
+                        x-text="loading.cat ? 'Saving...' : 'Save'"></button>
+                </div>
+            </form>
+        </x-modal>
 
-    <x-modal id="product-modal" title="Product">
-        <form @submit.prevent="saveProduct()" class="space-y-4" novalidate>
-            <p x-show="prodErrors.general" x-text="prodErrors.general" x-cloak
-                class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
+        <x-modal id="product-modal" title="Product">
+            <form @submit.prevent="saveProduct()" class="space-y-4" novalidate>
+                <p x-show="prodErrors.general" x-text="prodErrors.general" x-cloak
+                    class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
 
-            <div>
-                <label class="block text-sm font-medium mb-1">Category</label>
-                <select x-model="product.category_id" class="w-full h-9 rounded-md border px-3 text-sm"
-                    :class="prodErrors.category_id ? 'border-red-500' : 'border-input'">
-                    <option value="">Select Category</option>
-                    <template x-for="c in categories" :key="c.id">
-                        <option :value="c.id" x-text="c.name"></option>
-                    </template>
-                </select>
-                <p x-show="prodErrors.category_id" x-text="prodErrors.category_id" x-cloak
-                    class="mt-1 text-xs text-red-600"></p>
-            </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Category</label>
+                    <select x-model="product.category_id" class="w-full h-9 rounded-md border px-3 text-sm"
+                        :class="prodErrors.category_id ? 'border-red-500' : 'border-input'">
+                        <option value="">Select Category</option>
+                        <template x-for="c in categories" :key="c.id">
+                            <option :value="c.id" x-text="c.name"></option>
+                        </template>
+                    </select>
+                    <p x-show="prodErrors.category_id" x-text="prodErrors.category_id" x-cloak
+                        class="mt-1 text-xs text-red-600"></p>
+                </div>
 
-            <div>
-                <label class="block text-sm font-medium mb-1">Product Name</label>
-                <input x-model="product.name" required class="w-full h-9 rounded-md border px-3 text-sm"
-                    :class="prodErrors.name ? 'border-red-500' : 'border-input'">
-                <p x-show="prodErrors.name" x-text="prodErrors.name" x-cloak class="mt-1 text-xs text-red-600"></p>
-            </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Product Name</label>
+                    <input x-model="product.name" required class="w-full h-9 rounded-md border px-3 text-sm"
+                        :class="prodErrors.name ? 'border-red-500' : 'border-input'">
+                    <p x-show="prodErrors.name" x-text="prodErrors.name" x-cloak class="mt-1 text-xs text-red-600"></p>
+                </div>
 
-            <div>
-                <label class="block text-sm font-medium mb-1">Price ($)</label>
-                <input x-model="product.price" type="number" min="0" required
-                    class="w-full h-9 rounded-md border px-3 text-sm"
-                    :class="prodErrors.price ? 'border-red-500' : 'border-input'">
-                <p x-show="prodErrors.price" x-text="prodErrors.price" x-cloak class="mt-1 text-xs text-red-600"></p>
-            </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Price ($)</label>
+                    <input x-model="product.price" type="number" min="0" required
+                        class="w-full h-9 rounded-md border px-3 text-sm"
+                        :class="prodErrors.price ? 'border-red-500' : 'border-input'">
+                    <p x-show="prodErrors.price" x-text="prodErrors.price" x-cloak class="mt-1 text-xs text-red-600">
+                    </p>
+                </div>
 
-            <div>
-                <label class="block text-sm font-medium mb-1">Description</label>
-                <textarea x-model="product.description" rows="2" class="w-full rounded-md border px-3 py-2 text-sm"
-                    :class="prodErrors.description ? 'border-red-500' : 'border-input'"></textarea>
-                <p x-show="prodErrors.description" x-text="prodErrors.description" x-cloak
-                    class="mt-1 text-xs text-red-600"></p>
-            </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Description</label>
+                    <textarea x-model="product.description" rows="2" class="w-full rounded-md border px-3 py-2 text-sm"
+                        :class="prodErrors.description ? 'border-red-500' : 'border-input'"></textarea>
+                    <p x-show="prodErrors.description" x-text="prodErrors.description" x-cloak
+                        class="mt-1 text-xs text-red-600"></p>
+                </div>
 
-            <div>
-                <label class="block text-sm font-medium mb-1">Image <span x-show="product.id"
-                        class="text-xs text-muted-foreground">(Leave blank to keep current)</span></label>
-                <input id="product-image-input" type="file" accept="image/*" class="w-full text-sm">
-                <p x-show="prodErrors.image" x-text="prodErrors.image" x-cloak class="mt-1 text-xs text-red-600"></p>
-            </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Image <span x-show="product.id"
+                            class="text-xs text-muted-foreground">(Leave blank to keep current)</span></label>
+                    <input id="product-image-input" type="file" accept="image/*" class="w-full text-sm">
+                    <p x-show="prodErrors.image" x-text="prodErrors.image" x-cloak class="mt-1 text-xs text-red-600">
+                    </p>
+                </div>
 
-            <div x-show="product.id" class="flex items-center gap-2">
-                <input type="checkbox" id="is-available" x-model="product.is_available" class="rounded border-input">
-                <label for="is-available" class="text-sm">Available</label>
-            </div>
+                <div x-show="product.id" class="flex items-center gap-2">
+                    <input type="checkbox" id="is-available" x-model="product.is_available"
+                        class="rounded border-input">
+                    <label for="is-available" class="text-sm">Available</label>
+                </div>
 
-            <div class="flex justify-end gap-2 pt-4">
-                <button type="button" @click="$dispatch('close-modal', { id: 'product-modal' })"
-                    class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
-                <button type="submit" :disabled="loading.prod"
-                    class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4"
-                    x-text="loading.prod ? 'Saving...' : 'Save'"></button>
-            </div>
-        </form>
-    </x-modal>
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" @click="$dispatch('close-modal', { id: 'product-modal' })"
+                        class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
+                    <button type="submit" :disabled="loading.prod"
+                        class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4"
+                        x-text="loading.prod ? 'Saving...' : 'Save'"></button>
+                </div>
+            </form>
+        </x-modal>
 
-    <x-modal id="table-modal" title="Table">
-        <form @submit.prevent="saveTable()" class="space-y-4" novalidate>
-            <p x-show="tableErrors.general" x-text="tableErrors.general" x-cloak
-                class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
-            <div>
-                <label class="block text-sm font-medium mb-1">Table Number</label>
-                <input x-model="table.number" required class="w-full h-9 rounded-md border px-3 text-sm"
-                    :class="tableErrors.number ? 'border-red-500' : 'border-input'">
-                <p x-show="tableErrors.number" x-text="tableErrors.number" x-cloak class="mt-1 text-xs text-red-600">
+        <x-modal id="table-modal" title="Table">
+            <form @submit.prevent="saveTable()" class="space-y-4" novalidate>
+                <p x-show="tableErrors.general" x-text="tableErrors.general" x-cloak
+                    class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Table Number</label>
+                    <input x-model="table.number" required class="w-full h-9 rounded-md border px-3 text-sm"
+                        :class="tableErrors.number ? 'border-red-500' : 'border-input'">
+                    <p x-show="tableErrors.number" x-text="tableErrors.number" x-cloak
+                        class="mt-1 text-xs text-red-600">
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Capacity</label>
+                    <input x-model="table.capacity" type="number" min="1" required
+                        class="w-full h-9 rounded-md border px-3 text-sm"
+                        :class="tableErrors.capacity ? 'border-red-500' : 'border-input'">
+                    <p x-show="tableErrors.capacity" x-text="tableErrors.capacity" x-cloak
+                        class="mt-1 text-xs text-red-600"></p>
+                </div>
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" @click="$dispatch('close-modal', { id: 'table-modal' })"
+                        class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
+                    <button type="submit" :disabled="loading.table"
+                        class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4"
+                        x-text="loading.table ? 'Saving...' : 'Save'"></button>
+                </div>
+            </form>
+        </x-modal>
+
+        <x-modal id="confirm-delete-modal" title="Confirm Delete">
+            <div class="space-y-4">
+                <p x-show="deleteError" x-text="deleteError" x-cloak
+                    class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
+                <p class="text-sm text-muted-foreground">
+                    Are you sure you want to delete <strong x-text="deleteTarget.name"></strong>? This action cannot be
+                    undone.
                 </p>
+                <div class="flex justify-end gap-2">
+                    <button type="button" @click="$dispatch('close-modal', { id: 'confirm-delete-modal' })"
+                        class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
+                    <button type="button" @click="runDelete()" :disabled="loading.delete"
+                        class="rounded-md bg-destructive text-white text-sm font-medium h-9 px-4"
+                        x-text="loading.delete ? 'Deleting...' : 'Delete'"></button>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Capacity</label>
-                <input x-model="table.capacity" type="number" min="1" required
-                    class="w-full h-9 rounded-md border px-3 text-sm"
-                    :class="tableErrors.capacity ? 'border-red-500' : 'border-input'">
-                <p x-show="tableErrors.capacity" x-text="tableErrors.capacity" x-cloak
-                    class="mt-1 text-xs text-red-600"></p>
-            </div>
-            <div class="flex justify-end gap-2 pt-4">
-                <button type="button" @click="$dispatch('close-modal', { id: 'table-modal' })"
-                    class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
-                <button type="submit" :disabled="loading.table"
-                    class="rounded-md bg-primary text-primary-foreground text-sm font-medium h-9 px-4"
-                    x-text="loading.table ? 'Saving...' : 'Save'"></button>
-            </div>
-        </form>
-    </x-modal>
-
-    <x-modal id="confirm-delete-modal" title="Confirm Delete">
-        <div class="space-y-4">
-            <p x-show="deleteError" x-text="deleteError" x-cloak
-                class="rounded-md bg-red-50 text-red-700 text-sm px-3 py-2"></p>
-            <p class="text-sm text-muted-foreground">
-                Are you sure you want to delete <strong x-text="deleteTarget.name"></strong>? This action cannot be
-                undone.
-            </p>
-            <div class="flex justify-end gap-2">
-                <button type="button" @click="$dispatch('close-modal', { id: 'confirm-delete-modal' })"
-                    class="rounded-md border text-sm font-medium h-9 px-4">Cancel</button>
-                <button type="button" @click="runDelete()" :disabled="loading.delete"
-                    class="rounded-md bg-destructive text-white text-sm font-medium h-9 px-4"
-                    x-text="loading.delete ? 'Deleting...' : 'Delete'"></button>
-            </div>
-        </div>
-    </x-modal>
-</div>
-@endsection
+        </x-modal>
+    </div>
+    @endsection

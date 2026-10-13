@@ -25,8 +25,9 @@ class CheckoutController extends Controller
         session(['table_id' => $table->id, 'table_qr' => $table->qr_token]);
 
         $categories = Category::with(['products' => fn ($q) => $q->where('is_available', true)])->get();
+        $paymentMethods = $table->restaurant?->payment_methods ?? ['cash', 'xendit'];
 
-        return view('customer.menu', compact('table', 'categories'));
+        return view('customer.menu', compact('table', 'categories', 'paymentMethods'));
     }
 
     public function addToCart(Request $request)
