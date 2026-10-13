@@ -91,12 +91,14 @@ class CheckoutController extends Controller
 
     public function storeCheckout(Request $request, CreateOrderAction $action)
     {
+        $tableQr = session('table_qr');
+        $table = Table::where('qr_token', $tableQr)->first();
+        $restaurant = $table?->restaurant;
+        $allowedMethods = $restaurant?->payment_methods ?? ['cash', 'xendit'];
+
         $request->validate([
             'customer_name' => ['required', 'string', 'max:100'],
             'payment_method' => ['required', Rule::in($allowedMethods)],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'exists:products,id'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
 
         $cart = session('cart', []);
@@ -118,10 +120,13 @@ class CheckoutController extends Controller
         session()->forget('cart');
 
         if ($request->payment_method === 'xendit') {
-            $xenditService = new XenditService;
-            $invoice = $xenditService->createInvoice($order);
-
-            return redirect($invoice['invoice_url']);
+            try {
+                $xenditService = new XenditService;
+                $invoice = $xenditService->createInvoice($order);
+                return redirect($invoice['invoice_url']);
+            } catch (\Exception $e) {
+                return back()->with('error', 'Failed to create Xendit invoice: ' . $e->getMessage());
+            }
         }
 
         return redirect()->route('table.tracking.show', $order->order_token)->with('order_id', $order->id);
@@ -131,7 +136,7 @@ class CheckoutController extends Controller
     {
         $table = Table::where('qr_token', $qr_token)->firstOrFail();
         $restaurant = $table->restaurant;
-        $allowedMethods = $restaurant->payment_methods ?? ['cash', 'qris'];
+        $allowedMethods = $restaurant->payment_methods ?? ['cash', 'xendit'];
 
         $validated = $request->validate([
             'customer_name' => ['required', 'string', 'max:100'],
@@ -148,10 +153,22 @@ class CheckoutController extends Controller
 
         $order = $action->execute($cart, $validated['customer_name'], $table->id, PaymentMethod::from($validated['payment_method']));
 
-        return response()->json([
+        $response = [
             'order_id' => $order->id,
             'order_token' => $order->order_token,
-        ]);
+        ];
+
+        if ($validated['payment_method'] === 'xendit') {
+            try {
+                $xenditService = new XenditService;
+                $invoice = $xenditService->createInvoice($order);
+                $response['invoice_url'] = $invoice['invoice_url'];
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Failed to create Xendit invoice: ' . $e->getMessage()], 500);
+            }
+        }
+
+        return response()->json($response);
     }
 
     public function showTracking(string $order_token)

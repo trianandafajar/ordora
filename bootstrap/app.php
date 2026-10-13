@@ -23,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             CheckRestaurantStatus::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/xendit',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
