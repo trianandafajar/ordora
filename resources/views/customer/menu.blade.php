@@ -104,8 +104,21 @@
 
         {{-- Checkout dialog --}}
         <div x-show="checkoutOpen" x-cloak @click.outside="checkoutOpen = false"
+            x-transition:enter="transition-opacity ease-linear duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
             class="fixed inset-0 z-50 flex items-end bg-black/50" style="display:none">
-            <div class="relative w-full max-w-md mx-auto rounded-t-2xl bg-card p-5 pb-8 shadow-[0_-4px_24px_rgba(0,0,0,0.15)] max-h-[85vh] overflow-y-auto"
+            <div x-show="checkoutOpen"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="translate-y-full"
+                x-transition:enter-end="translate-y-0"
+                x-transition:leave="transition ease-in duration-300"
+                x-transition:leave-start="translate-y-0"
+                x-transition:leave-end="translate-y-full"
+                class="relative w-full max-w-md mx-auto rounded-t-2xl bg-card p-5 pb-8 shadow-[0_-4px_24px_rgba(0,0,0,0.15)] max-h-[85vh] overflow-y-auto"
                 @click.stop>
                 <div class="flex justify-center mb-3">
                     <div class="w-10 h-1 rounded-full bg-muted-foreground/30"></div>
