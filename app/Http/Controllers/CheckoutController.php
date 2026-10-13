@@ -92,7 +92,7 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'customer_name' => ['required', 'string', 'max:100'],
-            'payment_method' => ['required', 'in:cash,qris'],
+            'payment_method' => ['required', 'in:cash,qris,xendit'],
         ]);
 
         $cart = session('cart', []);
@@ -112,6 +112,12 @@ class CheckoutController extends Controller
             PaymentMethod::from($request->payment_method),
         );
         session()->forget('cart');
+
+        if ($request->payment_method === 'xendit') {
+            $xenditService = new \App\Services\XenditService();
+            $invoice = $xenditService->createInvoice($order);
+            return redirect($invoice['invoice_url']);
+        }
 
         return redirect()->route('table.tracking.show', $order->order_token)->with('order_id', $order->id);
     }

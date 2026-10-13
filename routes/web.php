@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\KasirController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\TableController;
+use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KasirOrderController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('webhooks/xendit', [WebhookController::class, 'handle']);
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
