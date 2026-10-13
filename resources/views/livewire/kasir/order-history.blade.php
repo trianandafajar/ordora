@@ -1,6 +1,6 @@
 <div data-order-history class="space-y-6">
     <div>
-        <h1 class="mt-1 text-3xl font-semibold tracking-tight">Payment History</h1>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight">Order History</h1>
         <p class="mt-2 text-sm text-muted-foreground">View completed orders and payments.</p>
     </div>
 
@@ -46,7 +46,7 @@
                         <td class="px-3 py-3 text-right font-semibold">$ {{ number_format($order->total_price, 0, ',',
                             '.') }}</td>
                     </tr>@empty<tr>
-                        <td colspan="5" class="px-3 py-12 text-center text-muted-foreground">No payment history yet.
+                        <td colspan="5" class="px-3 py-12 text-center text-muted-foreground">No order history yet.
                         </td>
                     </tr>@endforelse</tbody>
             </table>
