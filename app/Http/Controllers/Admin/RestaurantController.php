@@ -153,7 +153,7 @@ class RestaurantController extends Controller
     {
         $validated = $request->validate([
             'payment_methods' => ['required', 'array'],
-            'payment_methods.*' => ['required', 'string', 'in:cash,qris,xendit'],
+            'payment_methods.*' => ['required', 'string', 'in:cash,xendit'],
         ]);
 
         $restaurant->update(['payment_methods' => $validated['payment_methods']]);

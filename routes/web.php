@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\KasirController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\RestaurantController;
 use App\Http\Controllers\Admin\TableController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Auth\AuthController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KasirOrderController;
+use App\Http\Controllers\SuperAdmin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('webhooks/xendit', [WebhookController::class, 'handle']);
@@ -31,7 +33,10 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::get('/', function () {
     if (auth()->check()) {
         $user = auth()->user();
-        if ($user->role->value === 'superadmin') return redirect()->route('superadmin.dashboard');
+        if ($user->role->value === 'superadmin') {
+            return redirect()->route('superadmin.dashboard');
+        }
+
         return redirect($user->role->value === 'admin' ? '/admin/dashboard' : '/cashier/dashboard');
     }
 
@@ -71,28 +76,28 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'superAdmin'])->name('dashboard');
-    Route::resource('restaurants', App\Http\Controllers\Admin\RestaurantController::class);
-    Route::post('restaurants/owners', [App\Http\Controllers\Admin\RestaurantController::class, 'storeUser'])->name('restaurants.storeUser');
-    Route::post('restaurants/{restaurant}/staff', [App\Http\Controllers\Admin\RestaurantController::class, 'storeStaff'])->name('restaurants.staff.store');
-    Route::put('restaurants/{restaurant}/staff/{user}', [App\Http\Controllers\Admin\RestaurantController::class, 'updateStaff'])->name('restaurants.staff.update');
-    Route::delete('restaurants/{restaurant}/staff/{user}', [App\Http\Controllers\Admin\RestaurantController::class, 'destroyStaff'])->name('restaurants.staff.destroy');
-    Route::patch('restaurants/{restaurant}/staff/{user}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggleStaff'])->name('restaurants.staff.toggle');
-    Route::patch('restaurants/{restaurant}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggle'])->name('restaurants.toggle');
-    Route::get('restaurants/{restaurant}/tables/{table}', [App\Http\Controllers\Admin\RestaurantController::class, 'showTable'])->name('restaurants.tables.show');
-    Route::put('restaurants/{restaurant}/payments', [App\Http\Controllers\Admin\RestaurantController::class, 'updatePayments'])->name('restaurants.payments.update');
-    Route::post('restaurants/{restaurant}/tables', [App\Http\Controllers\Admin\RestaurantController::class, 'storeTable'])->name('restaurants.tables.store');
-    Route::put('restaurants/{restaurant}/tables/{table}', [App\Http\Controllers\Admin\RestaurantController::class, 'updateTable'])->name('restaurants.tables.update');
-    Route::delete('restaurants/{restaurant}/tables/{table}', [App\Http\Controllers\Admin\RestaurantController::class, 'destroyTable'])->name('restaurants.tables.destroy');
+    Route::resource('restaurants', RestaurantController::class);
+    Route::post('restaurants/owners', [RestaurantController::class, 'storeUser'])->name('restaurants.storeUser');
+    Route::post('restaurants/{restaurant}/staff', [RestaurantController::class, 'storeStaff'])->name('restaurants.staff.store');
+    Route::put('restaurants/{restaurant}/staff/{user}', [RestaurantController::class, 'updateStaff'])->name('restaurants.staff.update');
+    Route::delete('restaurants/{restaurant}/staff/{user}', [RestaurantController::class, 'destroyStaff'])->name('restaurants.staff.destroy');
+    Route::patch('restaurants/{restaurant}/staff/{user}/toggle', [RestaurantController::class, 'toggleStaff'])->name('restaurants.staff.toggle');
+    Route::patch('restaurants/{restaurant}/toggle', [RestaurantController::class, 'toggle'])->name('restaurants.toggle');
+    Route::get('restaurants/{restaurant}/tables/{table}', [RestaurantController::class, 'showTable'])->name('restaurants.tables.show');
+    Route::put('restaurants/{restaurant}/payments', [RestaurantController::class, 'updatePayments'])->name('restaurants.payments.update');
+    Route::post('restaurants/{restaurant}/tables', [RestaurantController::class, 'storeTable'])->name('restaurants.tables.store');
+    Route::put('restaurants/{restaurant}/tables/{table}', [RestaurantController::class, 'updateTable'])->name('restaurants.tables.update');
+    Route::delete('restaurants/{restaurant}/tables/{table}', [RestaurantController::class, 'destroyTable'])->name('restaurants.tables.destroy');
 
-    Route::post('restaurants/{restaurant}/categories', [App\Http\Controllers\Admin\RestaurantController::class, 'storeCategory'])->name('restaurants.categories.store');
-    Route::put('restaurants/{restaurant}/categories/{category}', [App\Http\Controllers\Admin\RestaurantController::class, 'updateCategory'])->name('restaurants.categories.update');
-    Route::delete('restaurants/{restaurant}/categories/{category}', [App\Http\Controllers\Admin\RestaurantController::class, 'destroyCategory'])->name('restaurants.categories.destroy');
+    Route::post('restaurants/{restaurant}/categories', [RestaurantController::class, 'storeCategory'])->name('restaurants.categories.store');
+    Route::put('restaurants/{restaurant}/categories/{category}', [RestaurantController::class, 'updateCategory'])->name('restaurants.categories.update');
+    Route::delete('restaurants/{restaurant}/categories/{category}', [RestaurantController::class, 'destroyCategory'])->name('restaurants.categories.destroy');
 
-    Route::post('restaurants/{restaurant}/products', [App\Http\Controllers\Admin\RestaurantController::class, 'storeProduct'])->name('restaurants.products.store');
-    Route::put('restaurants/{restaurant}/products/{product}', [App\Http\Controllers\Admin\RestaurantController::class, 'updateProduct'])->name('restaurants.products.update');
-    Route::delete('restaurants/{restaurant}/products/{product}', [App\Http\Controllers\Admin\RestaurantController::class, 'destroyProduct'])->name('restaurants.products.destroy');
-    Route::resource('users', App\Http\Controllers\SuperAdmin\UserController::class);
-    Route::patch('users/{user}/toggle', [App\Http\Controllers\SuperAdmin\UserController::class, 'toggle'])->name('users.toggle');
+    Route::post('restaurants/{restaurant}/products', [RestaurantController::class, 'storeProduct'])->name('restaurants.products.store');
+    Route::put('restaurants/{restaurant}/products/{product}', [RestaurantController::class, 'updateProduct'])->name('restaurants.products.update');
+    Route::delete('restaurants/{restaurant}/products/{product}', [RestaurantController::class, 'destroyProduct'])->name('restaurants.products.destroy');
+    Route::resource('users', UserController::class);
+    Route::patch('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
 });
 
 // Cashier

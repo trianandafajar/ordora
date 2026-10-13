@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToRestaurant;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,8 +13,8 @@ use Illuminate\Support\Str;
 #[Fillable(['category_id', 'name', 'slug', 'description', 'price', 'image', 'is_available', 'restaurant_id'])]
 class Product extends Model
 {
+    use BelongsToRestaurant;
     use HasFactory;
-    use \App\Models\Traits\BelongsToRestaurant;
 
     protected static function booted(): void
     {

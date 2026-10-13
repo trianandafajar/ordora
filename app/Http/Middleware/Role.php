@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,7 @@ class Role
             abort(403);
         }
 
-        if (auth()->user()->role === \App\Enums\UserRole::SuperAdmin) {
+        if (auth()->user()->role === UserRole::SuperAdmin) {
             return $next($request);
         }
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
+use App\Models\Traits\BelongsToRestaurant;
 use App\Observers\OrderObserver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -16,8 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[ObservedBy([OrderObserver::class])]
 class Order extends Model
 {
+    use BelongsToRestaurant;
     use HasFactory;
-    use \App\Models\Traits\BelongsToRestaurant;
 
     protected static function booted(): void
     {

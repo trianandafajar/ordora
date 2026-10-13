@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Restaurant;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,7 @@ class ProductSeeder extends Seeder
         Product::query()->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        $restaurantId = \App\Models\Restaurant::value('id');
+        $restaurantId = Restaurant::value('id');
         $categories = Category::pluck('id', 'name');
 
         $products = [

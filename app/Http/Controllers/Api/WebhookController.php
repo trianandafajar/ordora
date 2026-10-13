@@ -22,7 +22,7 @@ class WebhookController extends Controller
             $orderToken = str_replace('ordora_', '', $data['external_id']);
             $order = Order::where('order_token', $orderToken)->first();
 
-            if ($order && !$order->paid_at) {
+            if ($order && ! $order->paid_at) {
                 $order->update([
                     'status' => OrderStatus::Paid,
                     'paid_at' => now(),

@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Table;
+use App\Services\XenditService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -92,7 +93,10 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'customer_name' => ['required', 'string', 'max:100'],
-            'payment_method' => ['required', 'in:cash,qris,xendit'],
+            'payment_method' => ['required', Rule::in($allowedMethods)],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
 
         $cart = session('cart', []);
@@ -114,8 +118,9 @@ class CheckoutController extends Controller
         session()->forget('cart');
 
         if ($request->payment_method === 'xendit') {
-            $xenditService = new \App\Services\XenditService();
+            $xenditService = new XenditService;
             $invoice = $xenditService->createInvoice($order);
+
             return redirect($invoice['invoice_url']);
         }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -41,8 +42,8 @@ class AuthController extends Controller
 
         $user = auth()->user();
         if (($user->role->value === 'admin' || $user->role->value === 'kasir') && $user->restaurant_id) {
-            $restaurant = \App\Models\Restaurant::find($user->restaurant_id);
-            if ($restaurant && !$restaurant->is_active) {
+            $restaurant = Restaurant::find($user->restaurant_id);
+            if ($restaurant && ! $restaurant->is_active) {
                 auth()->logout();
                 throw ValidationException::withMessages([
                     'email' => 'Your restaurant account has been suspended. Please contact administrator.',

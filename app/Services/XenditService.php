@@ -15,12 +15,12 @@ class XenditService
 
     public function createInvoice(Order $order)
     {
-        $apiInstance = new InvoiceApi();
-        
+        $apiInstance = new InvoiceApi;
+
         $params = [
-            'external_id' => 'ordora_' . $order->order_token,
+            'external_id' => 'ordora_'.$order->order_token,
             'amount' => (int) $order->total_price,
-            'description' => 'Order #' . $order->id,
+            'description' => 'Order #'.$order->id,
             'customer' => [
                 'given_names' => $order->customer_name,
             ],

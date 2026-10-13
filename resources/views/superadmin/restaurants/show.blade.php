@@ -537,7 +537,7 @@
             </div>
 
             <div x-show="tab === 'payments'" class="space-y-4" x-data="{
-                paymentMethods: @js($restaurant->payment_methods ?? ['cash', 'qris']),
+                paymentMethods: @js($restaurant->payment_methods ?? ['cash', 'xendit']),
                 async togglePayment(method) {
                     if (this.paymentMethods.includes(method)) {
                         this.paymentMethods = this.paymentMethods.filter(m => m !== method);
@@ -562,13 +562,6 @@
                                 <p class="text-xs text-muted-foreground">Pay with physical cash to the cashier.</p>
                             </div>
                             <input type="checkbox" :checked="paymentMethods.includes('cash')" @change="togglePayment('cash')" class="rounded border-input size-4">
-                        </label>
-                        <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/30">
-                            <div>
-                                <span class="font-medium">QRIS</span>
-                                <p class="text-xs text-muted-foreground">Manual QRIS verification by cashier.</p>
-                            </div>
-                            <input type="checkbox" :checked="paymentMethods.includes('qris')" @change="togglePayment('qris')" class="rounded border-input size-4">
                         </label>
                         <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/30">
                             <div>

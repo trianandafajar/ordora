@@ -142,16 +142,12 @@
                 </div>
                 <input x-model="customerName" required placeholder="Your name"
                     class="mt-3 w-full h-11 rounded-xl border px-4 text-sm">
-                <div class="grid grid-cols-3 gap-3 mt-3">
-                    <label class="border p-3 rounded-xl cursor-pointer text-sm text-center"
+                <div class="flex mt-3">
+                    <label class="border p-3 rounded-xl cursor-pointer text-sm text-center w-full"
                         :class="paymentMethod === 'cash' ? 'bg-primary/10 border-primary' : ''">
                         <input type="radio" value="cash" x-model="paymentMethod" class="sr-only"> Cash
                     </label>
-                    {{-- <label class="border p-3 rounded-xl cursor-pointer text-sm text-center"
-                        :class="paymentMethod === 'qris' ? 'bg-primary/10 border-primary' : ''">
-                        <input type="radio" value="qris" x-model="paymentMethod" class="sr-only"> QRIS
-                    </label> --}}
-                    <label class="border p-3 rounded-xl cursor-pointer text-sm text-center"
+                    <label class="border p-3 rounded-xl cursor-pointer text-sm text-center w-full ml-3"
                         :class="paymentMethod === 'xendit' ? 'bg-primary/10 border-primary' : ''">
                         <input type="radio" value="xendit" x-model="paymentMethod" class="sr-only"> Xendit
                     </label>

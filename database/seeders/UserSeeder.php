@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\UserRole;
+use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,7 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        $restaurant = \App\Models\Restaurant::create([
+        $restaurant = Restaurant::create([
             'name' => 'Restoran Utama',
             'owner_id' => $user->id,
             'is_active' => true,

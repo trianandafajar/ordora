@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToRestaurant;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,8 +12,8 @@ use Illuminate\Support\Str;
 #[Fillable(['name', 'slug', 'restaurant_id'])]
 class Category extends Model
 {
+    use BelongsToRestaurant;
     use HasFactory;
-    use \App\Models\Traits\BelongsToRestaurant;
 
     protected static function booted(): void
     {
