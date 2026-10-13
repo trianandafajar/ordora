@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>Menu - Ordora</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -30,7 +31,7 @@
         return Object.values(this.selected).reduce((a, b) => a + b, 0);
     }
 }">
-    <div class="mx-auto max-w-md min-h-screen bg-background shadow-xl border-x relative pb-24">
+    <div class="mx-auto max-w-md min-h-screen bg-background shadow-xl border-x relative pb-32">
         <x-header title="Table {{ $table->number }}">
             <x-slot:right>
                 <div class="flex items-center gap-3">
@@ -92,12 +93,19 @@
             @endforeach
         </main>
 
-        <div x-show="itemCount > 0" x-cloak
+        <div x-show="itemCount > 0" x-cloak x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="translate-y-4 opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
             class="fixed bottom-0 inset-x-0 z-40 pointer-events-none">
-            <div class="mx-auto max-w-md px-4 pb-5 pt-10 bg-gradient-to-t from-background via-background/90 to-transparent">
+            <div
+                class="mx-auto max-w-md px-5 pt-8 pb-[max(1.25rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-background from-65% to-transparent">
                 <button @click="checkoutOpen = true"
-                    class="pointer-events-auto w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg active:scale-[0.98] transition-transform cursor-pointer">
-                    Order Now (<span x-text="itemCount"></span>) — $ <span x-text="total.toLocaleString()"></span>
+                    class="pointer-events-auto w-full h-14 px-5 rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/30 ring-1 ring-black/5 flex items-center justify-between active:scale-[0.98] transition-transform cursor-pointer">
+                    <span class="flex items-center gap-2 font-semibold text-sm">
+                        <span class="size-7 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold"
+                            x-text="itemCount"></span>
+                        Order Now
+                    </span>
+                    <span class="font-bold">$ <span x-text="total.toLocaleString()"></span></span>
                 </button>
             </div>
         </div>
