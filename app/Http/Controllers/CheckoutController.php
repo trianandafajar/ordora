@@ -123,9 +123,10 @@ class CheckoutController extends Controller
             try {
                 $xenditService = new XenditService;
                 $invoice = $xenditService->createInvoice($order);
+
                 return redirect($invoice['invoice_url']);
             } catch (\Exception $e) {
-                return back()->with('error', 'Failed to create Xendit invoice: ' . $e->getMessage());
+                return back()->with('error', 'Failed to create Xendit invoice: '.$e->getMessage());
             }
         }
 
@@ -164,7 +165,7 @@ class CheckoutController extends Controller
                 $invoice = $xenditService->createInvoice($order);
                 $response['invoice_url'] = $invoice['invoice_url'];
             } catch (\Exception $e) {
-                return response()->json(['error' => 'Failed to create Xendit invoice: ' . $e->getMessage()], 500);
+                return response()->json(['error' => 'Failed to create Xendit invoice: '.$e->getMessage()], 500);
             }
         }
 
