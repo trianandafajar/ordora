@@ -108,7 +108,6 @@ new class extends Component
         $query = Order::query()
             ->with(['table:id,number', 'orderItems.product:id,name'])
             ->whereIn('status', self::ACTIVE_STATUS_VALUES)
-            ->whereNotNull('paid_at')
             ->latest('created_at')->latest('id');
 
         if ($this->statusFilter !== 'all') {
@@ -186,6 +185,10 @@ new class extends Component
 
             if (! in_array($target, $allowedTargets, true)) {
                 throw ValidationException::withMessages(['status' => 'The target status is invalid for this order.']);
+            }
+
+            if (($target === OrderStatus::Preparing || $target === OrderStatus::Ready) && $order->paid_at === null) {
+                throw ValidationException::withMessages(['status' => 'Order must be paid before it can be prepared or marked as ready.']);
             }
 
             (new UpdateOrderStatusAction)->execute($order, $target, $user->id);
