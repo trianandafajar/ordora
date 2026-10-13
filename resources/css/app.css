@@ -55,3 +55,44 @@
 @utility faded-bottom {
   @apply after:pointer-events-none after:absolute after:inset-s-0 after:bottom-0 after:hidden after:h-32 after:w-full after:rounded-b-2xl after:bg-[linear-gradient(180deg,transparent_10%,var(--background)_70%)] md:after:block;
 }
+
+#print-receipt {
+    display: none;
+}
+
+@media print {
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    #print-receipt,
+    #print-receipt * {
+        visibility: visible;
+    }
+
+    #print-receipt {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 80mm;
+        padding: 12px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #000;
+        background: #fff;
+    }
+
+    #print-receipt .r-center { text-align: center; }
+    #print-receipt .r-brand { font-size: 20px; font-weight: bold; letter-spacing: 2px; }
+    #print-receipt .r-muted { color: #555; font-size: 11px; }
+    #print-receipt .r-bold { font-weight: bold; }
+    #print-receipt .r-divider { border-top: 1px dashed #000; margin: 10px 0; }
+    #print-receipt .r-row { display: flex; justify-content: space-between; gap: 8px; margin: 3px 0; }
+    #print-receipt .r-total { font-size: 14px; font-weight: bold; }
+}

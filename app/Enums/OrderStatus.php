@@ -10,4 +10,16 @@ enum OrderStatus: string
     case Served = 'served';
     case Paid = 'paid';
     case Confirmed = 'confirmed';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Pending => 'Pending',
+            self::Preparing => 'Preparing',
+            self::Ready => 'Ready',
+            self::Served => 'Served',
+            self::Paid => 'Paid',
+            self::Confirmed => 'Confirmed',
+        };
+    }
 }

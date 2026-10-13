@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KasirOrderController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SuperAdmin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -105,8 +106,8 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
 Route::middleware(['auth', 'role:kasir'])->prefix('cashier')->name('cashier.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
     Route::get('/history', [DashboardController::class, 'history'])->name('history');
+    Route::get('/orders/{order}/receipt', [ReceiptController::class, 'show'])->name('orders.receipt');
     Route::get('/order/{order}', [KasirOrderController::class, 'show'])->name('order.show');
-    Route::get('/order/{order}/receipt', [KasirOrderController::class, 'receipt'])->name('order.receipt');
     Route::patch('/order/{order}/status', [KasirOrderController::class, 'updateStatus'])->name('order.status');
     Route::post('/order/{order}/pay', [KasirOrderController::class, 'pay'])->name('order.pay');
 });

@@ -108,6 +108,10 @@
         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
         @endauth
         <script>
+            window.addEventListener('print-receipt', event => {
+                window.open(`/cashier/orders/${event.detail.orderId}/receipt`, '_blank');
+            });
+
             function sidebarState() {
             return {
                 sidebarOpen: false,

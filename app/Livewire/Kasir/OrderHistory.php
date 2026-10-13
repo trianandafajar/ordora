@@ -22,8 +22,7 @@ class OrderHistory extends Component
     {
         $query = Order::query()
             ->with(['table:id,number', 'orderItems.product:id,name'])
-            ->whereNotNull('paid_at')
-            ->latest('paid_at')->latest('id');
+            ->latest('id');
 
         $this->applySearch($query);
 
@@ -52,8 +51,21 @@ class OrderHistory extends Component
         });
     }
 
+    public ?Order $selectedOrder = null;
+
     public function render()
     {
         return view('livewire.kasir.order-history');
+    }
+
+    public function openReceipt(int $orderId): void
+    {
+        $this->selectedOrder = Order::with(['orderItems.product', 'table'])->find($orderId);
+        $this->dispatch('open-modal', id: 'receipt-modal');
+    }
+
+    public function printReceipt(int $orderId): void
+    {
+        $this->dispatch('print-receipt', orderId: $orderId);
     }
 }
