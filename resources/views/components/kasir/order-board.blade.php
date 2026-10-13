@@ -1,412 +1,426 @@
 <?php
 
-    use App\Actions\PayOrderAction;
-    use App\Actions\UpdateOrderStatusAction;
-    use App\Enums\OrderStatus;
-    use App\Enums\PaymentMethod;
-    use App\Enums\TableStatus;
-    use App\Enums\UserRole;
-    use App\Models\Order;
-    use Illuminate\Database\Eloquent\Builder;
-    use Illuminate\Database\Eloquent\ModelNotFoundException;
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\Validation\ValidationException;
-    use Livewire\Attributes\Computed;
-    use Livewire\Attributes\On;
-    use Livewire\Attributes\Url;
-    use Livewire\Component;
+use App\Actions\PayOrderAction;
+use App\Actions\UpdateOrderStatusAction;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\TableStatus;
+use App\Enums\UserRole;
+use App\Models\Order;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
+use Livewire\Component;
 
-    new class extends Component
+new class extends Component
+{
+    private const ACTIVE_STATUS_VALUES = ['pending', 'preparing', 'ready'];
+
+    #[Url]
+    public string $activeTab = 'orders';
+
+    public string $search = '';
+
+    public string $statusFilter = 'all';
+
+    public string $historyFrom = '';
+
+    public string $historyTo = '';
+
+    public bool $paymentDialogOpen = false;
+
+    public string $paymentStep = 'method';
+
+    public ?int $paymentOrderId = null;
+
+    public string $paymentMethod = PaymentMethod::Cash->value;
+
+    public bool $qrisConfirmed = false;
+
+    public array $paymentData = [];
+
+    public string $paymentError = '';
+
+    public bool $receiptDialogOpen = false;
+
+    public array $receiptData = [];
+
+    public function activeStatuses(): array
     {
-        private const ACTIVE_STATUS_VALUES = ['pending', 'preparing', 'ready'];
+        return [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Ready];
+    }
 
-        #[Url]
-        public string $activeTab = 'orders';
+    public function statusMeta(): array
+    {
+        return [
+            'pending' => [
+                'label' => 'Pending',
+                'description' => 'New orders',
+                'icon' => 'clock',
+                'surface' => 'bg-amber-500/10',
+                'text' => 'text-amber-700 dark:text-amber-400',
+                'line' => 'border-amber-500/20',
+                'topBar' => 'bg-amber-500',
+            ],
 
-        public string $search = '';
-        public string $statusFilter = 'all';
-        public string $historyFrom = '';
-        public string $historyTo = '';
+            'preparing' => [
+                'label' => 'Preparing',
+                'description' => 'In progress',
+                'icon' => 'arrow-path',
+                'surface' => 'bg-blue-500/10',
+                'text' => 'text-blue-700 dark:text-blue-400',
+                'line' => 'border-blue-500/20',
+            ],
 
-        public bool $paymentDialogOpen = false;
-        public string $paymentStep = 'method';
-        public ?int $paymentOrderId = null;
-        public string $paymentMethod = PaymentMethod::Cash->value;
-        public bool $qrisConfirmed = false;
-        public array $paymentData = [];
-        public string $paymentError = '';
+            'ready' => [
+                'label' => 'Ready',
+                'description' => 'Ready to serve',
+                'icon' => 'check-circle',
+                'surface' => 'bg-emerald-500/10',
+                'text' => 'text-emerald-700 dark:text-emerald-400',
+                'line' => 'border-emerald-500/20',
+            ],
 
-        public bool $receiptDialogOpen = false;
-        public array $receiptData = [];
+            'served' => [
+                'label' => 'Served',
+                'description' => 'Completed',
+                'icon' => 'check-badge',
+                'surface' => 'bg-violet-500/10',
+                'text' => 'text-violet-700 dark:text-violet-400',
+                'line' => 'border-violet-500/20',
+            ],
+        ];
+    }
 
-        public function activeStatuses(): array
-        {
-            return [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Ready];
+    private function setPaymentStep(string $step): void
+    {
+        $this->paymentStep = $step;
+        $this->dispatch('paymentStepChanged', step: $step);
+    }
+
+    #[Computed]
+    public function orderColumns(): array
+    {
+        $query = Order::query()
+            ->with(['table:id,number', 'orderItems.product:id,name'])
+            ->whereIn('status', self::ACTIVE_STATUS_VALUES)
+            ->latest('created_at')->latest('id');
+
+        if ($this->statusFilter !== 'all') {
+            $query->where('status', $this->statusFilter);
         }
 
-        public function statusMeta(): array
-        {
-            return [
-                'pending' => [
-                    'label' => 'Pending',
-                    'description' => 'New orders',
-                    'icon' => 'clock',
-                    'surface' => 'bg-amber-500/10',
-                    'text' => 'text-amber-700 dark:text-amber-400',
-                    'line' => 'border-amber-500/20',
-                    'topBar' => 'bg-amber-500',
-                ],
+        $this->applySearch($query);
 
-                'preparing' => [
-                    'label' => 'Preparing',
-                    'description' => 'In progress',
-                    'icon' => 'arrow-path',
-                    'surface' => 'bg-blue-500/10',
-                    'text' => 'text-blue-700 dark:text-blue-400',
-                    'line' => 'border-blue-500/20',
-                ],
+        return $query->get()->groupBy(fn (Order $order): string => $order->status->value)->all();
+    }
 
-                'ready' => [
-                    'label' => 'Ready',
-                    'description' => 'Ready to serve',
-                    'icon' => 'check-circle',
-                    'surface' => 'bg-emerald-500/10',
-                    'text' => 'text-emerald-700 dark:text-emerald-400',
-                    'line' => 'border-emerald-500/20',
-                ],
+    #[Computed]
+    public function historyOrders()
+    {
+        $query = Order::query()
+            ->with(['table:id,number', 'orderItems.product:id,name'])
+            ->whereNotNull('paid_at')
+            ->latest('paid_at')->latest('id');
 
-                'served' => [
-                    'label' => 'Served',
-                    'description' => 'Completed',
-                    'icon' => 'check-badge',
-                    'surface' => 'bg-violet-500/10',
-                    'text' => 'text-violet-700 dark:text-violet-400',
-                    'line' => 'border-violet-500/20',
-                ],
-            ];
+        $this->applySearch($query);
+
+        if ($this->historyFrom !== '') {
+            $query->whereDate('paid_at', '>=', $this->historyFrom);
         }
 
-        private function setPaymentStep(string $step): void
-        {
-            $this->paymentStep = $step;
-            $this->dispatch('paymentStepChanged', step: $step);
+        if ($this->historyTo !== '') {
+            $query->whereDate('paid_at', '<=', $this->historyTo);
         }
 
-        #[Computed]
-        public function orderColumns(): array
-        {
-            $query = Order::query()
-                ->with(['table:id,number', 'orderItems.product:id,name'])
-                ->whereIn('status', self::ACTIVE_STATUS_VALUES)
-                ->latest('created_at')->latest('id');
+        return $query->limit(100)->get();
+    }
 
-            if ($this->statusFilter !== 'all') {
-                $query->where('status', $this->statusFilter);
+    #[Computed]
+    public function kpis(): array
+    {
+        return [
+            'active_orders' => Order::whereIn('status', self::ACTIVE_STATUS_VALUES)->count(),
+            'occupied_tables' => DB::table('tables')->where('status', TableStatus::Occupied->value)->count(),
+            'pending_orders' => Order::where('status', OrderStatus::Pending)->count(),
+            'today_revenue' => Order::whereNotNull('paid_at')->whereDate('paid_at', today())->sum('total_price'),
+        ];
+    }
+
+    public function setTab(string $tab): void
+    {
+        $this->activeTab = in_array($tab, ['orders', 'history'], true) ? $tab : 'orders';
+        $this->refreshBoard();
+    }
+
+    public function refreshBoard(): void
+    {
+        unset($this->orderColumns, $this->historyOrders, $this->kpis);
+    }
+
+    #[On('order-board-refresh')]
+    public function refreshFromRealtime(): void
+    {
+        $this->refreshBoard();
+    }
+
+    public function moveOrder(int $orderId, string $targetStatus): void
+    {
+        $user = auth()->user();
+        abort_unless($user?->role === UserRole::Kasir, 403);
+
+        $target = OrderStatus::tryFrom($targetStatus);
+        if (! $target) {
+            throw ValidationException::withMessages(['status' => 'The target status is invalid.']);
+        }
+
+        DB::transaction(function () use ($orderId, $target, $user): void {
+            $order = Order::query()->lockForUpdate()->findOrFail($orderId);
+
+            $allowedTargets = [...$this->activeStatuses(), OrderStatus::Served];
+
+            if (! in_array($target, $allowedTargets, true)) {
+                throw ValidationException::withMessages(['status' => 'The target status is invalid for this order.']);
             }
 
-            $this->applySearch($query);
-
-            return $query->get()->groupBy(fn (Order $order): string => $order->status->value)->all();
-        }
-
-        #[Computed]
-        public function historyOrders()
-        {
-            $query = Order::query()
-                ->with(['table:id,number', 'orderItems.product:id,name'])
-                ->whereNotNull('paid_at')
-                ->latest('paid_at')->latest('id');
-
-            $this->applySearch($query);
-
-            if ($this->historyFrom !== '') {
-                $query->whereDate('paid_at', '>=', $this->historyFrom);
+            if (($target === OrderStatus::Preparing || $target === OrderStatus::Ready) && $order->paid_at === null) {
+                throw ValidationException::withMessages(['status' => 'Order must be paid before it can be prepared or marked as ready.']);
             }
 
-            if ($this->historyTo !== '') {
-                $query->whereDate('paid_at', '<=', $this->historyTo);
-            }
+            (new UpdateOrderStatusAction)->execute($order, $target, $user->id);
+        });
 
-            return $query->limit(100)->get();
+        $this->dispatch('order-board-toast', message: 'Order status updated successfully.');
+    }
+
+    public function openPaymentDialog(int $orderId, ?string $method = null): void
+    {
+        abort_unless(auth()->user()?->role === UserRole::Kasir, 403);
+
+        $order = Order::query()
+            ->with(['table:id,number', 'orderItems.product:id,name'])
+            ->findOrFail($orderId);
+
+        $selectedMethod = PaymentMethod::tryFrom($method ?? $order->payment_method?->value ?? PaymentMethod::Cash->value);
+        if (! $selectedMethod) {
+            $this->paymentError = 'The payment method is invalid.';
+
+            return;
         }
 
-        #[Computed]
-        public function kpis(): array
-        {
-            return [
-                'active_orders' => Order::whereIn('status', self::ACTIVE_STATUS_VALUES)->count(),
-                'occupied_tables' => DB::table('tables')->where('status', TableStatus::Occupied->value)->count(),
-                'pending_orders' => Order::where('status', OrderStatus::Pending)->count(),
-                'today_revenue' => Order::whereNotNull('paid_at')->whereDate('paid_at', today())->sum('total_price'),
-            ];
-        }
-
-        public function setTab(string $tab): void
-        {
-            $this->activeTab = in_array($tab, ['orders', 'history'], true) ? $tab : 'orders';
+        if ($order->paid_at !== null) {
+            $this->paymentError = 'This order has already been paid.';
             $this->refreshBoard();
+
+            return;
         }
 
-        public function refreshBoard(): void
-        {
-            unset($this->orderColumns, $this->historyOrders, $this->kpis);
+        $this->resetErrorBag();
+        $this->paymentError = '';
+        $this->paymentDialogOpen = true;
+        $this->paymentOrderId = $order->id;
+        $this->paymentMethod = $selectedMethod->value;
+        $this->qrisConfirmed = false;
+        $this->paymentData = $this->serializeOrder($order);
+
+        $this->setPaymentStep($selectedMethod->value === PaymentMethod::Cash->value ? 'scan' : 'confirmation');
+    }
+
+    public function selectPaymentMethod(string $method): void
+    {
+        $selectedMethod = PaymentMethod::tryFrom($method);
+        if (! $selectedMethod) {
+            $this->addError('paymentMethod', 'The payment method is invalid.');
+
+            return;
         }
 
-        #[On('order-board-refresh')]
-        public function refreshFromRealtime(): void
-        {
-            $this->refreshBoard();
+        $this->resetErrorBag();
+        $this->paymentMethod = $selectedMethod->value;
+        $this->qrisConfirmed = false;
+    }
+
+    public function continuePayment(): void
+    {
+        if (! PaymentMethod::tryFrom($this->paymentMethod)) {
+            $this->addError('paymentMethod', 'Select a payment method first.');
+
+            return;
         }
 
-        public function moveOrder(int $orderId, string $targetStatus): void
-        {
-            $user = auth()->user();
-            abort_unless($user?->role === UserRole::Kasir, 403);
+        if ($this->paymentOrderId === null) {
+            $this->paymentError = 'The payment order could not be found.';
 
-            $target = OrderStatus::tryFrom($targetStatus);
-            if (! $target) {
-                throw ValidationException::withMessages(['status' => 'The target status is invalid.']);
-            }
-
-            DB::transaction(function () use ($orderId, $target, $user): void {
-                $order = Order::query()->lockForUpdate()->findOrFail($orderId);
-
-                $allowedTargets = [...$this->activeStatuses(), OrderStatus::Served];
-
-                if (! in_array($target, $allowedTargets, true)) {
-                    throw ValidationException::withMessages(['status' => 'The target status is invalid for this order.']);
-                }
-
-                (new UpdateOrderStatusAction())->execute($order, $target, $user->id);
-            });
-
-            $this->dispatch('order-board-toast', message: 'Order status updated successfully.');
+            return;
         }
 
-        public function openPaymentDialog(int $orderId, ?string $method = null): void
-        {
-            abort_unless(auth()->user()?->role === UserRole::Kasir, 403);
-
-            $order = Order::query()
-                ->with(['table:id,number', 'orderItems.product:id,name'])
-                ->findOrFail($orderId);
-
-            $selectedMethod = PaymentMethod::tryFrom($method ?? $order->payment_method?->value ?? PaymentMethod::Cash->value);
-            if (! $selectedMethod) {
-                $this->paymentError = 'The payment method is invalid.';
-
-                return;
-            }
-
-            if ($order->paid_at !== null) {
-                $this->paymentError = 'This order has already been paid.';
-                $this->refreshBoard();
-
-                return;
-            }
-
-            $this->resetErrorBag();
-            $this->paymentError = '';
-            $this->paymentDialogOpen = true;
-            $this->paymentOrderId = $order->id;
-            $this->paymentMethod = $selectedMethod->value;
-            $this->qrisConfirmed = false;
-            $this->paymentData = $this->serializeOrder($order);
-
-            $this->setPaymentStep($selectedMethod->value === PaymentMethod::Cash->value ? 'scan' : 'confirmation');
-        }
-
-        public function selectPaymentMethod(string $method): void
-        {
-            $selectedMethod = PaymentMethod::tryFrom($method);
-            if (! $selectedMethod) {
-                $this->addError('paymentMethod', 'The payment method is invalid.');
-
-                return;
-            }
-
-            $this->resetErrorBag();
-            $this->paymentMethod = $selectedMethod->value;
-            $this->qrisConfirmed = false;
-        }
-
-        public function continuePayment(): void
-        {
-            if (! PaymentMethod::tryFrom($this->paymentMethod)) {
-                $this->addError('paymentMethod', 'Select a payment method first.');
-
-                return;
-            }
-
-            if ($this->paymentOrderId === null) {
-                $this->paymentError = 'The payment order could not be found.';
-
-                return;
-            }
-
-            $order = Order::query()->find($this->paymentOrderId);
-            if (! $order || $order->paid_at !== null) {
-                $this->paymentError = 'This order has changed and cannot be paid from this dialog.';
-                $this->paymentDialogOpen = false;
-                $this->resetPaymentState();
-                $this->refreshBoard();
-
-                return;
-            }
-
-            $this->resetErrorBag();
-            $this->paymentError = '';
-            $this->setPaymentStep($this->paymentMethod === PaymentMethod::Cash->value ? 'scan' : 'confirmation');
-        }
-
-        public function handleScan(string $decodedText): void
-        {
-            abort_unless(auth()->user()?->role === UserRole::Kasir, 403);
-
-            if (! $this->paymentDialogOpen || $this->paymentStep !== 'scan' || $this->paymentOrderId === null) {
-                return;
-            }
-
-            $this->qrisConfirmed = true;
-            $this->confirmPayment();
-
-            if ($this->paymentDialogOpen) {
-                $this->dispatch('paymentStepChanged', step: 'scan');
-            }
-        }
-
-        public function confirmPayment(): void
-        {
-            abort_unless(auth()->user()?->role === UserRole::Kasir, 403);
-
-            $this->resetErrorBag();
-            $method = PaymentMethod::tryFrom($this->paymentMethod);
-            if (! $method) {
-                $this->addError('paymentMethod', 'The payment method is invalid.');
-
-                return;
-            }
-
-            if (($method === PaymentMethod::Qris || $method === PaymentMethod::Cash) && ! $this->qrisConfirmed) {
-                $this->addError('qrisConfirmed', 'Confirm the payment first.');
-
-                return;
-            }
-
-            if ($this->paymentOrderId === null) {
-                $this->paymentError = 'The payment order could not be found.';
-
-                return;
-            }
-
-            try {
-                $paidOrder = (new PayOrderAction())->execute(
-                    Order::query()->findOrFail($this->paymentOrderId),
-                    $method,
-                    auth()->id(),
-                );
-            } catch (ValidationException $exception) {
-                $this->paymentError = $exception->validator->errors()->first() ?? 'The payment could not be processed.';
-                $this->qrisConfirmed = false;
-                $this->refreshBoard();
-
-                return;
-            } catch (ModelNotFoundException) {
-                $this->paymentError = 'The order could not be found.';
-                $this->qrisConfirmed = false;
-                $this->refreshBoard();
-
-                return;
-            }
-
-            $this->receiptData = [
-                ...$this->serializeOrder($paidOrder),
-                'payment_method' => $paidOrder->payment_method?->value,
-                'cashier_name' => $paidOrder->user?->name ?? auth()->user()?->name ?? 'Cashier',
-                'paid_at' => $paidOrder->paid_at?->format('d M Y, H:i'),
-                'receipt_url' => route('cashier.order.receipt', $paidOrder),
-            ];
-
-            $this->paymentDialogOpen = false;
-            $this->receiptDialogOpen = true;
-            $this->resetPaymentState();
-            $this->refreshBoard();
-            $this->dispatch('order-board-toast', message: 'Payment processed successfully.');
-        }
-
-        public function cancelPayment(): void
-        {
+        $order = Order::query()->find($this->paymentOrderId);
+        if (! $order || $order->paid_at !== null) {
+            $this->paymentError = 'This order has changed and cannot be paid from this dialog.';
             $this->paymentDialogOpen = false;
             $this->resetPaymentState();
             $this->refreshBoard();
+
+            return;
         }
 
-        public function closeReceiptDialog(): void
-        {
-            $this->receiptDialogOpen = false;
-            $this->receiptData = [];
+        $this->resetErrorBag();
+        $this->paymentError = '';
+        $this->setPaymentStep($this->paymentMethod === PaymentMethod::Cash->value ? 'scan' : 'confirmation');
+    }
+
+    public function handleScan(string $decodedText): void
+    {
+        abort_unless(auth()->user()?->role === UserRole::Kasir, 403);
+
+        if (! $this->paymentDialogOpen || $this->paymentStep !== 'scan' || $this->paymentOrderId === null) {
+            return;
         }
 
-        private function nextStatus(OrderStatus $status): ?OrderStatus
-        {
-            return match ($status) {
-                OrderStatus::Pending => OrderStatus::Preparing,
-                OrderStatus::Preparing => OrderStatus::Ready,
-                OrderStatus::Ready => OrderStatus::Served,
-                default => null,
-            };
+        $this->qrisConfirmed = true;
+        $this->confirmPayment();
+
+        if ($this->paymentDialogOpen) {
+            $this->dispatch('paymentStepChanged', step: 'scan');
+        }
+    }
+
+    public function confirmPayment(): void
+    {
+        abort_unless(auth()->user()?->role === UserRole::Kasir, 403);
+
+        $this->resetErrorBag();
+        $method = PaymentMethod::tryFrom($this->paymentMethod);
+        if (! $method) {
+            $this->addError('paymentMethod', 'The payment method is invalid.');
+
+            return;
         }
 
-        private function applySearch(Builder $query): void
-        {
-            $search = trim($this->search);
-            if ($search === '') {
-                return;
-            }
+        if (($method === PaymentMethod::Qris || $method === PaymentMethod::Cash) && ! $this->qrisConfirmed) {
+            $this->addError('qrisConfirmed', 'Confirm the payment first.');
 
-            $query->where(function (Builder $builder) use ($search): void {
-                $builder->where('customer_name', 'like', "%{$search}%")
-                    ->orWhere('id', 'like', "%{$search}%")
-                    ->orWhereHas('table', fn (Builder $table): Builder => $table->where('number', 'like', "%{$search}%"));
-            });
+            return;
         }
 
-        /**
-         * @return array{id: int, customer_name: string, table_number: string|int|null, total_price: string, items: array<int, array{id: int, quantity: int, product_name: string, price: string, subtotal: string}>}
-         */
-        private function serializeOrder(Order $order): array
-        {
-            $order->loadMissing(['table:id,number', 'orderItems.product:id,name']);
+        if ($this->paymentOrderId === null) {
+            $this->paymentError = 'The payment order could not be found.';
 
-            return [
-                'id' => $order->id,
-                'customer_name' => $order->customer_name,
-                'table_number' => $order->table?->number,
-                'total_price' => (string) $order->total_price,
-                'items' => $order->orderItems->map(fn ($item): array => [
-                    'id' => $item->id,
-                    'quantity' => $item->quantity,
-                    'product_name' => $item->product->name,
-                    'price' => (string) $item->price,
-                    'subtotal' => (string) $item->subtotal,
-                ])->values()->all(),
-            ];
+            return;
         }
 
-        private function resetPaymentState(): void
-        {
-            $this->paymentOrderId = null;
-            $this->paymentMethod = PaymentMethod::Cash->value;
+        try {
+            $paidOrder = (new PayOrderAction)->execute(
+                Order::query()->findOrFail($this->paymentOrderId),
+                $method,
+                auth()->id(),
+            );
+        } catch (ValidationException $exception) {
+            $this->paymentError = $exception->validator->errors()->first() ?? 'The payment could not be processed.';
             $this->qrisConfirmed = false;
-            $this->paymentData = [];
-            $this->paymentError = '';
-            $this->resetErrorBag();
+            $this->refreshBoard();
 
-            // Step 'method' => JS mematikan kamera.
-            $this->setPaymentStep('method');
+            return;
+        } catch (ModelNotFoundException) {
+            $this->paymentError = 'The order could not be found.';
+            $this->qrisConfirmed = false;
+            $this->refreshBoard();
+
+            return;
         }
-    };
-    ?>
+
+        $this->receiptData = [
+            ...$this->serializeOrder($paidOrder),
+            'payment_method' => $paidOrder->payment_method?->value,
+            'cashier_name' => $paidOrder->user?->name ?? auth()->user()?->name ?? 'Cashier',
+            'paid_at' => $paidOrder->paid_at?->format('d M Y, H:i'),
+            'receipt_url' => route('cashier.order.receipt', $paidOrder),
+        ];
+
+        $this->paymentDialogOpen = false;
+        $this->receiptDialogOpen = true;
+        $this->resetPaymentState();
+        $this->refreshBoard();
+        $this->dispatch('order-board-toast', message: 'Payment processed successfully.');
+    }
+
+    public function cancelPayment(): void
+    {
+        $this->paymentDialogOpen = false;
+        $this->resetPaymentState();
+        $this->refreshBoard();
+    }
+
+    public function closeReceiptDialog(): void
+    {
+        $this->receiptDialogOpen = false;
+        $this->receiptData = [];
+    }
+
+    private function nextStatus(OrderStatus $status): ?OrderStatus
+    {
+        return match ($status) {
+            OrderStatus::Pending => OrderStatus::Preparing,
+            OrderStatus::Preparing => OrderStatus::Ready,
+            OrderStatus::Ready => OrderStatus::Served,
+            default => null,
+        };
+    }
+
+    private function applySearch(Builder $query): void
+    {
+        $search = trim($this->search);
+        if ($search === '') {
+            return;
+        }
+
+        $query->where(function (Builder $builder) use ($search): void {
+            $builder->where('customer_name', 'like', "%{$search}%")
+                ->orWhere('id', 'like', "%{$search}%")
+                ->orWhereHas('table', fn (Builder $table): Builder => $table->where('number', 'like', "%{$search}%"));
+        });
+    }
+
+    /**
+     * @return array{id: int, customer_name: string, table_number: string|int|null, total_price: string, items: array<int, array{id: int, quantity: int, product_name: string, price: string, subtotal: string}>}
+     */
+    private function serializeOrder(Order $order): array
+    {
+        $order->loadMissing(['table:id,number', 'orderItems.product:id,name']);
+
+        return [
+            'id' => $order->id,
+            'customer_name' => $order->customer_name,
+            'table_number' => $order->table?->number,
+            'total_price' => (string) $order->total_price,
+            'items' => $order->orderItems->map(fn ($item): array => [
+                'id' => $item->id,
+                'quantity' => $item->quantity,
+                'product_name' => $item->product->name,
+                'price' => (string) $item->price,
+                'subtotal' => (string) $item->subtotal,
+            ])->values()->all(),
+        ];
+    }
+
+    private function resetPaymentState(): void
+    {
+        $this->paymentOrderId = null;
+        $this->paymentMethod = PaymentMethod::Cash->value;
+        $this->qrisConfirmed = false;
+        $this->paymentData = [];
+        $this->paymentError = '';
+        $this->resetErrorBag();
+
+        // Step 'method' => JS mematikan kamera.
+        $this->setPaymentStep('method');
+    }
+};
+?>
 
 <div data-order-board x-data="orderBoardRealtimeState" class="space-y-6">
     <div x-show="toastMessage" x-cloak x-transition
@@ -594,7 +608,8 @@
             <div class="space-y-3" data-order-column="{{ $status->value }}">
                 @forelse($columnOrders as $order)
                 <article data-order-id="{{ $order->id }}"
-                    class="group cursor-grab rounded-xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md active:cursor-grabbing"
+                    @if($order->paid_at === null) data-draggable="false" draggable="false" @else draggable="true" @endif
+                    class="group rounded-xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md {{ $order->paid_at === null ? 'cursor-default' : 'cursor-grab active:cursor-grabbing' }}"
                     wire:key="order-{{ $order->id }}">
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex min-w-0 items-center gap-2">
@@ -639,15 +654,21 @@
                             </button>
                             @endif
                             @if($next = $this->nextStatus($status))
-                            <button type="button" wire:click="moveOrder({{ $order->id }}, '{{ $next->value }}')"
+                            <button type="button" 
+                                wire:click="moveOrder({{ $order->id }}, '{{ $next->value }}')"
                                 wire:loading.attr="disabled"
-                                class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">{{
-                                $this->statusMeta()[$next->value]['label']
-                                }}<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                @if(($next === OrderStatus::Preparing || $next === OrderStatus::Ready) && $order->paid_at === null)
+                                    disabled
+                                    title="Payment required"
+                                @endif
+                                class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+                                {{ $this->statusMeta()[$next->value]['label'] }}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="2" stroke="currentColor" class="size-3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                                </svg></button>
+                                </svg>
+                            </button>
                             @endif
                         </div>
                     </div>

@@ -108,13 +108,13 @@ function initOrderBoardSortables() {
 
     roots.forEach((root) => {
         root.querySelectorAll('[data-order-column]').forEach((column) => {
-            sortableInstances.push(Sortable.create(column, {
-                group: { name: 'orders', pull: true, put: true },
-                animation: 150,
-                draggable: '[data-order-id]',
-                onStart: () => {
-                    sortableDragging = true;
-                },
+                sortableInstances.push(Sortable.create(column, {
+                    group: { name: 'orders', pull: true, put: true },
+                    animation: 150,
+                    draggable: '[data-order-id]:not([data-draggable="false"])',
+                    onStart: () => {
+                        sortableDragging = true;
+                    },
                 onEnd: ({ item, from, to }) => {
                     sortableDragging = false;
 
