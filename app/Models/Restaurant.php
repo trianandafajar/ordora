@@ -11,12 +11,13 @@ class Restaurant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'owner_id', 'is_active'];
+    protected $fillable = ['name', 'owner_id', 'is_active', 'payment_methods'];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'payment_methods' => 'array',
         ];
     }
 

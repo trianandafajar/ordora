@@ -24,6 +24,7 @@ class RestaurantController extends Controller
     {
         $restaurants = Restaurant::with('owner')->latest()->get();
         $owners = User::where('role', 'admin')->whereNull('restaurant_id')->get();
+
         return view('superadmin.restaurants.index', compact('restaurants', 'owners'));
     }
 
@@ -39,6 +40,7 @@ class RestaurantController extends Controller
         User::find($request->owner_id)->update(['restaurant_id' => $restaurant->id]);
 
         $restaurant->load('owner');
+
         return response()->json([
             'success' => true,
             'restaurant' => $restaurant,
@@ -61,6 +63,7 @@ class RestaurantController extends Controller
         }
 
         $restaurant->load('owner');
+
         return response()->json([
             'success' => true,
             'restaurant' => $restaurant,
@@ -70,7 +73,8 @@ class RestaurantController extends Controller
 
     public function toggle(Restaurant $restaurant)
     {
-        $restaurant->update(['is_active' => !$restaurant->is_active]);
+        $restaurant->update(['is_active' => ! $restaurant->is_active]);
+
         return response()->json([
             'is_active' => $restaurant->is_active,
             'message' => 'Restaurant status updated successfully.',
@@ -132,6 +136,7 @@ class RestaurantController extends Controller
     public function show(Restaurant $restaurant)
     {
         $restaurant->load(['owner', 'staff', 'categories.products', 'tables']);
+
         return view('superadmin.restaurants.show', compact('restaurant'));
     }
 
@@ -139,8 +144,21 @@ class RestaurantController extends Controller
     {
         abort_if($table->restaurant_id !== $restaurant->id, 404);
 
-        $table->load(['orders' => fn($q) => $q->where('status', '!=', OrderStatus::Confirmed)->latest()]);
+        $table->load(['orders' => fn ($q) => $q->where('status', '!=', OrderStatus::Confirmed)->latest()]);
+
         return view('superadmin.restaurants.tables.show', ['restaurant' => $restaurant, 'table' => $table]);
+    }
+
+    public function updatePayments(Request $request, Restaurant $restaurant)
+    {
+        $validated = $request->validate([
+            'payment_methods' => ['required', 'array'],
+            'payment_methods.*' => ['required', 'string', 'in:cash,qris,xendit'],
+        ]);
+
+        $restaurant->update(['payment_methods' => $validated['payment_methods']]);
+
+        return response()->json(['message' => 'Payments updated successfully.']);
     }
 
     public function storeStaff(Request $request, Restaurant $restaurant)
@@ -181,6 +199,7 @@ class RestaurantController extends Controller
         }
 
         $user->update($data);
+
         return response()->json(['success' => true, 'user' => $user]);
     }
 
@@ -190,6 +209,7 @@ class RestaurantController extends Controller
             return response()->json(['error' => 'Forbidden'], 403);
         }
         $user->delete();
+
         return response()->json(['success' => true]);
     }
 
@@ -198,7 +218,8 @@ class RestaurantController extends Controller
         if ($user->restaurant_id !== $restaurant->id || $user->role !== UserRole::Kasir) {
             return response()->json(['error' => 'Forbidden'], 403);
         }
-        $user->update(['is_active' => !$user->is_active]);
+        $user->update(['is_active' => ! $user->is_active]);
+
         return response()->json(['is_active' => $user->is_active]);
     }
 
@@ -206,6 +227,7 @@ class RestaurantController extends Controller
     {
         $request->validate(['name' => 'required|string|max:255']);
         $category = $restaurant->categories()->create(['name' => $request->name]);
+
         return response()->json(['success' => true, 'category' => $category]);
     }
 
@@ -217,6 +239,7 @@ class RestaurantController extends Controller
 
         $request->validate(['name' => 'required|string|max:255']);
         $category->update(['name' => $request->name]);
+
         return response()->json(['success' => true, 'category' => $category]);
     }
 
@@ -226,6 +249,7 @@ class RestaurantController extends Controller
             return response()->json(['error' => 'Forbidden'], 403);
         }
         $category->delete();
+
         return response()->json(['success' => true]);
     }
 
@@ -248,6 +272,7 @@ class RestaurantController extends Controller
         }
 
         $product = Product::create($data);
+
         return response()->json(['success' => true, 'product' => $product]);
     }
 
@@ -279,6 +304,7 @@ class RestaurantController extends Controller
         }
 
         $product->update($data);
+
         return response()->json(['success' => true, 'product' => $product->fresh()]);
     }
 
@@ -291,6 +317,7 @@ class RestaurantController extends Controller
             Storage::disk('public')->delete($product->image);
         }
         $product->delete();
+
         return response()->json(['success' => true]);
     }
 
@@ -324,6 +351,7 @@ class RestaurantController extends Controller
         ]);
 
         $table->update($request->only('number', 'capacity'));
+
         return response()->json(['success' => true, 'table' => $table->fresh()]);
     }
 
@@ -333,6 +361,7 @@ class RestaurantController extends Controller
             return response()->json(['error' => 'Forbidden'], 403);
         }
         $table->delete();
+
         return response()->json(['success' => true]);
     }
 }

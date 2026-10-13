@@ -304,6 +304,9 @@
                     <button @click="tab = 'tables'"
                         :class="tab === 'tables' ? 'border-b-2 border-primary font-bold' : 'text-muted-foreground'"
                         class="pb-2 text-sm cursor-pointer">Tables QR</button>
+                    <button @click="tab = 'payments'"
+                        :class="tab === 'payments' ? 'border-b-2 border-primary font-bold' : 'text-muted-foreground'"
+                        class="pb-2 text-sm cursor-pointer">Payments</button>
                 </div>
                 <button x-show="tab === 'staff'" @click="openCreate()"
                     class="rounded-md bg-primary text-primary-foreground text-xs font-medium h-8 px-3 mb-2 cursor-pointer">
@@ -530,6 +533,51 @@
                             </template>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div x-show="tab === 'payments'" class="space-y-4" x-data="{
+                paymentMethods: @js($restaurant->payment_methods ?? ['cash', 'qris']),
+                async togglePayment(method) {
+                    if (this.paymentMethods.includes(method)) {
+                        this.paymentMethods = this.paymentMethods.filter(m => m !== method);
+                    } else {
+                        this.paymentMethods.push(method);
+                    }
+                    try {
+                        const { res, data } = await send(`{{ route('superadmin.restaurants.payments.update', $restaurant->id) }}`, 'PUT', { payment_methods: this.paymentMethods });
+                        if (!res.ok) throw new Error('Failed to update');
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                }
+            }">
+                <div class="rounded-xl border bg-card shadow-sm p-6 space-y-4">
+                    <h3 class="text-lg font-medium">Active Payment Methods</h3>
+                    <p class="text-sm text-muted-foreground">Toggle which payment methods are available for customers on the menu and checkout.</p>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/30">
+                            <div>
+                                <span class="font-medium">Cash</span>
+                                <p class="text-xs text-muted-foreground">Pay with physical cash to the cashier.</p>
+                            </div>
+                            <input type="checkbox" :checked="paymentMethods.includes('cash')" @change="togglePayment('cash')" class="rounded border-input size-4">
+                        </label>
+                        <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/30">
+                            <div>
+                                <span class="font-medium">QRIS</span>
+                                <p class="text-xs text-muted-foreground">Manual QRIS verification by cashier.</p>
+                            </div>
+                            <input type="checkbox" :checked="paymentMethods.includes('qris')" @change="togglePayment('qris')" class="rounded border-input size-4">
+                        </label>
+                        <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/30">
+                            <div>
+                                <span class="font-medium">Xendit</span>
+                                <p class="text-xs text-muted-foreground">Automated payment gateway via Xendit.</p>
+                            </div>
+                            <input type="checkbox" :checked="paymentMethods.includes('xendit')" @change="togglePayment('xendit')" class="rounded border-input size-4">
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>

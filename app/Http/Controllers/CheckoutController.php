@@ -13,6 +13,7 @@ use App\Models\Table;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class CheckoutController extends Controller
@@ -118,9 +119,12 @@ class CheckoutController extends Controller
     public function placeOrder(Request $request, string $qr_token, CreateOrderAction $action): JsonResponse
     {
         $table = Table::where('qr_token', $qr_token)->firstOrFail();
+        $restaurant = $table->restaurant;
+        $allowedMethods = $restaurant->payment_methods ?? ['cash', 'qris'];
+
         $validated = $request->validate([
             'customer_name' => ['required', 'string', 'max:100'],
-            'payment_method' => ['required', 'in:cash,qris'],
+            'payment_method' => ['required', Rule::in($allowedMethods)],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],

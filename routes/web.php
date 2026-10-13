@@ -76,6 +76,7 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::patch('restaurants/{restaurant}/staff/{user}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggleStaff'])->name('restaurants.staff.toggle');
     Route::patch('restaurants/{restaurant}/toggle', [App\Http\Controllers\Admin\RestaurantController::class, 'toggle'])->name('restaurants.toggle');
     Route::get('restaurants/{restaurant}/tables/{table}', [App\Http\Controllers\Admin\RestaurantController::class, 'showTable'])->name('restaurants.tables.show');
+    Route::put('restaurants/{restaurant}/payments', [App\Http\Controllers\Admin\RestaurantController::class, 'updatePayments'])->name('restaurants.payments.update');
     Route::post('restaurants/{restaurant}/tables', [App\Http\Controllers\Admin\RestaurantController::class, 'storeTable'])->name('restaurants.tables.store');
     Route::put('restaurants/{restaurant}/tables/{table}', [App\Http\Controllers\Admin\RestaurantController::class, 'updateTable'])->name('restaurants.tables.update');
     Route::delete('restaurants/{restaurant}/tables/{table}', [App\Http\Controllers\Admin\RestaurantController::class, 'destroyTable'])->name('restaurants.tables.destroy');
